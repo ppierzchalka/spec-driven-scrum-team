@@ -1,0 +1,129 @@
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { installTeam, parseAgentFile, serializeAgentFile } from './installTeam.js';
+import type { TeamConfig } from './types.js';
+
+let root: string;
+let defsDir: string;
+let skillDir: string;
+let targetDir: string;
+
+function writeFixture() {
+  defsDir = join(root, 'defs');
+  skillDir = join(root, 'skills', 'autonomous-implement');
+  targetDir = join(root, 'target');
+  mkdirSync(defsDir, { recursive: true });
+  mkdirSync(skillDir, { recursive: true });
+
+  writeFileSync(
+    join(defsDir, 'lead.md'),
+    '---\ndescription: Orchestrates the pipeline\nmode: primary\n---\nYou are the lead agent.\n',
+  );
+  writeFileSync(
+    join(defsDir, 'tester.md'),
+    '---\ndescription: Writes tests first\nmode: subagent\n---\nYou are the tester agent.\n',
+  );
+  writeFileSync(
+    join(skillDir, 'SKILL.md'),
+    '# autonomous-implement\n\nRuns the pipeline.\n',
+  );
+}
+
+beforeAll(() => {
+  root = mkdtempSync(join(tmpdir(), 'install-team-'));
+  writeFixture();
+});
+
+afterAll(() => {
+  rmSync(root, { recursive: true, force: true });
+});
+
+describe('parseAgentFile / serializeAgentFile', () => {
+  it('round-trips frontmatter and body', () => {
+    const content = '---\ndescription: hello\nmode: primary\n---\nBody text.\n';
+    const parsed = parseAgentFile(content);
+    expect(parsed.frontmatter).toEqual({ description: 'hello', mode: 'primary' });
+    expect(parsed.body).toBe('Body text.\n');
+    expect(serializeAgentFile(parsed.frontmatter, parsed.body)).toBe(content);
+  });
+});
+
+describe('installTeam', () => {
+  it('writes all agent definitions with their canonical frontmatter and body', () => {
+    const result = installTeam({ definitionsDir: defsDir, skillDir, config: {}, targetDir });
+    expect(result.written).toHaveLength(2);
+    expect(result.written.map((p) => p.split('/').pop())).toEqual(expect.arrayContaining(['lead.md', 'tester.md']));
+
+    const lead = parseAgentFile(readFileSync(join(targetDir, '.opencode/agents/lead.md'), 'utf8'));
+    expect(lead.frontmatter.description).toBe('Orchestrates the pipeline');
+    expect(lead.frontmatter.model).toBeUndefined();
+    expect(lead.body).toContain('You are the lead agent.');
+  });
+
+  it('omits model key when model is unset', () => {
+    installTeam({ definitionsDir: defsDir, skillDir, config: {}, targetDir });
+    const tester = readFileSync(join(targetDir, '.opencode/agents/tester.md'), 'utf8');
+    expect(tester).not.toContain('model:');
+    expect(tester).not.toContain('reasoningEffort:');
+  });
+
+  it('applies model and reasoningEffort from config', () => {
+    const config: TeamConfig = {
+      lead: { model: 'openai/gpt-6-astra', reasoningEffort: 'high' },
+    };
+    installTeam({ definitionsDir: defsDir, skillDir, config, targetDir });
+    const lead = parseAgentFile(readFileSync(join(targetDir, '.opencode/agents/lead.md'), 'utf8'));
+    expect(lead.frontmatter.model).toBe('openai/gpt-6-astra');
+    expect(lead.frontmatter.reasoningEffort).toBe('high');
+  });
+
+  it('copies the skill into the target skills directory', () => {
+    const result = installTeam({ definitionsDir: defsDir, skillDir, config: {}, targetDir });
+    const skillPath = join(targetDir, '.opencode/skills/autonomous-implement/SKILL.md');
+    expect(result.skillPath).toBe(skillPath);
+    expect(readFileSync(skillPath, 'utf8')).toContain('Runs the pipeline.');
+  });
+
+  it('writes team.config.json', () => {
+    const config: TeamConfig = { lead: { model: 'google/gemini-3.6-flash' } };
+    const result = installTeam({ definitionsDir: defsDir, skillDir, config, targetDir });
+    expect(JSON.parse(readFileSync(result.configPath, 'utf8'))).toEqual(config);
+  });
+
+  it('preserves an existing agent prompt when overwrite is false but still applies the model', () => {
+    const first: TeamConfig = {};
+    installTeam({ definitionsDir: defsDir, skillDir, config: first, targetDir });
+    const agentPath = join(targetDir, '.opencode/agents/lead.md');
+    writeFileSync(agentPath, '---\ndescription: Custom edit\nmode: primary\n---\nMy custom prompt.\n');
+
+    const second: TeamConfig = { lead: { model: 'deepseek/deepseek-v4-flash' } };
+    const result = installTeam({
+      definitionsDir: defsDir,
+      skillDir,
+      config: second,
+      targetDir,
+      overwrite: { lead: false },
+    });
+
+    expect(result.preserved).toContain(agentPath);
+    const lead = parseAgentFile(readFileSync(agentPath, 'utf8'));
+    expect(lead.frontmatter.description).toBe('Custom edit');
+    expect(lead.frontmatter.model).toBe('deepseek/deepseek-v4-flash');
+    expect(lead.body).toContain('My custom prompt.');
+  });
+
+  it('overwrites an agent prompt when overwrite is true', () => {
+    const agentPath = join(targetDir, '.opencode/agents/lead.md');
+    installTeam({ definitionsDir: defsDir, skillDir, config: {}, targetDir, overwrite: { lead: true } });
+    const lead = parseAgentFile(readFileSync(agentPath, 'utf8'));
+    expect(lead.frontmatter.description).toBe('Orchestrates the pipeline');
+    expect(lead.body).toContain('You are the lead agent.');
+  });
+
+  it('creates the .opencode/agents directory', () => {
+    expect(existsSync(join(targetDir, '.opencode/agents'))).toBe(true);
+    expect(readdirSync(join(targetDir, '.opencode/agents'))).toEqual(expect.arrayContaining(['lead.md', 'tester.md']));
+  });
+});
