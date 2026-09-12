@@ -5,6 +5,7 @@ import {
   availableModels,
   deriveEffortLevels,
   stripAnsi,
+  detectEnvProviders,
 } from './model-catalog.js';
 
 const REAL_AUTH_OUTPUT = `\u001b[0m
@@ -77,5 +78,23 @@ describe('deriveEffortLevels', () => {
 describe('stripAnsi', () => {
   it('removes ANSI escape sequences', () => {
     expect(stripAnsi('\u001b[90mhello\u001b[0m')).toBe('hello');
+  });
+});
+
+describe('detectEnvProviders', () => {
+  it('detects providers from env vars', () => {
+    const env = { META_MODEL_API_KEY: 'x', ANTHROPIC_API_KEY: 'y' } as NodeJS.ProcessEnv;
+    expect(detectEnvProviders(env)).toEqual(expect.arrayContaining(['meta', 'anthropic']));
+  });
+
+  it('returns empty when no provider keys are set', () => {
+    expect(detectEnvProviders({} as NodeJS.ProcessEnv)).toEqual([]);
+  });
+});
+
+describe('availableModels with env providers', () => {
+  it('includes models from env-detected providers', () => {
+    const models = 'meta/muse-spark-1.3-contributor\nopencode-go/deepseek-v4-pro\n';
+    expect(availableModels('', models, ['meta'])).toEqual(['meta/muse-spark-1.3-contributor']);
   });
 });

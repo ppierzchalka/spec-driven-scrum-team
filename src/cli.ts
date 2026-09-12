@@ -3,8 +3,9 @@ import { text, cancel } from '@clack/prompts';
 import { dirname, join, resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { runTui } from './tui.js';
+import { runTui, enumerateAvailableModels, AGENT_NAMES } from './tui.js';
 import { installTeam } from './installTeam.js';
+import { resolveDefault } from './defaults.js';
 import type { TeamConfig } from './types.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -38,7 +39,10 @@ async function resolveTarget(rawTarget: string | undefined): Promise<string> {
 }
 
 async function main(): Promise<void> {
-  const target = await resolveTarget(process.argv[2]);
+  const args = process.argv.slice(2);
+  const useDefaults = args.includes('--defaults') || args.includes('-d');
+  const positional = args.filter((arg) => !arg.startsWith('-'));
+  const target = await resolveTarget(positional[0]);
 
   const configPath = join(target, '.opencode', 'team.config.json');
   let existing: TeamConfig = {};
@@ -46,7 +50,29 @@ async function main(): Promise<void> {
     existing = JSON.parse(readFileSync(configPath, 'utf8')) as TeamConfig;
   }
 
-  const { config, overwrite } = await runTui({ existing });
+  let config: TeamConfig;
+  let overwrite: Record<string, boolean>;
+  if (useDefaults) {
+    const available = enumerateAvailableModels();
+    config = {};
+    overwrite = {};
+    for (const name of AGENT_NAMES) {
+      const choice = resolveDefault(name, available);
+      if (choice) config[name] = choice;
+      overwrite[name] = true;
+    }
+    console.log('Default configuration (from models available to this opencode install):');
+    for (const name of AGENT_NAMES) {
+      const choice = config[name];
+      console.log(`  ${name}: ${choice?.model ?? 'unset'}${choice?.reasoningEffort ? ` @ ${choice.reasoningEffort}` : ''}`);
+    }
+    console.log();
+  } else {
+    const tui = await runTui({ existing });
+    config = tui.config;
+    overwrite = tui.overwrite;
+  }
+
   const result = installTeam({ definitionsDir, skillDir, config, targetDir: target, overwrite });
 
   console.log(`\nInstalled into ${target}`);

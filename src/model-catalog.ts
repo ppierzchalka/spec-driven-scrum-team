@@ -46,11 +46,39 @@ export function parseModels(output: string): ModelEntry[] {
   return entries;
 }
 
-export function availableModels(authListOutput: string, modelsOutput: string): string[] {
-  const authed = new Set(parseAuthList(authListOutput));
+export function availableModels(
+  authListOutput: string,
+  modelsOutput: string,
+  extraProviders: string[] = [],
+): string[] {
+  const authed = new Set([...parseAuthList(authListOutput), ...extraProviders]);
   return parseModels(modelsOutput)
     .filter((entry) => authed.has(entry.provider))
     .map((entry) => `${entry.provider}/${entry.model}`);
+}
+
+const ENV_PROVIDER_KEYS: Record<string, string[]> = {
+  OPENAI_API_KEY: ['openai'],
+  ANTHROPIC_API_KEY: ['anthropic'],
+  GOOGLE_API_KEY: ['google', 'google-vertex'],
+  GEMINI_API_KEY: ['google'],
+  DEEPSEEK_API_KEY: ['deepseek'],
+  META_MODEL_API_KEY: ['meta'],
+  GROQ_API_KEY: ['groq'],
+  OPENROUTER_API_KEY: ['openrouter'],
+  XAI_API_KEY: ['xai'],
+  MISTRAL_API_KEY: ['mistral'],
+  GITHUB_API_KEY: ['github-copilot'],
+};
+
+export function detectEnvProviders(env: NodeJS.ProcessEnv = process.env): string[] {
+  const providers = new Set<string>();
+  for (const [key, ids] of Object.entries(ENV_PROVIDER_KEYS)) {
+    if (env[key]) {
+      for (const id of ids) providers.add(id);
+    }
+  }
+  return [...providers];
 }
 
 const EFFORT_BY_PROVIDER: Record<string, string[]> = {

@@ -1,6 +1,6 @@
 import { select, text, intro, outro, cancel } from '@clack/prompts';
 import { execFileSync } from 'node:child_process';
-import { availableModels, deriveEffortLevels } from './model-catalog.js';
+import { availableModels, deriveEffortLevels, detectEnvProviders } from './model-catalog.js';
 import type { TeamConfig } from './types.js';
 
 export const AGENT_NAMES = ['lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
@@ -24,6 +24,14 @@ function safeExec(cmd: string, args: string[]): string {
   } catch {
     return '';
   }
+}
+
+export function enumerateAvailableModels(): string[] {
+  return availableModels(
+    safeExec('opencode', ['auth', 'list']),
+    safeExec('opencode', ['models']),
+    detectEnvProviders(),
+  );
 }
 
 function currentHint(choice: { model?: string; reasoningEffort?: string } | undefined): string {
@@ -132,10 +140,7 @@ export async function runTui(options: { existing: TeamConfig }): Promise<TuiResu
   const overwrite: Record<string, boolean> = {};
   for (const name of AGENT_NAMES) overwrite[name] = true;
 
-  const models = availableModels(
-    safeExec('opencode', ['auth', 'list']),
-    safeExec('opencode', ['models']),
-  );
+  const models = enumerateAvailableModels();
 
   let done = false;
   while (!done) {
