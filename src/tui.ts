@@ -1,6 +1,7 @@
 import { select, text, intro, outro, cancel } from '@clack/prompts';
 import { execFileSync } from 'node:child_process';
 import { availableModels, deriveEffortLevels, detectEnvProviders } from './model-catalog.js';
+import { seedDefaults } from './defaults.js';
 import type { TeamConfig } from './types.js';
 
 export const AGENT_NAMES = ['lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
@@ -136,11 +137,10 @@ async function configureAgent(
 export async function runTui(options: { existing: TeamConfig }): Promise<TuiResult> {
   intro('Spec-Driven Scrum Team');
 
-  const config: TeamConfig = structuredClone(options.existing);
+  const models = enumerateAvailableModels();
+  const config = seedDefaults(options.existing, models);
   const overwrite: Record<string, boolean> = {};
   for (const name of AGENT_NAMES) overwrite[name] = true;
-
-  const models = enumerateAvailableModels();
 
   let done = false;
   while (!done) {

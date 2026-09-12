@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDefault } from './defaults.js';
+import { resolveDefault, seedDefaults } from './defaults.js';
 
 const AVAILABLE = [
   'meta/muse-spark-1.3-contributor',
@@ -37,5 +37,27 @@ describe('resolveDefault', () => {
 
   it('never picks a premium model by accident of prefix', () => {
     expect(resolveDefault('architect', ['opencode-go/gpt-5.6-luna'])).toBeUndefined();
+  });
+});
+
+describe('seedDefaults', () => {
+  it('fills every agent with a default when there is no saved config', () => {
+    const seeded = seedDefaults({}, AVAILABLE);
+    for (const name of ['lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer']) {
+      expect(seeded[name]?.model).toBeTruthy();
+    }
+    expect(seeded.lead).toEqual({ model: 'opencode-go/kimi-k3', reasoningEffort: 'medium' });
+  });
+
+  it('keeps persisted choices and only fills in agents that are unset', () => {
+    const seeded = seedDefaults({ lead: { model: 'opencode-go/gpt-5.6-luna', reasoningEffort: 'high' } }, AVAILABLE);
+    expect(seeded.lead).toEqual({ model: 'opencode-go/gpt-5.6-luna', reasoningEffort: 'high' });
+    expect(seeded.tester?.model).toBe('meta/muse-spark-1.3-contributor');
+  });
+
+  it('does not mutate the existing config', () => {
+    const existing = { lead: { model: 'x' } as const };
+    seedDefaults(existing, AVAILABLE);
+    expect(existing).toEqual({ lead: { model: 'x' } });
   });
 });

@@ -1,4 +1,4 @@
-import type { AgentChoice } from './types.js';
+import type { AgentChoice, TeamConfig } from './types.js';
 
 interface DefaultRule {
   patterns: string[];
@@ -23,4 +23,15 @@ export function resolveDefault(agent: string, available: string[]): AgentChoice 
     if (match) return { model: match, reasoningEffort: rule.reasoningEffort };
   }
   return undefined;
+}
+
+export function seedDefaults(existing: TeamConfig, available: string[]): TeamConfig {
+  const config: TeamConfig = structuredClone(existing);
+  for (const name of Object.keys(DEFAULT_RULES)) {
+    if (!config[name]?.model) {
+      const choice = resolveDefault(name, available);
+      if (choice) config[name] = choice;
+    }
+  }
+  return config;
 }
