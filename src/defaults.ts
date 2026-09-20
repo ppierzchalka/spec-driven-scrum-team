@@ -25,6 +25,20 @@ export function resolveDefault(agent: string, available: string[]): AgentChoice 
   return undefined;
 }
 
+export function resetAgent(config: TeamConfig, name: string, available: string[]): AgentChoice | undefined {
+  const choice = resolveDefault(name, available);
+  if (choice) config[name] = choice;
+  return choice;
+}
+
+export function resetAllToDefaults(config: TeamConfig, names: readonly string[], available: string[]): string[] {
+  const reset: string[] = [];
+  for (const name of names) {
+    if (resetAgent(config, name, available)) reset.push(name);
+  }
+  return reset;
+}
+
 export function seedDefaults(existing: TeamConfig, available: string[]): TeamConfig {
   const config: TeamConfig = structuredClone(existing);
   for (const name of Object.keys(DEFAULT_RULES)) {

@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   parseAuthList,
   parseModels,
@@ -6,6 +9,7 @@ import {
   deriveEffortLevels,
   stripAnsi,
   detectEnvProviders,
+  detectConfigProviders,
 } from './model-catalog.js';
 
 const REAL_AUTH_OUTPUT = `\u001b[0m
@@ -96,5 +100,35 @@ describe('availableModels with env providers', () => {
   it('includes models from env-detected providers', () => {
     const models = 'meta/muse-spark-1.3-contributor\nopencode-go/deepseek-v4-pro\n';
     expect(availableModels('', models, ['meta'])).toEqual(['meta/muse-spark-1.3-contributor']);
+  });
+});
+
+describe('detectConfigProviders', () => {
+  it('reads providers with an apiKey from a jsonc config', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'oc-config-'));
+    const file = join(dir, 'opencode.jsonc');
+    writeFileSync(
+      file,
+      `{
+  // a comment
+  "provider": {
+    "meta": {
+      "options": {
+        "apiKey": "{file:~/.config/opencode/meta-api-key}",
+      },
+    },
+    "unauthed": { "npm": "@ai-sdk/foo" },
+  },
+}`,
+    );
+    try {
+      expect(detectConfigProviders([file])).toEqual(['meta']);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('returns empty for missing or unparseable files', () => {
+    expect(detectConfigProviders([join(tmpdir(), 'does-not-exist.json')])).toEqual([]);
   });
 });

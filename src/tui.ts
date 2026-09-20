@@ -1,7 +1,7 @@
-import { select, text, intro, outro, cancel } from '@clack/prompts';
+import { select, text, intro, outro, cancel, note } from '@clack/prompts';
 import { execFileSync } from 'node:child_process';
-import { availableModels, deriveEffortLevels, detectEnvProviders } from './model-catalog.js';
-import { seedDefaults } from './defaults.js';
+import { availableModels, deriveEffortLevels, detectEnvProviders, detectConfigProviders } from './model-catalog.js';
+import { seedDefaults, resolveDefault, resetAgent, resetAllToDefaults } from './defaults.js';
 import type { TeamConfig } from './types.js';
 
 export const AGENT_NAMES = ['lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
@@ -31,7 +31,7 @@ export function enumerateAvailableModels(): string[] {
   return availableModels(
     safeExec('opencode', ['auth', 'list']),
     safeExec('opencode', ['models']),
-    detectEnvProviders(),
+    [...detectEnvProviders(), ...detectConfigProviders()],
   );
 }
 
@@ -106,6 +106,7 @@ async function configureAgent(
   let back = false;
   while (!back) {
     const current = config[name] ?? {};
+    const defaultChoice = resolveDefault(name, models);
     const option = guard(
       await select<string>({
         message: `${name} — ${currentHint(current)}`,
@@ -113,6 +114,7 @@ async function configureAgent(
           { value: 'model', label: 'Model', hint: current.model ?? 'unset (opencode default)' },
           { value: 'effort', label: 'Reasoning effort', hint: current.reasoningEffort ?? 'not set' },
           { value: 'overwrite', label: 'Overwrite instructions', hint: overwrite[name] ? 'yes (canonical prompt)' : 'no (keep my edits)' },
+          { value: 'reset', label: 'Reset to default', hint: defaultChoice ? `${defaultChoice.model}${defaultChoice.reasoningEffort ? ` @ ${defaultChoice.reasoningEffort}` : ''}` : 'no default available' },
           { value: 'back', label: 'Back' },
         ],
       }),
@@ -127,6 +129,11 @@ async function configureAgent(
       case 'overwrite':
         overwrite[name] = !overwrite[name];
         break;
+      case 'reset': {
+        const reset = resetAgent(config, name, models);
+        note(reset ? `Reset ${name} to ${reset.model}${reset.reasoningEffort ? ` @ ${reset.reasoningEffort}` : ''}.` : `No default available for ${name} — keeping current choice.`);
+        break;
+      }
       case 'back':
         back = true;
         break;
@@ -153,6 +160,7 @@ export async function runTui(options: { existing: TeamConfig }): Promise<TuiResu
             label: name,
             hint: currentHint(config[name]),
           })),
+          { value: '__reset_all__', label: 'Reset all to defaults', hint: 'restore recommended models, discarding manual picks' },
           { value: '__install__', label: 'Install & exit', hint: 'write files into the target repo' },
         ],
       }),
@@ -160,6 +168,13 @@ export async function runTui(options: { existing: TeamConfig }): Promise<TuiResu
     if (agent === '__install__') {
       done = true;
       break;
+    }
+    if (agent === '__reset_all__') {
+      const reset = resetAllToDefaults(config, AGENT_NAMES, models);
+      note(reset.length > 0
+        ? `Reset to defaults: ${reset.join(', ')}.`
+        : 'No defaults available for resolved models — nothing changed.');
+      continue;
     }
     await configureAgent(agent, config, overwrite, models);
   }

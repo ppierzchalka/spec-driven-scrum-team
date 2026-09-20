@@ -1,3 +1,8 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+import { parse as parseJsonc } from 'jsonc-parser';
+
 export interface ModelEntry {
   provider: string;
   model: string;
@@ -76,6 +81,29 @@ export function detectEnvProviders(env: NodeJS.ProcessEnv = process.env): string
   for (const [key, ids] of Object.entries(ENV_PROVIDER_KEYS)) {
     if (env[key]) {
       for (const id of ids) providers.add(id);
+    }
+  }
+  return [...providers];
+}
+
+export function defaultConfigPaths(): string[] {
+  const configDir = join(homedir(), '.config', 'opencode');
+  return [join(configDir, 'opencode.json'), join(configDir, 'opencode.jsonc'), join(configDir, 'config.json')];
+}
+
+export function detectConfigProviders(paths: string[] = defaultConfigPaths()): string[] {
+  const providers = new Set<string>();
+  for (const path of paths) {
+    if (!existsSync(path)) continue;
+    try {
+      const config = parseJsonc(readFileSync(path, 'utf8')) as {
+        provider?: Record<string, { options?: { apiKey?: unknown } }>;
+      };
+      for (const [id, def] of Object.entries(config?.provider ?? {})) {
+        if (def?.options?.apiKey) providers.add(id);
+      }
+    } catch {
+      // skip unparseable config files
     }
   }
   return [...providers];

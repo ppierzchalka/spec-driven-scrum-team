@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDefault, seedDefaults } from './defaults.js';
+import { resolveDefault, seedDefaults, resetAgent, resetAllToDefaults } from './defaults.js';
+import type { TeamConfig } from './types.js';
 
 const AVAILABLE = [
   'meta/muse-spark-1.3-contributor',
@@ -59,5 +60,28 @@ describe('seedDefaults', () => {
     const existing = { lead: { model: 'x' } as const };
     seedDefaults(existing, AVAILABLE);
     expect(existing).toEqual({ lead: { model: 'x' } });
+  });
+});
+
+describe('resetAgent / resetAllToDefaults', () => {
+  it('restores a single agent to its default', () => {
+    const config: TeamConfig = { lead: { model: 'opencode-go/gpt-5.6-luna', reasoningEffort: 'high' } };
+    const choice = resetAgent(config, 'lead', AVAILABLE);
+    expect(choice).toEqual({ model: 'opencode-go/kimi-k3', reasoningEffort: 'medium' });
+    expect(config.lead).toEqual(choice);
+  });
+
+  it('leaves the agent alone when no default is available', () => {
+    const config: TeamConfig = { lead: { model: 'custom/x' } };
+    expect(resetAgent(config, 'lead', [])).toBeUndefined();
+    expect(config.lead).toEqual({ model: 'custom/x' });
+  });
+
+  it('resets every agent and returns the names', () => {
+    const config: TeamConfig = { lead: { model: 'custom/x' }, tester: {} };
+    const names = resetAllToDefaults(config, ['lead', 'tester', 'ux'], AVAILABLE);
+    expect(names).toEqual(['lead', 'tester', 'ux']);
+    expect(config.lead?.model).toBe('opencode-go/kimi-k3');
+    expect(config.tester?.model).toBe('meta/muse-spark-1.3-contributor');
   });
 });
