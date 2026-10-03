@@ -20,14 +20,14 @@ The route most work travels. You have an idea and want it built.
    - **`/prototype`** to answer the question with throwaway code,
    - **`/handoff`** back what you learned, and reference it from the original idea thread.
 3. **Branch: is this a multi-session build?**
-   - **Yes** → **`/to-spec`** (turn the thread into a spec), then **`/to-tickets`** to split it into tracer-bullet tickets, each declaring its **blocking edges**. On a local tracker that's one file per ticket under `.scratch/<feature>/issues/`, worked blockers-first by hand; on a real tracker the edges become native blocking links, so any ticket whose blockers are done can be grabbed: kick off **`/implement`** per ticket, **`/clear`ing context between each one**. Each ticket is self-contained, so the last one's context is disposable.
+    - **Yes** → **`/to-spec`** (turn the thread into a spec), then **`/to-tickets`** to split it into tracer-bullet tickets, each declaring its **blocking edges**. Save them in the location you choose. In a fresh session, point **`/implement`** at the spec and tickets; it will coordinate per-task worktrees, run independent ready tasks concurrently, queue blockers, then publish a topologically ordered GitHub PR stack for your review.
    - **No** → **`/implement`** right here, in the same context window.
 
-   Either way, **`/implement`** builds each issue by driving **`/tdd`** internally (one red-green slice at a time), then closes out by running **`/code-review`**, a two-axis review (Standards + Spec) of the diff, before committing. Reach for **`/tdd`** on its own when you just want to build a concrete behaviour test-first without a full spec, and **`/code-review`** on its own whenever you want to review a branch or PR against a fixed point.
+    Either way, **`/implement`** is the lead: one task stays in the current worktree and yields one PR; a task graph can be decomposed, parallelized across per-task worktrees, and published as a stacked PR sequence. It verifies work and routes your PR feedback to the owning task pipelines until you approve merging. Reach for **`/tdd`** on its own when you just want to build a concrete behaviour test-first without a full spec, and **`/code-review`** on its own whenever you want to review a branch or PR against a fixed point.
 
 ### Context hygiene
 
-Keep steps 1–3 in **one unbroken context window** (don't compact or clear until after `/to-tickets`) so the grilling, spec, and tickets all build on the same thinking. Each `/implement` then starts fresh, working from the ticket.
+Keep grilling and planning together through `/to-tickets` so the spec and tickets preserve the decisions. Then start a fresh session, point `/implement` at those artifacts, and let that session lead implementation, PR review feedback, and merging when you approve.
 
 The limit on this is the **[smart zone](https://www.aihero.dev/ai-coding-dictionary/smart-zone)**: the window (~150k tokens on state-of-the-art models) within which the model still reasons sharply. If a session approaches it before `/to-tickets`, don't push on degraded; `/compact` at the nearest phase boundary and carry on (see Phase boundaries).
 
