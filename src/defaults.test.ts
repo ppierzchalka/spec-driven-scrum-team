@@ -23,7 +23,7 @@ const AVAILABLE = [
 describe('resolveDefault', () => {
   it('allocates planning/design to OpenAI and implementation/checks to Muse and DeepSeek at the agreed effort', () => {
     expect(resolveDefault('lead', AVAILABLE)).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
-    expect(resolveDefault('architect', AVAILABLE)).toEqual({ model: 'openai/gpt-6-luna', reasoningEffort: 'max' });
+    expect(resolveDefault('architect', AVAILABLE)).toEqual({ model: 'openai/gpt-6-luna', reasoningEffort: 'xhigh' });
     expect(resolveDefault('security', AVAILABLE)).toEqual({ model: 'opencode-go/deepseek-v4-pro', reasoningEffort: 'high' });
     expect(resolveDefault('ux', AVAILABLE)).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
     expect(resolveDefault('tester', AVAILABLE)).toEqual({ model: 'meta/muse-spark-1.3-contributor', reasoningEffort: 'medium' });
@@ -37,7 +37,7 @@ describe('resolveDefault', () => {
     const noGo = AVAILABLE.filter((m) => !m.startsWith('opencode-go/'));
     expect(resolveDefault('tester', noGo)).toEqual({ model: 'meta/muse-spark-1.3-contributor', reasoningEffort: 'medium' });
     expect(resolveDefault('tester', noMeta)?.model).toBe('opencode-go/muse-spark-1.3-contributor');
-    expect(resolveDefault('architect', AVAILABLE.filter((m) => m !== 'openai/gpt-6-luna'))).toEqual({ model: 'openai/gpt-5.6-luna', reasoningEffort: 'max' });
+    expect(resolveDefault('architect', AVAILABLE.filter((m) => m !== 'openai/gpt-6-luna'))).toEqual({ model: 'openai/gpt-5.6-luna', reasoningEffort: 'xhigh' });
     expect(resolveDefault('reviewer', AVAILABLE.filter((m) => !m.includes('deepseek-v4-flash')))).toEqual({ model: 'opencode-go/deepseek-v4-pro', reasoningEffort: 'high' });
     expect(resolveDefault('lead', AVAILABLE.filter((m) => !m.endsWith('-sol')))?.model).toBe('openai/gpt-5.6-terra');
   });

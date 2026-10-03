@@ -22,7 +22,7 @@ Invoke it in a **fresh session** as the `lead` agent, with one of these forms:
 
 For status/collection/resume/stop, follow [references/worktree-runs.md](references/worktree-runs.md)'s management procedure directly; do not interpret the run ID as a new Ticket or create another run. Read-only status needs no new pipeline confirmation; resume confirms its scope/toggles/permissions and stop confirms the specific process action.
 
-Arguments supply scope and proposed settings, such as `skip security`, `review rounds: 2`, or `we're building a Godot game`. Include these in the startup confirmation. They do not remove the confirmation step or override command prohibitions.
+Arguments supply scope and proposed settings, such as `skip security` or `we're building a Godot game`. Include these in the startup confirmation. They do not remove the confirmation step or override command prohibitions.
 
 ## Before you start
 
@@ -42,7 +42,7 @@ Before dispatching agents, editing project files, creating worktrees, or executi
 
 Read [references/run-contract.md](references/run-contract.md) and use its startup question, configuration record, dispatch packet, stage transitions, and stop conditions. Lead is the required coordinator; all six specialists are individually selectable. Wait for explicit user confirmation even when arguments or repo defaults already specify stages.
 
-- Recommend architect for structural changes, security for concrete trust-boundary/data risks, and UX for interface/player-interaction changes. Tester, developer, and reviewer are normally on for implementation. These are recommendations, not automatic dispatch rules.
+- Recommend the smallest sufficient stage set for this Ticket and explain each choice's quality/cost tradeoff. Architect is for consequential structural changes, Security for concrete trust-boundary/data risks, and UX for interface/player-interaction work. Recommend Tester and Reviewer when their evidence materially improves confidence; explain when either is proposed off. Developer stays on for production implementation. These are recommendations, never automatic dispatch rules.
 - For FE/Next.js, suggest UX and relevant architecture; security depends on auth, server actions, untrusted content, or data handling. For local game mechanics, suggest security **off**. Networked games, accounts, untrusted mods/saves, or commerce may justify security **on**.
 - Record the confirmed configuration using the run contract and state enabled/disabled stages before starting. A fully disabled specialist pipeline yields planning/handoff, not implementation.
 
@@ -84,7 +84,7 @@ Each agent first reports **applicable**, **not applicable**, or **blocked** unde
 
 ### 6. Reviewer
 - Dispatch the `reviewer` agent with the Ticket, all notes, the tests, and the implementation diff.
-- It verifies the diff against criteria, project conventions, enabled-stage notes, and test evidence. It writes `review_findings`: approved, changes required, or blocked. Route fixes only to enabled owners within the confirmed review limit. If an owner is disabled or the limit is reached, return to the user with findings and options; do not silently reconfigure the pipeline.
+- It verifies the diff against criteria, required gates, relevant project paradigms/best practices, enabled-stage notes, and test evidence. It writes only actionable, evidence-backed material findings—not nits or findings for their own sake. It writes `review_findings`: approved, changes required, or blocked. Route fixes only to enabled owners within five total Reviewer passes, counting the initial review as round one; run the loop autonomously without asking between rounds. After round three, record a process retrospective and correct systemic causes before continuing. At round five, post remaining findings as comments on their owning PRs when authorized and report them unresolved; do not start round six.
 
 ## Gates and PR
 
@@ -100,7 +100,7 @@ When the user says `/autonomous-implement address review comments on PR #<n>`:
 
 1. Fetch the PR and its review comments (via `gh pr view <n> --comments` and `gh pr diff <n>`).
 2. Run the mandatory startup confirmation for this feedback pass; show all six toggles, recommend only relevant stages on, and confirm command/publication permissions.
-3. Prefer its existing isolated worktree on the PR branch, or create one if that branch is not checked out elsewhere. Inspect existing registrations/claims and preserve changes; never force-checkout a branch already in use. Confirm reuse/resume before starting a worker. Dispatch enabled stages within the confirmed round limit.
+3. Prefer its existing isolated worktree on the PR branch, or create one if that branch is not checked out elsewhere. Inspect existing registrations/claims and preserve changes; never force-checkout a branch already in use. Confirm reuse/resume before starting a worker. Dispatch enabled stages within the five-pass maximum without round-by-round questions.
 4. Run applicable gates. Push an update only if explicitly authorized; otherwise leave local fixes. Summarize addressed and unresolved comments with evidence.
 
 ## Parallel execution (multiple tickets)

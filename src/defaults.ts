@@ -6,10 +6,10 @@ interface DefaultRule {
 }
 
 const DEFAULT_RULES: Record<string, DefaultRule> = {
-  // Sol/medium for planning and UX, Luna/max for architecture; keep
+  // Sol/medium for planning and UX, Luna/xhigh for architecture; keep
   // implementation and verification on Muse/OpenCode with role-specific effort.
   lead: { models: ['openai/gpt-6.1-sol', 'openai/gpt-6-sol', 'openai/gpt-5.6-terra'], reasoningEffort: 'medium' },
-  architect: { models: ['openai/gpt-6-luna', 'openai/gpt-5.6-luna'], reasoningEffort: 'max' },
+  architect: { models: ['openai/gpt-6-luna', 'openai/gpt-5.6-luna'], reasoningEffort: 'xhigh' },
   security: { models: ['opencode-go/deepseek-v4-pro', 'opencode/deepseek-v4-pro', 'opencode-go/qwen3.8-max', 'opencode/qwen3.8-max'], reasoningEffort: 'high' },
   ux: { models: ['openai/gpt-6.1-sol', 'openai/gpt-6-sol'], reasoningEffort: 'medium' },
   tester: { models: ['meta/muse-spark-1.3-contributor', 'opencode-go/muse-spark-1.3-contributor', 'opencode/muse-spark-1.3-contributor-free', 'opencode-go/kimi-k3', 'opencode/kimi-k3'], reasoningEffort: 'medium' },

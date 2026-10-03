@@ -22,9 +22,9 @@ Scope: Tickets/PR and acceptance criteria ...
 Models: current per-agent selections/inherited defaults; any suitability gaps ...
 Checks: required automated gates ...; manual checks and verifier ...
 Execution: isolated task worktree; proposed base/branch/path; background or separate-terminal worker; concurrency/dependencies ...
-Review: up to 2 fix rounds unless you choose another limit
+Review: up to 5 total Reviewer passes, including the initial review; stop early on approval; no round-by-round questions
 Commands: inherited forbidden actions ...; any additional restrictions?
-Publication: commit off; push off; create/update PR off
+Publication: commit off; push off; create/update PR off; cap-exhausted findings posted to those PRs when PR publishing is authorized
 
 Confirm this proposal or list your changes. If you want publication,
 explicitly identify which actions and branch/PR/repository are authorized.
@@ -56,7 +56,7 @@ models: {} # actual installed choices per enabled agent; flag inherited/unknown 
 checks:
   required: ["exact project command/check agreed for this run"]
   manual: [] # check, expected result, verifier, current status
-review_fix_round_limit: 2
+review_round_limit: 5 # maximum total Reviewer passes, including the initial pass; stop early on approval
 execution: single # or explicit dependency/parallel groups
 workspace_mode: isolated-worktree # current-checkout only by explicit user exception
 execution_role: controller # delegated worker reuses the prepared workspace, never respawns
@@ -72,6 +72,7 @@ publication:
   commit: false
   push: false
   create_or_update_pr: false
+  post_cap_exhaustion_findings: "same authorization as create_or_update_pr"
   target: null # specific branch/repository/PR if authorized
 confirmation:
   source: current-user-conversation # or delegated-parent-run
@@ -97,7 +98,10 @@ If the packet is missing information essential to the stage, the stage returns b
 
 - **Pending → running → complete/not applicable/blocked.** Record actual outcomes, artifact paths, and evidence. Reviewer additionally gives its verdict. Off stages are `skipped: user configuration`, not not-applicable assessments or approvals. A not-applicable assessment of an enabled stage is recorded as such; obtain user confirmation before changing its toggle for later dispatches.
 - Advance only when dependencies have usable outputs and unresolved blockers do not invalidate the next stage. Explain unrelated blockers and their owners rather than unnecessarily halting safe independent work.
-- A fix round is one pass over outstanding review findings through enabled fix owners and, if enabled, Reviewer. Initial implementation/review is not a fix round. Count rounds per Ticket, preserve finding IDs, and stop when the limit is reached (zero means return initial findings without automatic fixes).
+- A review round is one Reviewer pass. Round one is the initial review; each later round follows one complete fix-and-re-review pass. Count rounds per Ticket, preserve finding IDs, and continue without user interruption while actionable findings remain, up to five total Reviewer passes. Stop earlier when Reviewer approves; do not spend unused rounds.
+- After the third review round, if findings remain, record a process retrospective in the run record before round four: round-by-round findings and changes, repeated or reopened IDs, why earlier reviews/fixes missed them, and which requirement, architecture, test, gate, or handoff assumption needs correction. Re-read the task contract and relevant evidence, identify and address the systemic cause, then continue autonomously if no user-owned decision or permission is needed.
+- At the end of round five, if actionable findings remain, stop before round six. When PR publication is authorized, post the remaining findings as comments on their owning PRs, grouped with stable IDs, evidence, impact, and the requested correction. Otherwise retain them in the run record and report that PR-comment publication was not authorized. Never claim approval or verified completion with unresolved blockers.
+- Do not ask the user between rounds or when the cap is reached. The startup confirmation covers the five-round maximum and PR-comment behavior. Interrupt only for a genuine user-owned decision, missing required capability, or separately approval-required action; preserve completed work and report the blocker.
 - New requirements, toggles, mandatory gates, conflicting decisions, missing required tools, or approval-required actions go to the user. Reconfirmation applies to the changed configuration; routine corrections within the approved scope do not restart startup questioning.
 - If Developer is off, production fixes wait for user reconfiguration. With Tester off, Developer still performs agreed verification; with Reviewer off, report unreviewed. No optional specialist may be silently reintroduced during a loop.
 - Mandatory gate failures/unavailability prevent a claim of verified delivery. Record introduced/pre-existing/unknown and ask before changing delivery conditions. Keep manual checks pending until the named verifier supplies evidence.

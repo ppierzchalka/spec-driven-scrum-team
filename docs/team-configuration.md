@@ -19,7 +19,7 @@ The default allocation puts OpenAI capacity into planning, architecture, and UX;
 | Agent | Preferred model | Effort | Workload rationale |
 | --- | --- | --- | --- |
 | Lead | `openai/gpt-6.1-sol` | medium | Requirements grilling, specs, overall planning, and coordination |
-| Architect | `openai/gpt-6-luna` | max | Architecture, invariants, and consequential tradeoffs |
+| Architect | `openai/gpt-6-luna` | xhigh | Architecture, invariants, and consequential tradeoffs |
 | Security | `opencode-go/deepseek-v4-pro` | high | Scoped trust-boundary assessment when enabled |
 | UX | `openai/gpt-6.1-sol` | medium | Product-specific visual/interaction decisions and rendered contract review |
 | Tester | `meta/muse-spark-1.3-contributor` | medium | Tests against defined criteria/design notes |
@@ -28,7 +28,7 @@ The default allocation puts OpenAI capacity into planning, architecture, and UX;
 
 Only models found in the installer's available list can be selected automatically. The ordered, exact-ID fallback lists live in `src/defaults.ts`:
 
-- Lead prefers Sol 6.1, then Sol 6, then Terra at medium effort. Architect prefers Luna 6/max, then Luna 5.6/max; neither falls back to Astra. The Luna variants were verified through `opencode models openai --verbose`, and the effort picker now includes max for those models.
+- Lead prefers Sol 6.1, then Sol 6, then Terra at medium effort. Architect prefers Luna 6/xhigh, then Luna 5.6/xhigh; neither falls back to Astra. The Luna variants were verified through `opencode models openai --verbose`.
 - UX falls back only to `openai/gpt-6-sol`; no cheap thinking/execution model is silently selected for design. If neither Sol candidate is available, no UX default is set and the installer explains that unset means inheritance. Select a suitable model manually before enabling UX work.
 - OpenCode Go reasoning models have Zen equivalents as fallbacks. Meta code/tests have explicit Muse Contributor fallbacks via OpenCode, then appropriate OpenCode reasoning models.
 - Reviewer prefers plain DeepSeek V4 Flash through Go or Zen, then V4 Pro/high if Flash is unavailable. Security prefers V4 Pro/high. Neither role nor Developer/Tester automatically falls back to OpenAI.
@@ -82,7 +82,7 @@ The shared run registry defaults to `team-runs/` under the repo's common Git dir
 
 The skill uses the available durable background process facility and reports actual launch evidence. If it is unavailable, it prepares the workspace and supplies a separate-terminal launch command, explicitly reporting **not running**. Status/collection are user-invoked management actions; publication, integration, and cleanup require scoped permission. See the installed `references/worktree-runs.md` for recovery and ownership rules.
 
-The installer ships only `/autonomous-implement` and its references. Reset Architect to its new Luna/max default when applying the revised allocation; ordinary reconfiguration preserves saved model choices.
+The installer ships only `/autonomous-implement` and its references. Reset Architect to its new Luna/xhigh default when applying the revised allocation; ordinary reconfiguration preserves saved model choices.
 
 ### GLM 5.2 option
 
