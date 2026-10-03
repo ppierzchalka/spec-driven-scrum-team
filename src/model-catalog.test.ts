@@ -19,6 +19,8 @@ const REAL_AUTH_OUTPUT = `\u001b[0m
 │
 ●  OpenCode Go \u001b[90mapi
 │
+●  OpenAI \u001b[90moauth
+│
 └  2 credentials
 `;
 
@@ -32,7 +34,7 @@ opencode-go/glm-5.1
 
 describe('parseAuthList', () => {
   it('extracts authed provider ids from the real opencode output', () => {
-    expect(parseAuthList(REAL_AUTH_OUTPUT)).toEqual(['opencode', 'opencode-go']);
+    expect(parseAuthList(REAL_AUTH_OUTPUT)).toEqual(['opencode', 'opencode-go', 'openai']);
   });
 });
 
@@ -62,6 +64,12 @@ describe('availableModels', () => {
 });
 
 describe('deriveEffortLevels', () => {
+  it('supports verified max effort for Luna and GLM without enabling it for every model', () => {
+    expect(deriveEffortLevels('openai', 'openai/gpt-6-luna')).toEqual(['none', 'low', 'medium', 'high', 'xhigh', 'max']);
+    expect(deriveEffortLevels('openai', 'openai/gpt-5.6-luna')).toContain('max');
+    expect(deriveEffortLevels('opencode-go', 'opencode-go/glm-5.2')).toEqual(['high', 'max']);
+    expect(deriveEffortLevels('openai', 'openai/gpt-5.4')).not.toContain('max');
+  });
   it('maps google to thinkingLevel levels', () => {
     expect(deriveEffortLevels('google')).toEqual(['minimal', 'low', 'medium', 'high']);
   });
@@ -100,6 +108,14 @@ describe('availableModels with env providers', () => {
   it('includes models from env-detected providers', () => {
     const models = 'meta/muse-spark-1.3-contributor\nopencode-go/deepseek-v4-pro\n';
     expect(availableModels('', models, ['meta'])).toEqual(['meta/muse-spark-1.3-contributor']);
+  });
+
+  it('includes OpenAI models when auth list labels credentials as OAuth', () => {
+    const models = 'openai/gpt-6-astra\nmeta/muse-spark-1.3\nopencode/muse-spark-1.3\n';
+    expect(availableModels(REAL_AUTH_OUTPUT, models)).toEqual([
+      'openai/gpt-6-astra',
+      'opencode/muse-spark-1.3',
+    ]);
   });
 });
 

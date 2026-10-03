@@ -31,7 +31,7 @@ export function parseAuthList(output: string): string[] {
     const name = bullet
       .replace('●', '')
       .trim()
-      .replace(/\s+(api|provider)$/i, '')
+      .replace(/\s+(api|provider|oauth)$/i, '')
       .trim();
     if (!name) continue;
     const slug = slugify(name);
@@ -116,6 +116,14 @@ const EFFORT_BY_PROVIDER: Record<string, string[]> = {
   anthropic: ['none', 'high', 'max'],
 };
 
-export function deriveEffortLevels(provider: string): string[] {
+const EFFORT_BY_MODEL: Record<string, string[]> = {
+  'openai/gpt-6-luna': ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+  'openai/gpt-5.6-luna': ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+  'opencode-go/glm-5.2': ['high', 'max'],
+  'opencode/glm-5.2': ['high', 'max'],
+};
+
+export function deriveEffortLevels(provider: string, model?: string): string[] {
+  if (model && EFFORT_BY_MODEL[model]) return EFFORT_BY_MODEL[model];
   return EFFORT_BY_PROVIDER[provider] ?? ['none', 'low', 'medium', 'high'];
 }

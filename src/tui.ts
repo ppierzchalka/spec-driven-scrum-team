@@ -1,4 +1,4 @@
-import { select, text, intro, outro, cancel, note } from '@clack/prompts';
+import { autocomplete, select, text, intro, outro, cancel, note } from '@clack/prompts';
 import { execFileSync } from 'node:child_process';
 import { availableModels, deriveEffortLevels, detectEnvProviders, detectConfigProviders } from './model-catalog.js';
 import { seedDefaults, resolveDefault, resetAgent, resetAllToDefaults } from './defaults.js';
@@ -46,8 +46,9 @@ async function pickModel(
   models: string[],
 ): Promise<void> {
   const choice = guard(
-    await select<string>({
+    await autocomplete<string>({
       message: `Model for ${name}`,
+      placeholder: 'Type to search models or providers…',
       options: [
         { value: '__unset__', label: "Don't set (use opencode's current model)" },
         ...models.map((m) => ({ value: m, label: m })),
@@ -72,7 +73,7 @@ async function pickModel(
   if (model) {
     config[name] = { ...current, model };
     const provider = model.split('/')[0];
-    const levels = deriveEffortLevels(provider);
+    const levels = deriveEffortLevels(provider, model);
     if (current.reasoningEffort && !levels.includes(current.reasoningEffort)) {
       config[name] = { ...config[name], reasoningEffort: undefined };
     }
@@ -84,7 +85,7 @@ async function pickModel(
 async function pickEffort(name: string, config: TeamConfig): Promise<void> {
   const current = config[name] ?? {};
   const provider = current.model?.split('/')[0] ?? 'unknown';
-  const levels = deriveEffortLevels(provider);
+  const levels = deriveEffortLevels(provider, current.model);
   const choice = guard(
     await select<string>({
       message: `Reasoning effort for ${name} (${current.model ?? 'unset model'})`,
@@ -146,6 +147,9 @@ export async function runTui(options: { existing: TeamConfig }): Promise<TuiResu
 
   const models = enumerateAvailableModels();
   const config = seedDefaults(options.existing, models);
+  if (!config.ux?.model) {
+    note('No recommended Sol model is available for UX. An unset UX model inherits opencode’s current model; select a suitable model explicitly before running design work.', 'UX model selection');
+  }
   const overwrite: Record<string, boolean> = {};
   for (const name of AGENT_NAMES) overwrite[name] = true;
 

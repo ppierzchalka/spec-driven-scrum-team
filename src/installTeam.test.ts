@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { installTeam, parseAgentFile, serializeAgentFile } from './installTeam.js';
 import type { TeamConfig } from './types.js';
 
@@ -29,6 +30,7 @@ function writeFixture() {
     join(skillDir, 'SKILL.md'),
     '# autonomous-implement\n\nRuns the pipeline.\n',
   );
+  writeFileSync(join(skillDir, 'TEAM-POLICY.md'), '# Team policy\n\nConfirm command permissions.\n');
 }
 
 beforeAll(() => {
@@ -84,6 +86,8 @@ describe('installTeam', () => {
     const skillPath = join(targetDir, '.opencode/skills/autonomous-implement/SKILL.md');
     expect(result.skillPath).toBe(skillPath);
     expect(readFileSync(skillPath, 'utf8')).toContain('Runs the pipeline.');
+    expect(readFileSync(join(targetDir, '.opencode/skills/autonomous-implement/TEAM-POLICY.md'), 'utf8'))
+      .toContain('Confirm command permissions.');
   });
 
   it('writes team.config.json', () => {
@@ -125,5 +129,46 @@ describe('installTeam', () => {
   it('creates the .opencode/agents directory', () => {
     expect(existsSync(join(targetDir, '.opencode/agents'))).toBe(true);
     expect(readdirSync(join(targetDir, '.opencode/agents'))).toEqual(expect.arrayContaining(['lead.md', 'tester.md']));
+  });
+
+  it('installs the shipped team as a self-contained prompt bundle', () => {
+    const shippedRoot = fileURLToPath(new URL('../', import.meta.url));
+    const destination = join(root, 'shipped-team');
+    const result = installTeam({
+      definitionsDir: join(shippedRoot, 'agents'),
+      skillDir: join(shippedRoot, 'skills', 'autonomous-implement'),
+      config: {},
+      targetDir: destination,
+    });
+    expect(result.written).toHaveLength(7);
+
+    // Every role's shared-policy pointer must work in the installed repo.
+    for (const path of result.written) {
+      const agent = parseAgentFile(readFileSync(path, 'utf8'));
+      expect(agent.frontmatter.description).toEqual(expect.any(String));
+      const pointer = agent.body.match(/`(\.opencode\/skills\/[^`]+\/TEAM-POLICY\.md)`/);
+      if (!pointer) throw new Error(`Missing shared-policy pointer in ${path}`);
+      expect(existsSync(join(destination, pointer[1]))).toBe(true);
+      for (const reference of agent.body.matchAll(/`(\.opencode\/skills\/[^`]+\.md)`/g)) {
+        expect(existsSync(join(destination, reference[1])), `${path}: ${reference[1]}`).toBe(true);
+      }
+    }
+
+    // Exercise recursive copying and resolve local Markdown links, including
+    // the conditional references needed only by some stages.
+    const installedSkill = join(destination, '.opencode/skills/autonomous-implement');
+    const documents = ['SKILL.md', 'TEAM-POLICY.md', 'references/run-contract.md', 'references/worktree-runs.md', 'references/stack-guidance.md', 'references/interface-design.md'];
+    for (const document of documents) {
+      const path = join(installedSkill, document);
+      expect(existsSync(path), document).toBe(true);
+      const content = readFileSync(path, 'utf8');
+      for (const link of content.matchAll(/\]\(([^)]+\.md)\)/g)) {
+        expect(existsSync(join(dirname(path), link[1])), `${document}: ${link[1]}`).toBe(true);
+      }
+    }
+    const skill = parseAgentFile(readFileSync(result.skillPath, 'utf8'));
+    expect(skill.frontmatter.name).toBe('autonomous-implement');
+    expect(skill.frontmatter.description).toEqual(expect.any(String));
+    expect(readdirSync(join(destination, '.opencode/skills'))).toEqual(['autonomous-implement']);
   });
 });

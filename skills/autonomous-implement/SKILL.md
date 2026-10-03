@@ -1,92 +1,119 @@
 ---
 name: autonomous-implement
-description: "Drive the scrum-team pipeline over one or more ready tickets to reviewable PRs."
+description: "Implement prepared GitHub or local specs in isolated worktrees after confirming agent toggles; manage results and optional authorized PRs."
 disable-model-invocation: true
 ---
 
 # Autonomous Implement
 
-You are the **Lead** running the scrum-team pipeline. This skill takes ready Tickets and turns them into reviewable PRs, working the standard flow: architect → security → ux → tester → developer → reviewer → PR.
+You are the **Lead**. Turn ready Tickets or PR feedback into verified changes using a user-confirmed pipeline. Read [TEAM-POLICY.md](TEAM-POLICY.md) before acting; its task-fit, convention, command, and handoff rules apply to every stage.
+
+Planning/grilling happens in a separate session using the user's chosen skills. This skill consumes those existing artifacts in a **fresh implementation session**; it does not require a handover skill, a generated dispatch brief, or access to planning-session chat. Ask only about consequential gaps in the supplied artifacts rather than restarting the interview.
 
 Invoke it in a **fresh session** as the `lead` agent, with one of these forms:
 
 - `/autonomous-implement work on ticket <ref>` — implement one ready Ticket.
 - `/autonomous-implement work on tickets <ref>, <ref>, …` — implement several Tickets, possibly in parallel.
 - `/autonomous-implement address review comments on PR #<n>` — pick up my PR comments and re-run tester → developer → reviewer on the same branch.
+- `/autonomous-implement <GitHub issue URL or local spec path> [additional artifact refs]` — consume the prepared artifacts directly.
+- `/autonomous-implement status [run-id]` — inspect one run or this repo's active runs.
+- `/autonomous-implement collect <run-id>` — collect worker evidence and synchronize its canonical task record.
+- `/autonomous-implement resume <run-id>` or `/autonomous-implement stop <run-id>` — confirm the scoped action and use the recorded run identity/workspace.
 
-Everything after the command is a prompt override. You may be told to skip a stage (`skip security`), to adjust something (`review rounds: 2`), or to note context (`we're building a Godot game`). Honor those.
+For status/collection/resume/stop, follow [references/worktree-runs.md](references/worktree-runs.md)'s management procedure directly; do not interpret the run ID as a new Ticket or create another run. Read-only status needs no new pipeline confirmation; resume confirms its scope/toggles/permissions and stop confirms the specific process action.
+
+Arguments supply scope and proposed settings, such as `skip security`, `review rounds: 2`, or `we're building a Godot game`. Include these in the startup confirmation. They do not remove the confirmation step or override command prohibitions.
 
 ## Before you start
 
-1. Read `CONTEXT.md` for the project's domain vocabulary, and respect the ADRs in `docs/adr/`.
-2. Find how this repo's issue tracker works: read `docs/agents/issue-tracker.md` (created by `/setup-matt-pocock-skills`). It tells you how to fetch a Ticket by reference — an issue number on a real tracker, or a file path under `.scratch/` locally.
-3. Check `AGENTS.md` for per-repo pipeline defaults (e.g. "skip the security stage for this repo"). These are the baseline; a prompt override wins over them.
+1. Read applicable `AGENTS.md` instructions and command restrictions. Read `CONTEXT.md` and relevant ADRs when present; inspect the stack/engine and existing verification tooling.
+2. Read supplied GitHub issue/PR references or local Markdown/spec files directly. Use `gh` for GitHub and local file tools for local artifacts. Consult configured tracker instructions when applicable; tracker setup is not a prerequisite for a directly supplied spec. If no source was given, ask for it rather than assuming one.
+3. Read linked decisions, criteria, architecture/UX notes, and dependencies needed for implementation. Record canonical source refs and their current versions; snapshots carry them into the worktree. Establish scope/readiness and affected behavior before recommending stages.
 
-## Fetch the Ticket
+## Read the implementation artifacts
 
-- Fetch the referenced Ticket and read its full body: title, description, acceptance criteria, and any existing notes.
-- If the Ticket is missing, ambiguous, or not in a ready state, stop and ask rather than guessing.
-- Confirm each acceptance criterion is precise and non-childish. If a criterion is vague or an edge case is unaddressed, ask the user how to handle it **before** the tester or developer stage.
+- Read the full referenced Ticket/spec: goal, description, acceptance criteria, decisions, dependencies, and existing notes. Treat the supplied spec as the task contract even when it has no tracker-specific sections.
+- If the source is missing, ambiguous, contradictory, or explicitly not ready under the project's tracker rules, stop and ask rather than guessing. A local spec without a tracker status is valid input; readiness is its actionable criteria and the user's implementation request, not a mandatory label.
+- Confirm criteria are precise and verifiable. Resolve ambiguous requirements or consequential edge cases before tester/developer work.
+
+## Confirm the run configuration — mandatory
+
+Before dispatching agents, editing project files, creating worktrees, or executing verification, **always ask the user which agents to toggle on/off for this run**. This applies to first runs, reruns, and PR-feedback runs. Read-only intake above may precede the question.
+
+Read [references/run-contract.md](references/run-contract.md) and use its startup question, configuration record, dispatch packet, stage transitions, and stop conditions. Lead is the required coordinator; all six specialists are individually selectable. Wait for explicit user confirmation even when arguments or repo defaults already specify stages.
+
+- Recommend architect for structural changes, security for concrete trust-boundary/data risks, and UX for interface/player-interaction changes. Tester, developer, and reviewer are normally on for implementation. These are recommendations, not automatic dispatch rules.
+- For FE/Next.js, suggest UX and relevant architecture; security depends on auth, server actions, untrusted content, or data handling. For local game mechanics, suggest security **off**. Networked games, accounts, untrusted mods/saves, or commerce may justify security **on**.
+- Record the confirmed configuration using the run contract and state enabled/disabled stages before starting. A fully disabled specialist pipeline yields planning/handoff, not implementation.
+
+**Done:** the user has confirmed the selection and the run record exists. If input is unavailable, return `blocked: pipeline confirmation required` and perform no execution stages.
+
+## Isolate execution — default for every task
+
+Read [references/worktree-runs.md](references/worktree-runs.md) before creating or launching a run. Prefer one branch/worktree/worker per Ticket or supplied task spec, **even for a single task**. The fresh implementation Lead is the controller for launching and managing that run, separate from the planning session. After confirmation, reserve the run, create its workspace, snapshot the existing artifacts and required team configuration, and launch a separate worker. Report the actual launch identity and result/management paths.
+
+An explicitly delegated **worker** already in its recorded worktree runs the stages below directly. It validates its parent-confirmed run and never creates another worktree or launches another worker. Reuse an existing task/PR worktree when explicitly agreed and identity/branch match; execution in the current checkout is a user-confirmed exception, not the default. Missing Git/worktree/background capability is reported with a safe prepared/manual-launch alternative.
+
+For parallel execution, the parent Lead asks once for the whole run, records any per-Ticket differences, and passes that exact confirmed record to workers. Workers reuse this confirmation only for those Tickets and permissions in that same run; a standalone/new run must ask again. A headless worker with missing or ambiguous confirmation stops rather than inventing it.
 
 ## Run the Pipeline
 
-Run the stages below **in order**, in the **same context** (don't reset between stages). Each stage uses the named installed agent, dispatched as a subagent. The Ticket file is the shared record: each agent writes its notes into its section and reports back; **you** own state transitions.
+Dispatch only enabled stages in the order below, using the named installed agents and the run contract's complete dispatch packet. Subagents have their own context; the Ticket/run record carries decisions and evidence between them. You own overall state transitions. If a named agent or required tool is unavailable, stop that stage and report the capability gap; never claim a substitute is the configured agent.
 
-Which stages run is the flow. Any stage may be skipped or altered by the prompt override, by `AGENTS.md`, or by your judgment (e.g. skip security for a pure game-logic change). When you skip a stage, say so in the final summary.
+Each agent first reports **applicable**, **not applicable**, or **blocked** under the shared policy. If new evidence suggests changing a toggle, explain the impact and ask the user to reconfirm the change before dispatch. Never silently enable a disabled agent, including during fix loops.
 
 ### 1. Architect
-- Dispatch the `architect` agent: give it the Ticket, the relevant code, and `CONTEXT.md`.
+- Dispatch the `architect` agent with relevant domain docs when present.
 - It writes `architect_notes`: affected modules, boundaries, reuse, and any contradictory requirements.
 
 ### 2. Security
-- Only for security-relevant Tickets (fullstack, auth, data handling). Dispatch the `security` agent.
+- If enabled, dispatch `security` to assess the actual trust boundaries. If none apply, it reports not applicable without inventing an audit.
 - It writes `security_notes`: threat model, constraints the developer and reviewer must follow.
 
 ### 3. UX
-- Only for Tickets that touch the interface. Dispatch the `ux` agent.
+- If enabled, dispatch `ux` for interface or player-interaction work; it reports not applicable when the Ticket has no UX scope.
 - It writes `ux_notes`: flows, component structure, consistency, accessibility.
 
 ### 4. Tester (red)
 - Dispatch the `tester` agent with the Ticket, its criteria, and all notes.
-- It writes failing tests first (unit/integration/e2e as appropriate), runs them to confirm they fail for the right reason, and writes `test_plan`.
+- It writes behavior-focused tests first where a meaningful seam exists, confirms the intended failure, and writes `test_plan`. Engine/manual checks are valid when automation cannot cover the behavior; record their expected results and required human verification.
 
 ### 5. Developer (green)
 - Dispatch the `developer` agent with the Ticket, all notes, and the tests.
-- It implements minimal, clean code; runs the gates (tests, typecheck, lint); iterates until green; writes `impl_notes`.
+- It implements the criteria using project conventions, runs applicable checks, and writes `impl_notes` with actual evidence. If Tester was disabled, it still owns verification; disabled stages do not remove acceptance criteria.
 
 ### 6. Reviewer
 - Dispatch the `reviewer` agent with the Ticket, all notes, the tests, and the implementation diff.
-- It verifies tests pass, the implementation matches criteria and architecture, security/UX constraints are respected, and code is clean. It writes `review_findings` and either approves or routes fixes: test gaps back to Tester, code fixes back to Developer (loop stages 4–6 as needed).
+- It verifies the diff against criteria, project conventions, enabled-stage notes, and test evidence. It writes `review_findings`: approved, changes required, or blocked. Route fixes only to enabled owners within the confirmed review limit. If an owner is disabled or the limit is reached, return to the user with findings and options; do not silently reconfigure the pipeline.
 
 ## Gates and PR
 
-- Before any PR, re-run the gates in the workspace: tests, typecheck, lint. All green or the PR doesn't open.
-- Push the branch and open the PR via the `gh` CLI with a concise summary: what was built, which stages ran (and which were skipped), and the pipeline history.
-- Leave a one-paragraph handover for the user: what to review, and what was deliberately decided.
+- For interface changes, include the design contract's rendered finish checks in the agreed verification. With UX enabled, return the implementation to UX for a scoped contract check before final Reviewer approval; otherwise use the agreed enabled verifier/user. Keep this within the confirmed review budget and never enable a disabled agent. Missing rendered access leaves the check not verified, not visually approved.
+- Run the agreed applicable gates in the correct workspace after the final changes. Reuse still-valid evidence; repeat checks when edits invalidate it. Report manual checks and environment blockers explicitly; incomplete verification prevents a claim of fully verified completion.
+- Without publication authorization, leave verified local changes and a handoff. Before an authorized commit, inspect status, diff, and recent log; stage only intended files and preserve user work. Honor hooks and command restrictions.
+- With explicit push/PR authorization and passing required gates, publish via `gh` and summarize scope, verification, stages run/skipped, and unresolved manual checks. An authorized PR update follows the same boundaries.
+- Leave a concise handover: what to review, decisions made, verification evidence, blockers, and local changes or PR links. Do not claim reviewer approval when Reviewer was disabled.
 
 ## Review-feedback loop
 
 When the user says `/autonomous-implement address review comments on PR #<n>`:
 
 1. Fetch the PR and its review comments (via `gh pr view <n> --comments` and `gh pr diff <n>`).
-2. On the **same branch**, re-run the affected stages: dispatch `tester` if tests need changing, then `developer` for the fixes, then `reviewer`. Loop until the comments are addressed.
-3. Re-run gates, push to the same branch (the PR updates), and summarize what changed.
-4. Repeat as many times as the user asks.
+2. Run the mandatory startup confirmation for this feedback pass; show all six toggles, recommend only relevant stages on, and confirm command/publication permissions.
+3. Prefer its existing isolated worktree on the PR branch, or create one if that branch is not checked out elsewhere. Inspect existing registrations/claims and preserve changes; never force-checkout a branch already in use. Confirm reuse/resume before starting a worker. Dispatch enabled stages within the confirmed round limit.
+4. Run applicable gates. Push an update only if explicitly authorized; otherwise leave local fixes. Summarize addressed and unresolved comments with evidence.
 
 ## Parallel execution (multiple tickets)
 
 When invoked with **multiple** Tickets (`/autonomous-implement work on tickets 01, 02, 03`):
 
-1. **Decide the grouping per task-set.** Tickets that conflict or depend on one another form a **stack**: each PR's base is the previous ticket's branch, reviewed and merged in order. Independent Tickets become **separate** PRs to the current base. State the plan up front: which Tickets stack and why, which run independently.
-2. **One git Worktree per Ticket**, each with its own branch, created from the repo root: `git worktree add <path> -b <branch>`. Each Ticket is implemented against its own checkout so context and changes never bleed between Tickets.
-3. **Run each Pipeline as a separate headless opencode process** in its worktree — `opencode run` with the `lead` agent and the working directory set to the worktree, prompt `autonomous-implement work on ticket <ref> [overrides]`. Each process is fully isolated: fresh context, its own Ticket, its own branch. This is the only way parallel Tickets run; do not multiplex them in your own session.
-4. **Wait** for the processes to finish and collect their results.
-5. Each pipeline already ran its gates and opened its PR from its branch before exiting; verify each exited green.
-6. For **stacked** groups, set the base chain: the PR for ticket N+1 targets ticket N's branch, so it contains its predecessors and can be merged in order. For **independent** groups, each PR targets the current base.
-7. **Report back one summary**: a line per Ticket (branch, PR link, stages run, skipped stages) plus the recommended review/merge order. If any pipeline failed, show its failure and whether it left a PR or not.
+1. Apply the isolated-run contract to each Ticket. Confirm independent/dependent grouping, concurrency limit, and any authorized stacked PR bases. Dependents wait for usable prerequisite commits; do not copy uncommitted production changes across worktrees.
+2. Launch only the confirmed ready tasks with unique claims/workspaces. Open separate fresh implementation sessions with `/autonomous-implement <artifact-ref>` to start additional independent workflows, or confirm a batch in one implementation session.
+3. Use `/autonomous-implement status` and `/autonomous-implement collect <run-id>` to inspect/collect evidence from any fresh implementation session with access to the shared registry. Workers write isolated notes/results; the collecting controller checks ownership/conflicts before synchronizing canonical state.
+4. Return per-run branch, worktree, handle/session, observed state, verification, blockers, and integration order. Publication/integration/cleanup require their own scoped authorization; preserve unfinished work.
 
 ## Finish
 
-Mark the Ticket `Done` only after the PR is merged. Before that, leave it in a state that reflects reality (`Implemented`/`Reviewed`) with every stage's notes recorded.
+For PR-based delivery, mark `Done` only after merge. For local-only delivery, follow the tracker completion rule and user-agreed acceptance condition; otherwise leave `Implemented`/`Reviewed` with evidence. Record the confirmed configuration, stage notes, skips, findings, and remaining checks. An off stage is not an approval.
 
-Use precise language. No baby talk, no redundant over-explaining. If you hit an edge case you can't settle, ask — don't improvise scope.
+Use concise, precise language. Resolve material scope, permission, or pipeline changes with the user rather than improvising.

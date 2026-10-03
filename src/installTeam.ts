@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import type { InstallOptions, InstallResult, TeamConfig } from './types.js';
@@ -47,11 +47,10 @@ function writeConfig(targetDir: string, config: TeamConfig): string {
 }
 
 function copySkill(skillDir: string, targetDir: string): string {
-  const source = join(skillDir, 'SKILL.md');
   const destDir = join(targetDir, SKILLS_DIR, 'autonomous-implement');
   mkdirSync(destDir, { recursive: true });
+  cpSync(skillDir, destDir, { recursive: true });
   const dest = join(destDir, 'SKILL.md');
-  writeFileSync(dest, readFileSync(source, 'utf8'));
   return dest;
 }
 

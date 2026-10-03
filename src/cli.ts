@@ -67,6 +67,9 @@ async function main(): Promise<void> {
       console.log(`  ${name}: ${choice?.model ?? 'unset'}${choice?.reasoningEffort ? ` @ ${choice.reasoningEffort}` : ''}`);
     }
     console.log();
+    if (!config.ux?.model) {
+      console.log('No recommended Sol model is available for UX. An unset UX model inherits opencode’s current model; select a suitable model explicitly before running design work.');
+    }
   } else {
     const tui = await runTui({ existing });
     config = tui.config;

@@ -1,6 +1,6 @@
 # Spec-Driven Scrum Team
 
-A reusable scrum-like multi-agent development team for opencode: this repo ships the seven agents, the `/autonomous-implement` skill that drives them, and the interactive installer that installs and configures them in a target repo.
+A reusable scrum-like multi-agent development team for opencode: the seven agents, `/autonomous-implement` for prepared GitHub or local work, and an interactive installer for target repos.
 
 ## Language
 
@@ -11,7 +11,7 @@ One of the seven fixed opencode roles this repo installs: `lead`, `architect`, `
 _Avoid_: bot, role
 
 **Team**:
-The seven agents and the `/autonomous-implement` skill that drives them, installed together.
+The seven agents and the `/autonomous-implement` skill, installed together.
 
 **Target repo**:
 The repository the installer runs in and installs into — the project that will use the team. Not this tool repo.
@@ -29,7 +29,7 @@ A unit of work with acceptance criteria, produced by planning skills and stored 
 _Avoid_: task, issue
 
 **Handover**:
-The point where a ticket is ready for the pipeline to implement autonomously ("ready for agent").
+Transfer of a ready Ticket and its agreed requirements, decisions, and constraints from planning to an implementation run.
 
 **Autonomous-implement**:
 The skill that runs the pipeline over ready tickets, driven by the `lead` agent in a fresh session.
@@ -38,6 +38,15 @@ The skill that runs the pipeline over ready tickets, driven by the `lead` agent 
 The ordered run of agents over a ticket: architect, security, ux, tester, developer, reviewer, then PR. Any stage is skippable or alterable via prompt input.
 
 ### Parallel execution
+
+**Run**:
+One confirmed execution of a Ticket's Pipeline, with its own scope, enabled agents, permissions, workspace, and results.
+
+**Controller**:
+The implementation Lead session that consumes prepared artifacts, dispatches independent Runs, and collects their outcomes, separate from the planning session.
+
+**Worker**:
+The isolated Lead session that executes one confirmed Run and returns its stage results to the Controller.
 
 **Worktree**:
 A per-ticket git worktree with its own branch, where a pipeline runs in a separate headless opencode process.
