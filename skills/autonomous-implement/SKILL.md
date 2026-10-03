@@ -26,9 +26,9 @@ Arguments supply scope and proposed settings, such as `skip security` or `we're 
 
 ## Before you start
 
-1. Read applicable `AGENTS.md` instructions and command restrictions. Read `CONTEXT.md` and relevant ADRs when present; inspect the stack/engine and existing verification tooling.
+1. Read applicable `AGENTS.md` instructions and command restrictions. Read `CONTEXT.md` and relevant ADRs when present; inspect the stack/engine and existing verification tooling. Read [references/usage-telemetry.md](references/usage-telemetry.md) for per-agent usage capture and reporting.
 2. Read supplied GitHub issue/PR references or local Markdown/spec files directly. Use `gh` for GitHub and local file tools for local artifacts. Consult configured tracker instructions when applicable; tracker setup is not a prerequisite for a directly supplied spec. If no source was given, ask for it rather than assuming one.
-3. Read linked decisions, criteria, architecture/UX notes, and dependencies needed for implementation. Record canonical source refs and their current versions; snapshots carry them into the worktree. Establish scope/readiness and affected behavior before recommending stages.
+3. Read linked decisions, criteria, architecture/UX notes, and dependencies needed for implementation. Record canonical source refs and their current versions; snapshots carry them into the worktree. Establish scope/readiness and affected behavior before recommending stages. Record the run-start timestamp and root session ID for usage attribution.
 
 ## Read the implementation artifacts
 
@@ -92,7 +92,7 @@ Each agent first reports **applicable**, **not applicable**, or **blocked** unde
 - Run the agreed applicable gates in the correct workspace after the final changes. Reuse still-valid evidence; repeat checks when edits invalidate it. Report manual checks and environment blockers explicitly; incomplete verification prevents a claim of fully verified completion.
 - Without publication authorization, leave verified local changes and a handoff. Before an authorized commit, inspect status, diff, and recent log; stage only intended files and preserve user work. Honor hooks and command restrictions.
 - With explicit push/PR authorization and passing required gates, publish via `gh` and summarize scope, verification, stages run/skipped, and unresolved manual checks. An authorized PR update follows the same boundaries.
-- Leave a concise handover: what to review, decisions made, verification evidence, blockers, and local changes or PR links. Do not claim reviewer approval when Reviewer was disabled.
+- Collect per-agent usage telemetry using [references/usage-telemetry.md](references/usage-telemetry.md) before final handoff. Leave a concise handover: what to review, decisions made, verification evidence, blockers, local changes or PR links, and the per-agent usage summary. Do not claim reviewer approval when Reviewer was disabled.
 
 ## Review-feedback loop
 

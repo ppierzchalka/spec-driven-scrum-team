@@ -23,6 +23,7 @@ Models: current per-agent selections/inherited defaults; any suitability gaps ..
 Checks: required automated gates ...; manual checks and verifier ...
 Execution: isolated task worktree; proposed base/branch/path; background or separate-terminal worker; concurrency/dependencies ...
 Review: up to 5 total Reviewer passes, including the initial review; stop early on approval; no round-by-round questions
+Telemetry: per-agent/model token counts and OpenCode-reported cost; aggregate only, no transcript retention
 Commands: inherited forbidden actions ...; any additional restrictions?
 Publication: commit off; push off; create/update PR off; cap-exhausted findings posted to those PRs when PR publishing is authorized
 
@@ -64,6 +65,10 @@ control_root: /absolute/shared/run-records
 artifact_sources: ["GitHub issue/spec URL or absolute local path, with version"]
 artifact_snapshots: ["absolute worker-accessible input paths"]
 worker_output: /absolute/task-worktree/run-output
+usage_telemetry:
+  status: pending # complete / partial / unavailable
+  aggregate_path: /absolute/common-git-dir/team-runs/<run-id>/usage.json
+  source: OpenCode assistant-message usage metadata
 command_policy:
   sources: [AGENTS.md]
   forbidden: ["effective inherited and user-specified prohibitions"]
@@ -79,7 +84,7 @@ confirmation:
   decision: "actual user decision and any changes to the proposal"
 ```
 
-Record per-Ticket differences for multi-Ticket runs, review counters, stage status, finding IDs, and scope/gate changes alongside this configuration. Read actual model assignments from installed agent definitions/project configuration rather than assuming installer recommendations have been applied. An unset agent inherits the current model; record inherited/unknown when it cannot be resolved. Confirm suitability for design/reasoning-heavy work and request explicit reconfiguration if needed. Resolve commands from the project and preserve their exact arguments/cwd. Approval for one target/action does not authorize another. Disabled agents remain installed and can retain model settings; their toggle controls dispatch for this run only.
+Record per-Ticket differences for multi-Ticket runs, review counters, stage status, finding IDs, and scope/gate changes alongside this configuration. Capture usage by agent and model in the private run record as described in [usage-telemetry.md](usage-telemetry.md); this is run metadata, not a new publication action. Read actual model assignments from installed agent definitions/project configuration rather than assuming installer recommendations have been applied. An unset agent inherits the current model; record inherited/unknown when it cannot be resolved. Confirm suitability for design/reasoning-heavy work and request explicit reconfiguration if needed. Resolve commands from the project and preserve their exact arguments/cwd. Approval for one target/action does not authorize another. Disabled agents remain installed and can retain model settings; their toggle controls dispatch for this run only.
 
 ## Dispatch packet
 

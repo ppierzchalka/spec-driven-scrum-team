@@ -63,6 +63,10 @@ Prompt instructions guide model behavior. Configure runtime tool permissions or 
 
 ## Workflow and evidence contracts
 
+### Per-agent model usage
+
+Each implementation run records OpenCode-reported input/output/reasoning/cache tokens and reported cost, grouped by agent and actual provider/model, in the private run registry. The final report shows which stages and models used the most. Raw session exports and transcripts are not retained in the run telemetry; unavailable or unattributable usage is labelled rather than estimated. See the installed skill's `references/usage-telemetry.md` for the source fields and aggregation rules.
+
 ### Plan elsewhere, implement in fresh sessions
 
 Use your chosen grilling/planning skills in a planning session and save the agreed specs, criteria, decisions, and dependencies as GitHub issues or local files. Then open a fresh Lead implementation session and invoke the single `/autonomous-implement` skill with those existing artifacts:
