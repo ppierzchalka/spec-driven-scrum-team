@@ -15,7 +15,7 @@ This repo becomes a tool that ships:
 
 Run flow: from this repo, run the installer pointing at a Target repo path (`./install /path/to/target`) → a layered TUI lets me pick a model and reasoning effort per Agent from the providers/model actually available in that opencode install (or type my own) → it writes the seven agents, the skill, and `team.config.json` into the Target repo. Re-running reconfigures: persisted choices are shown, I can change any Agent's model/effort, and per-run I choose whether to overwrite an Agent's instructions or keep my edits. Later this graduates to an npm-published command run from inside the Target repo.
 
-Once installed, a fresh opencode session as `lead` with `/autonomous-implement work on ticket 01` reads a ready Ticket and runs the Pipeline: architect → security → ux → tester → developer → reviewer → PR. Everything is overridable in the prompt. For multiple ready tickets, `lead` runs parallel pipelines (headless `opencode run` per Worktree), deciding stack vs independent PRs per task-set, and supports a review-feedback loop on PR comments.
+Once installed, a session as `lead` with `/autonomous-implement work on ticket 01` reads a ready Ticket and runs the Pipeline: architect → security → ux → tester → developer → reviewer → PR. Everything is overridable in the prompt. For multiple ready Tickets, `lead` creates one Worktree per Ticket and dispatches a Lead-role subagent per Ticket in the current session, deciding stack vs independent PRs per task-set, and supports a review-feedback loop on PR comments.
 
 ## User Stories
 
@@ -33,7 +33,7 @@ Once installed, a fresh opencode session as `lead` with `/autonomous-implement w
 12. As a user, I want every Pipeline stage skippable or alterable by writing it in the invocation prompt (e.g. `/autonomous-implement work on ticket 01, skip security`), so that I can tailor runs per ticket.
 13. As a user, I want Pipeline defaults overridable per-repo via `AGENTS.md`, so that a whole repo can agree to skip a stage (e.g. security for a Godot game) without repeating it per invocation.
 14. As a user, I want `/autonomous-implement address review comments on PR #N` to re-run tester → developer → reviewer on the same branch and update the same PR, so that my PR comments feed back into the loop.
-15. As a user, I want `lead` to spawn a separate git Worktree with its own branch for each parallel Ticket and run each Pipeline as a separate headless `opencode run` process, so that no ticket's context bleeds into another.
+15. As a user, I want `lead` to create a separate Git Worktree with its own branch for each parallel Ticket and dispatch a Lead-role subagent for each Pipeline in the current session, so that no Ticket's context bleeds into another.
 16. As a user, I want `lead` to decide per task-set whether PRs are independent or stacked, so that dependent/conflicting tickets stack and independent ones don't.
 17. As a user, I want each Pipeline run to run gates (tests, typecheck, lint) before opening a PR, so that PRs are reviewable, not broken.
 18. As a user, I want to run the installer from this repo against a destination path (no npm publish needed yet), so that this repo alone is enough to install the team into any Target repo.
@@ -54,7 +54,7 @@ Once installed, a fresh opencode session as `lead` with `/autonomous-implement w
 - **Overwrite semantics**: on re-run, each Agent is offered "overwrite instructions?"; yes writes the canonical prompt, no preserves the local edit. Model/effort from config always applies.
 - **Seven Agents, one per role**: no per-model permutation agents and no separate Astra reviewer (ADR-0001). The TUI installs exactly these seven.
 - **Pipeline is prose**: which stages run and what they produce is defined in the skill's text; overridden per-invocation in the prompt or per-repo in `AGENTS.md`, not via a structured stage config (ADR-0003).
-- **Parallel execution**: `lead` spawns a git Worktree per parallel Ticket and runs each Pipeline as a headless `opencode run` process in that worktree (ADR-0002). Stack vs independent PRs is decided per task-set by `lead`: independent when tickets don't conflict or depend; stacked otherwise.
+- **Parallel execution**: `lead` creates a Git Worktree per parallel Ticket and dispatches a Lead-role subagent per Ticket in the current session. Stack vs independent PRs is decided per task-set by `lead`: independent when Tickets do not conflict or depend; stacked otherwise.
 - **Review-feedback loop**: the skill has a mode that reads PR comments, re-runs tester → developer → reviewer on the same branch, and updates the same PR.
 
 ## Testing Decisions

@@ -157,7 +157,7 @@ describe('installTeam', () => {
     // Exercise recursive copying and resolve local Markdown links, including
     // the conditional references needed only by some stages.
     const installedSkill = join(destination, '.opencode/skills/autonomous-implement');
-    const documents = ['SKILL.md', 'TEAM-POLICY.md', 'references/run-contract.md', 'references/worktree-runs.md', 'references/stack-guidance.md', 'references/interface-design.md'];
+    const documents = ['SKILL.md', 'TEAM-POLICY.md', 'references/run-contract.md', 'references/worktrees.md', 'references/stack-guidance.md', 'references/interface-design.md'];
     for (const document of documents) {
       const path = join(installedSkill, document);
       expect(existsSync(path), document).toBe(true);

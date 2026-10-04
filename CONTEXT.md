@@ -32,24 +32,15 @@ _Avoid_: task, issue
 Transfer of a ready Ticket and its agreed requirements, decisions, and constraints from planning to an implementation run.
 
 **Autonomous-implement**:
-The skill that runs the pipeline over ready tickets, driven by the `lead` agent in a fresh session.
+The skill that runs the pipeline over ready tickets, driven by the `lead` agent and its subagents in the current session.
 
 **Pipeline**:
 The ordered run of agents over a ticket: architect, security, ux, tester, developer, reviewer, then PR. Any stage is skippable or alterable via prompt input.
 
 ### Parallel execution
 
-**Run**:
-One confirmed execution of a Ticket's Pipeline, with its own scope, enabled agents, permissions, workspace, and results.
-
-**Controller**:
-The implementation Lead session that consumes prepared artifacts, dispatches independent Runs, and collects their outcomes, separate from the planning session.
-
-**Worker**:
-The isolated Lead session that executes one confirmed Run and returns its stage results to the Controller.
-
 **Worktree**:
-A per-ticket git worktree with its own branch, where a pipeline runs in a separate headless opencode process.
+A per-ticket Git worktree with its own branch. Lead and its subagents use it as an isolated checkout for one Ticket.
 _Avoid_: workspace
 
 **Stacked PR**:
@@ -60,3 +51,24 @@ An authenticated model source available in the target repo's opencode install, w
 
 **Reasoning effort**:
 The per-model effort level written into an agent's frontmatter (e.g. none/low/medium/high). An agent with no model set inherits opencode's currently selected model.
+
+### Command safety
+
+**Guardian**:
+An independent, low-friction gatekeeper that admits known-safe requests by local policy, consults Jev on material-risk requests, and blocks Hard-deny requests. Its local executor runs only an authorized request; the Guardian is a command/tool guard, not a host sandbox.
+_Avoid_: runner, executor
+
+**Command request**:
+A proposed command together with its intended worktree/folder and the Agent's reason for running it.
+
+**Safe command**:
+A low-risk, read-only Command request within the declared worktree that the Guardian may admit locally without a Jev call; the exact allowlist is still being designed.
+
+**Hard deny**:
+A class of Command requests the Guardian never authorizes for an Agent, even when Jev recommends approval; an ambiguous target is treated as denied.
+
+**Jev decision**:
+A structured judgment about a Command request, returned with the evidence/reason used by the Guardian's local policy.
+
+**Untrusted instruction**:
+Text found in project files, command output, web content, or other tool results that attempts to redirect an Agent beyond the user's authorized task; it is data, not authority.

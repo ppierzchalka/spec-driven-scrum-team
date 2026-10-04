@@ -44,7 +44,7 @@ Only enabled roles consume work for a given run; the allocation changes naturall
 
 ## Your command restrictions
 
-The shared policy distinguishes **forbidden** actions (stop and find an allowed alternative) from **approval-required** actions (wait for scoped authorization). Confirming the pipeline does not waive prohibitions or automatically authorize publication. Approval covers the specified action and target for that run.
+The shared policy distinguishes **forbidden** actions (stop and find an allowed alternative) from **approval-required** actions (wait for scoped authorization). Confirming the pipeline does not waive prohibitions or automatically authorize publication. Approval covers the specified action and target for that pipeline.
 
 Add your preferences to the target repo's `AGENTS.md`. For example:
 
@@ -57,34 +57,26 @@ Add your preferences to the target repo's `AGENTS.md`. For example:
 - Commits, pushes, PR creation/updates, and deployments require my explicit authorization for the current run.
 ```
 
-Use your actual forbidden commands and allowed alternatives. All seven agents read the shared policy and applicable project instructions; Lead also passes restrictions to workers. Commands executed through scripts or other agents have the same restrictions.
+Use your actual forbidden commands and allowed alternatives. All seven agents read the shared policy and applicable project instructions; Lead also passes restrictions to subagents. Commands executed through scripts or other agents have the same restrictions.
 
 Prompt instructions guide model behavior. Configure runtime tool permissions or hooks as well when you need commands mechanically blocked.
 
 ## Workflow and evidence contracts
 
-### Per-agent model usage
+### Plan elsewhere, implement in your terminal
 
-Each implementation run records OpenCode-reported input/output/reasoning/cache tokens and reported cost, grouped by agent and actual provider/model, in the private run registry. The final report shows which stages and models used the most. Raw session exports and transcripts are not retained in the run telemetry; unavailable or unattributable usage is labelled rather than estimated. See the installed skill's `references/usage-telemetry.md` for the source fields and aggregation rules.
-
-### Plan elsewhere, implement in fresh sessions
-
-Use your chosen grilling/planning skills in a planning session and save the agreed specs, criteria, decisions, and dependencies as GitHub issues or local files. Then open a fresh Lead implementation session and invoke the single `/autonomous-implement` skill with those existing artifacts:
+Use your chosen grilling/planning skills and save the agreed specs, criteria, decisions, and dependencies as GitHub issues or local files. Then invoke the single `/autonomous-implement` skill with those existing artifacts:
 
 ```text
 /autonomous-implement https://github.com/<owner>/<repo>/issues/<number>
 /autonomous-implement .scratch/<feature>/spec.md
-/autonomous-implement status
-/autonomous-implement collect <run-id>
 ```
 
 No handover skill, preparation command, or extra dispatch document is required. The implementation session reads the supplied artifacts and linked decisions directly; it does not need planning-chat history or tracker setup for a directly supplied local spec. It asks focused questions only if consequential requirements are missing or contradictory.
 
-Each task prefers a new branch, independent worktree, and separate worker session—even single-task runs. Start additional independent workflows in separate fresh sessions or confirm a batch in one implementation session. Dependent tasks wait for an agreed usable prerequisite commit. Lead asks for toggles and workspace/run settings before each new launch; a batch can be confirmed together with per-task settings.
+Each task may use a new branch and independent worktree. Lead dispatches specialist subagents directly for one Ticket. For parallel Tickets, Lead dispatches one Lead-role subagent per Ticket in the current session. Open another terminal yourself when you want an independent session. Dependent tasks wait for an agreed usable prerequisite commit.
 
-The shared run registry defaults to `team-runs/` under the repo's common Git directory. Unique task claims prevent duplicate launches across controller sessions. Per-run records identify branch/worktree, parent-confirmed configuration, process/session, inputs, outputs, evidence, and blockers. Workers reuse their prepared worktree without recursively spawning another worker and write isolated results; the controller synchronizes canonical Ticket state.
-
-The skill uses the available durable background process facility and reports actual launch evidence. If it is unavailable, it prepares the workspace and supplies a separate-terminal launch command, explicitly reporting **not running**. Status/collection are user-invoked management actions; publication, integration, and cleanup require scoped permission. See the installed `references/worktree-runs.md` for recovery and ownership rules.
+Worktrees isolate Git branches and checkouts only. Publication, integration, and cleanup require scoped permission. See the installed `references/worktrees.md` for setup rules.
 
 The installer ships only `/autonomous-implement` and its references. Reset Architect to its new Luna/xhigh default when applying the revised allocation; ordinary reconfiguration preserves saved model choices.
 

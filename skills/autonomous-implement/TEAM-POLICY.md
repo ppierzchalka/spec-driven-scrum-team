@@ -30,7 +30,7 @@ Before running a command, check its purpose, working directory, affected paths, 
 - **Approval required** means wait for explicit, scoped authorization before destructive Git operations (`reset --hard`, `clean`, forced push, branch/worktree deletion), overwriting or deleting unrelated existing user work, or changing Git configuration. Preserve hooks; do not bypass them to turn a rejected operation into a success.
 - Approval is also required for deployments, publishing, infrastructure changes, database migrations, destructive database operations, and sending private project data to a new external service. Keep secrets out of commands shown to the user, logs, prompts, artifacts, and reports; use existing credential mechanisms.
 - Commit, push, and create/update PRs only when the user explicitly authorizes those actions for this run. When the user authorizes PR publication for the run, that authorization also covers posting the agreed cap-exhausted review findings as comments on those same PRs. Invoking the implementation pipeline alone does not authorize publication. Ordinary local edits, verification, and already-authorized fix/re-review rounds do not require repeated approval.
-- When permission is needed, explain the exact action, target, and consequence and wait. If approval is unavailable (including headless runs), stop that action and return the blocker; never treat silence as approval.
+- When permission is needed, explain the exact action, target, and consequence and wait. If approval is unavailable, stop that action and return the blocker; never treat silence as approval.
 
 The user can put a `## Team command policy` section in the target repo's `AGENTS.md`, listing forbidden commands, allowed alternatives, and project-specific approval requirements. Read applicable policies for each workspace; the confirmed run configuration records any additional restrictions.
 
@@ -62,7 +62,7 @@ Use this compact structure for every stage result. Omit empty details, but keep 
 ```text
 Task fit: applicable | not applicable | blocked — concrete reason
 Outcome: complete | not applicable | blocked
-Scope: Ticket/run ID, criterion IDs, and reviewed/changed paths
+Scope: Ticket/spec reference, criterion IDs, and reviewed/changed paths
 Result: decisions or changes; assigned Ticket section updated
 Findings: severity, path/line, evidence, impact, proposed correction, owner
 Verification: command/check, cwd, result (passed/failed/not run), and evidence source
