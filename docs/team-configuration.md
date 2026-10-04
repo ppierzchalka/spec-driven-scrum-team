@@ -74,7 +74,7 @@ Use your chosen grilling/planning skills and save the agreed specs, criteria, de
 
 No handover skill, preparation command, or extra dispatch document is required. The implementation session reads the supplied artifacts and linked decisions directly; it does not need planning-chat history or tracker setup for a directly supplied local spec. It asks focused questions only if consequential requirements are missing or contradictory.
 
-Each task may use a new branch and independent worktree. Lead dispatches specialist subagents directly for one Ticket. For parallel Tickets, Lead dispatches one Lead-role subagent per Ticket in the current session. Open another terminal yourself when you want an independent session. Dependent tasks wait for an agreed usable prerequisite commit.
+A single Ticket uses the current worktree; Lead asks whether you want to use it instead of proposing a new one. Parallel Tickets each use a new branch and independent worktree. Lead dispatches specialist subagents directly for one Ticket. For parallel Tickets, Lead dispatches one Lead-role subagent per Ticket in the current session. Open another terminal yourself when you want an independent session. Dependent tasks wait for an agreed usable prerequisite commit.
 
 Worktrees isolate Git branches and checkouts only. Publication, integration, and cleanup require scoped permission. See the installed `references/worktrees.md` for setup rules.
 

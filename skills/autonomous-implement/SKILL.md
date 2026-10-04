@@ -34,9 +34,9 @@ Before dispatching agents, editing project files, creating worktrees, or executi
 
 ## Worktrees And Dispatch
 
-Read [references/worktrees.md](references/worktrees.md) before creating a worktree. Use one when an isolated branch/checkout protects the current checkout or lets independent Tickets proceed in parallel.
+Read [references/worktrees.md](references/worktrees.md) before creating a worktree. Worktrees are for parallel work: create one only when multiple Tickets need isolated checkouts. Never propose a new worktree for a single Ticket; during the startup question, default to the current worktree and ask whether the user wants to use it instead of creating a separate one.
 
-- For one Ticket, Lead dispatches the enabled specialist stages directly in the current session.
+- For one Ticket, Lead dispatches the enabled specialist stages directly in the current worktree (unless the user chose a separate worktree).
 - For parallel Tickets, Lead creates an isolated worktree for each confirmed Ticket and dispatches one `general` subagent per Ticket with the Lead role, complete Ticket context, confirmed toggles, worktree path, and command boundaries. Each Lead subagent dispatches its enabled specialist stages.
 - All work stays in the current session. The user opens another terminal when they want an independent session.
 

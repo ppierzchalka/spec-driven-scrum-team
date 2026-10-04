@@ -1,6 +1,6 @@
 # Worktrees
 
-Use this reference only when the confirmed work benefits from a separate Git branch and checkout. A worktree is Git isolation, not an execution environment.
+Use this reference only when the confirmed work needs a separate Git branch and checkout — that is, for parallel Tickets. For a single Ticket, default to the current worktree: during the startup question, ask whether the user wants to use the current worktree instead of creating a new one. A worktree is Git isolation, not an execution environment.
 
 ## Prepare a worktree
 
