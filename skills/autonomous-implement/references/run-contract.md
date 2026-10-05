@@ -24,7 +24,7 @@ Workspace: one Ticket → use the current worktree by default; do you want to us
   create a separate worktree/branch instead? Parallel Tickets → one isolated
   worktree/branch per Ticket ...
 Parallel work: Ticket grouping, dependencies, and concurrency ...
-Review: up to 5 total Reviewer passes, including the initial review
+Review: up to 2 total Reviewer passes, including the initial review
 Commands: inherited forbidden actions ...; any additional restrictions?
 Publication: commit off; push off; create/update PR off
 
@@ -51,9 +51,8 @@ Read-only discovery can fill technical context. It cannot invent requirements, u
 
 - Each stage is pending, complete, not applicable, or blocked. Record actual outcomes and evidence with the Ticket/spec or final handoff. A disabled stage is `skipped: user configuration`; it is not approval.
 - Advance only when the next stage has the information it needs and unresolved blockers do not invalidate it.
-- A review pass is one Reviewer review. The initial review is pass one. Continue fix/re-review work without interruption while actionable findings remain, up to five passes. Stop early on approval.
-- After pass three, record why earlier passes missed remaining findings, correct the systemic cause, and continue if no user decision is needed.
-- After pass five, report remaining findings. Do not begin a sixth pass or claim approval.
+- A review pass is one Reviewer review. The initial review is pass one. Continue fix/re-review work without interruption while actionable findings remain, up to two passes. Stop early on approval.
+- After pass two, report remaining findings. Do not begin a third pass or claim approval.
 - New requirements, changed toggles, new mandatory gates, conflicting decisions, missing tools, or new approval needs go to the user.
 - With Tester off, Developer performs the agreed verification. With Reviewer off, report implementation as unreviewed. With Developer off, do not make production fixes.
 - Mandatory gate failures or unavailable gates prevent a verified-delivery claim. Keep manual checks pending until the named verifier supplies evidence.

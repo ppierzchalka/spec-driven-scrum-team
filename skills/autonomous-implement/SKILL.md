@@ -55,7 +55,7 @@ Each agent first reports **applicable**, **not applicable**, or **blocked**. If 
 
 ## Review And Delivery
 
-- Reviewer may require fixes and re-review up to five total passes, counting the first review as pass one. Run the loop without asking between passes. After pass three, record and address the systemic cause. At pass five, report unresolved findings; do not start a sixth pass.
+- Reviewer may require fixes and re-review up to two total passes, counting the first review as pass one. Run the loop without asking between passes. At pass two, report unresolved findings; do not start a third pass.
 - For interface changes, complete the agreed rendered finish checks. Missing rendered access remains not verified.
 - Run the agreed gates after final changes. Report manual checks and environment blockers explicitly; incomplete verification is not verified delivery.
 - Commit, push, create/update a PR, integrate, or remove a worktree only with explicit user authorization. Before a commit, inspect status, diff, and recent log; stage only intended files.

@@ -14,7 +14,7 @@ Repo defaults and command arguments are suggestions for that confirmation, not a
 
 ## Provider-balanced model defaults
 
-The default allocation puts OpenAI capacity into planning, architecture, and UX; Meta handles implementation/tests, and OpenCode Go/Zen handles review/security. Effort is selected per role rather than raised uniformly. It is a routing policy, not a benchmark or a guarantee about a model's capabilities, usage limits, or billing.
+The default allocation puts OpenAI capacity into planning, architecture, and UX; OpenCode Go handles implementation/tests, and OpenCode Go/Zen handles review/security. Effort is selected per role rather than raised uniformly. It is a routing policy, not a benchmark or a guarantee about a model's capabilities, usage limits, or billing.
 
 | Agent | Preferred model | Effort | Workload rationale |
 | --- | --- | --- | --- |
@@ -22,16 +22,16 @@ The default allocation puts OpenAI capacity into planning, architecture, and UX;
 | Architect | `openai/gpt-6-luna` | xhigh | Architecture, invariants, and consequential tradeoffs |
 | Security | `opencode-go/deepseek-v4-pro` | high | Scoped trust-boundary assessment when enabled |
 | UX | `openai/gpt-6.1-sol` | medium | Product-specific visual/interaction decisions and rendered contract review |
-| Tester | `meta/muse-spark-1.3-contributor` | medium | Tests against defined criteria/design notes |
-| Developer | `meta/muse-spark-1.3-contributor` | high | Implement the defined architecture, behavior, and visual contract |
-| Reviewer | `opencode-go/deepseek-v4-flash` | high | Independent correctness/contract review and follow-ups |
+| Tester | `opencode-go/muse-spark-1.3-contributor` | medium | Tests against defined criteria/design notes |
+| Developer | `opencode-go/muse-spark-1.3-contributor` | medium | Implement the defined architecture, behavior, and visual contract |
+| Reviewer | `opencode-go/deepseek-v4-flash` | medium | Independent correctness/contract review and follow-ups |
 
 Only models found in the installer's available list can be selected automatically. The ordered, exact-ID fallback lists live in `src/defaults.ts`:
 
 - Lead prefers Sol 6.1, then Sol 6, then Terra at medium effort. Architect prefers Luna 6/xhigh, then Luna 5.6/xhigh; neither falls back to Astra. The Luna variants were verified through `opencode models openai --verbose`.
 - UX falls back only to `openai/gpt-6-sol`; no cheap thinking/execution model is silently selected for design. If neither Sol candidate is available, no UX default is set and the installer explains that unset means inheritance. Select a suitable model manually before enabling UX work.
-- OpenCode Go reasoning models have Zen equivalents as fallbacks. Meta code/tests have explicit Muse Contributor fallbacks via OpenCode, then appropriate OpenCode reasoning models.
-- Reviewer prefers plain DeepSeek V4 Flash through Go or Zen, then V4 Pro/high if Flash is unavailable. Security prefers V4 Pro/high. Neither role nor Developer/Tester automatically falls back to OpenAI.
+- OpenCode Go reasoning models have Zen equivalents as fallbacks. Implementation/tests prefer the flat-rate OpenCode Go Muse Contributor, then the OpenCode free Muse Contributor, then appropriate OpenCode reasoning models. The metered Meta API Muse Contributor is intentionally not a default.
+- Reviewer prefers plain DeepSeek V4 Flash through Go or Zen, then V4 Pro/medium if Flash is unavailable. Security prefers V4 Pro/high. Neither role nor Developer/Tester automatically falls back to OpenAI.
 - Astra and unlisted fast/premium variants are manual choices, never automatic matches. Exact matching avoids accidentally selecting a different variant merely because its name contains a preferred ID.
 
 **Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then **Install & exit**. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. `npm run setup -- /path/to/target-repo --defaults` applies current defaults noninteractively and writes canonical prompts.

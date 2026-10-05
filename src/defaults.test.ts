@@ -16,6 +16,7 @@ const AVAILABLE = [
   'opencode-go/kimi-k3',
   'opencode-go/kimi-k2.7-code',
   'opencode-go/muse-spark-1.3-contributor',
+  'opencode/muse-spark-1.3-contributor-free',
   'opencode-go/qwen3.8-flash',
   'opencode-go/qwen3.8-max',
 ];
@@ -26,20 +27,27 @@ describe('resolveDefault', () => {
     expect(resolveDefault('architect', AVAILABLE)).toEqual({ model: 'openai/gpt-6-luna', reasoningEffort: 'xhigh' });
     expect(resolveDefault('security', AVAILABLE)).toEqual({ model: 'opencode-go/deepseek-v4-pro', reasoningEffort: 'high' });
     expect(resolveDefault('ux', AVAILABLE)).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
-    expect(resolveDefault('tester', AVAILABLE)).toEqual({ model: 'meta/muse-spark-1.3-contributor', reasoningEffort: 'medium' });
-    expect(resolveDefault('developer', AVAILABLE)).toEqual({ model: 'meta/muse-spark-1.3-contributor', reasoningEffort: 'high' });
-    expect(resolveDefault('reviewer', AVAILABLE)).toEqual({ model: 'opencode-go/deepseek-v4-flash', reasoningEffort: 'high' });
+    expect(resolveDefault('tester', AVAILABLE)).toEqual({ model: 'opencode-go/muse-spark-1.3-contributor', reasoningEffort: 'medium' });
+    expect(resolveDefault('developer', AVAILABLE)).toEqual({ model: 'opencode-go/muse-spark-1.3-contributor', reasoningEffort: 'medium' });
+    expect(resolveDefault('reviewer', AVAILABLE)).toEqual({ model: 'opencode-go/deepseek-v4-flash', reasoningEffort: 'medium' });
   });
 
   it('falls back to explicitly listed models when preferred providers are unavailable', () => {
-    const noMeta = AVAILABLE.filter((m) => !m.startsWith('meta/'));
-    expect(resolveDefault('developer', noMeta)).toEqual({ model: 'opencode-go/muse-spark-1.3-contributor', reasoningEffort: 'high' });
+    const noGoMuse = AVAILABLE.filter((m) => m !== 'opencode-go/muse-spark-1.3-contributor');
+    expect(resolveDefault('developer', noGoMuse)).toEqual({ model: 'opencode/muse-spark-1.3-contributor-free', reasoningEffort: 'medium' });
     const noGo = AVAILABLE.filter((m) => !m.startsWith('opencode-go/'));
-    expect(resolveDefault('tester', noGo)).toEqual({ model: 'meta/muse-spark-1.3-contributor', reasoningEffort: 'medium' });
-    expect(resolveDefault('tester', noMeta)?.model).toBe('opencode-go/muse-spark-1.3-contributor');
+    expect(resolveDefault('tester', noGo)?.model).toBe('opencode/muse-spark-1.3-contributor-free');
+    expect(resolveDefault('developer', noGo)?.model).toBe('opencode/muse-spark-1.3-contributor-free');
     expect(resolveDefault('architect', AVAILABLE.filter((m) => m !== 'openai/gpt-6-luna'))).toEqual({ model: 'openai/gpt-5.6-luna', reasoningEffort: 'xhigh' });
-    expect(resolveDefault('reviewer', AVAILABLE.filter((m) => !m.includes('deepseek-v4-flash')))).toEqual({ model: 'opencode-go/deepseek-v4-pro', reasoningEffort: 'high' });
+    expect(resolveDefault('reviewer', AVAILABLE.filter((m) => !m.includes('deepseek-v4-flash')))).toEqual({ model: 'opencode-go/deepseek-v4-pro', reasoningEffort: 'medium' });
     expect(resolveDefault('lead', AVAILABLE.filter((m) => !m.endsWith('-sol')))?.model).toBe('openai/gpt-5.6-terra');
+  });
+
+  it('does not default implementation or tests to the metered Meta API even when available', () => {
+    for (const name of ['tester', 'developer']) {
+      expect(resolveDefault(name, AVAILABLE)?.model).not.toMatch(/^meta\//);
+      expect(resolveDefault(name, ['meta/muse-spark-1.3-contributor'])).toBeUndefined();
+    }
   });
 
   it('does not automatically select OpenAI for implementation, tests, security, or review', () => {
@@ -100,7 +108,7 @@ describe('seedDefaults', () => {
   it('keeps persisted choices and only fills in agents that are unset', () => {
     const seeded = seedDefaults({ lead: { model: 'opencode-go/gpt-5.6-luna', reasoningEffort: 'high' } }, AVAILABLE);
     expect(seeded.lead).toEqual({ model: 'opencode-go/gpt-5.6-luna', reasoningEffort: 'high' });
-    expect(seeded.tester?.model).toBe('meta/muse-spark-1.3-contributor');
+    expect(seeded.tester?.model).toBe('opencode-go/muse-spark-1.3-contributor');
   });
 
   it('preserves explicitly selected Astra and cheap UX models until the user resets them', () => {
@@ -139,6 +147,6 @@ describe('resetAgent / resetAllToDefaults', () => {
     const names = resetAllToDefaults(config, ['lead', 'tester', 'ux'], AVAILABLE);
     expect(names).toEqual(['lead', 'tester', 'ux']);
     expect(config.lead?.model).toBe('openai/gpt-6.1-sol');
-    expect(config.tester?.model).toBe('meta/muse-spark-1.3-contributor');
+    expect(config.tester?.model).toBe('opencode-go/muse-spark-1.3-contributor');
   });
 });
