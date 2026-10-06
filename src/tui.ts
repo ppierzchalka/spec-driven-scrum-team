@@ -54,6 +54,18 @@ async function pickModel(
   models: string[],
   harness: Harness,
 ): Promise<void> {
+  if (harness === 'antigravity') {
+    const model = guard(await select<string>({
+      message: `Model tier for ${name} (Antigravity)`,
+      options: [
+        { value: 'inherit', label: 'Inherit session model' },
+        { value: 'flash', label: 'Flash' },
+        { value: 'pro', label: 'Pro' },
+      ],
+    }));
+    config[name] = { ...config[name], model: model === 'inherit' ? undefined : model };
+    return;
+  }
   if (harness !== 'opencode') {
     const model = guard(await text({
       message: `Native model ID for ${name} (${harness}); blank = inherit`,
@@ -132,6 +144,7 @@ async function configureAgent(
         options: [
           { value: 'model', label: 'Model', hint: current.model ?? 'unset (inherit harness model)' },
           ...(supportsEffort(harness) ? [{ value: 'effort', label: 'Reasoning effort', hint: current.reasoningEffort ?? 'not set' }] : []),
+          ...(harness === 'antigravity' ? [{ value: 'tools', label: 'Additional native tools', hint: current.additionalTools?.join(', ') || 'none; configure MCP servers in native agent file' }] : []),
           { value: 'overwrite', label: 'Overwrite instructions', hint: overwrite[name] ? 'yes (canonical prompt)' : 'no (keep my edits)' },
           { value: 'reset', label: harness === 'opencode' ? 'Reset to default' : 'Reset to inherited model', hint: defaultChoice ? `${defaultChoice.model}${defaultChoice.reasoningEffort ? ` @ ${defaultChoice.reasoningEffort}` : ''}` : 'no default available' },
           { value: 'back', label: 'Back' },
@@ -142,6 +155,14 @@ async function configureAgent(
       case 'model':
         await pickModel(name, config, models, harness);
         break;
+      case 'tools': {
+        const tools = guard(await text({
+          message: 'Additional Antigravity tool names (comma-separated); use names exposed by your runtime',
+          initialValue: current.additionalTools?.join(', ') ?? '',
+        }));
+        config[name] = { ...current, additionalTools: [...new Set(tools.split(',').map((tool) => tool.trim()).filter(Boolean))] };
+        break;
+      }
       case 'effort':
         await pickEffort(name, config);
         break;

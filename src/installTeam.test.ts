@@ -116,6 +116,7 @@ describe('installTeam', () => {
     expect(lead.frontmatter.description).toBe('Custom edit');
     expect(lead.frontmatter.model).toBe('deepseek/deepseek-v4-flash');
     expect(lead.body).toContain('My custom prompt.');
+    expect(readFileSync(join(targetDir, '.opencode/skills/autonomous-implement/references/roles/lead.md'), 'utf8')).toBe(lead.body);
   });
 
   it('overwrites an agent prompt when overwrite is true', () => {

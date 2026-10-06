@@ -62,7 +62,7 @@ async function main(): Promise<void> {
     config = {};
     overwrite = {};
     for (const name of AGENT_NAMES) {
-      const choice = resolveDefault(name, available);
+      const choice = harness === 'opencode' ? resolveDefault(name, available) : undefined;
       if (choice) config[name] = choice;
       overwrite[name] = true;
     }

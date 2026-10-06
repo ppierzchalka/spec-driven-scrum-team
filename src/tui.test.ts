@@ -32,4 +32,18 @@ describe('selected harness TUI', () => {
     expect(existing).toEqual({ lead: { model: 'existing-native-model' } });
     expect(autocomplete).not.toHaveBeenCalled();
   });
+
+  it('offers Antigravity supported tiers instead of free-text provider IDs', async () => {
+    vi.mocked(select)
+      .mockResolvedValueOnce('developer')
+      .mockResolvedValueOnce('model')
+      .mockResolvedValueOnce('flash')
+      .mockResolvedValueOnce('back')
+      .mockResolvedValueOnce('__install__');
+    const result = await runTui({ existing: {}, harness: 'antigravity' });
+    expect(result.config.developer).toEqual({ model: 'flash' });
+    const tierOptions = vi.mocked(select).mock.calls[2][0].options;
+    expect(tierOptions.map((option) => option.value)).toEqual(['inherit', 'flash', 'pro']);
+    expect(text).not.toHaveBeenCalled();
+  });
 });

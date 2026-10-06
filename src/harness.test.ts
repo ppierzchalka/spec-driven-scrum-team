@@ -60,6 +60,7 @@ describe('harness installations', () => {
       developer_instructions: 'Custom review contract', sandbox_mode: 'read-only',
       model: 'native-model', model_reasoning_effort: 'high',
     });
+    expect(readFileSync(join(targetDir, '.agents/skills/autonomous-implement/references/roles/reviewer.md'), 'utf8')).toBe('Custom review contract');
   });
 
   it('renders native metadata rather than leaking OpenCode mode/effort', () => {
@@ -67,5 +68,39 @@ describe('harness installations', () => {
     expect(claude.frontmatter).toEqual({ name: 'reviewer', description: 'Review', model: 'sonnet' });
     const codex = parseToml(renderAgent('reviewer', 'Review', 'Body', { model: 'native', reasoningEffort: 'high' }, 'codex'));
     expect(codex).toEqual({ name: 'reviewer', description: 'Review', model: 'native', model_reasoning_effort: 'high', developer_instructions: 'Body' });
+  });
+
+  it('inherits Copilot tools so configured tracker and MCP integrations remain available', () => {
+    const lead = parseAgentFile(renderAgent('lead', 'Coordinate', 'Body', undefined, 'copilot'));
+    expect(lead.frontmatter).not.toHaveProperty('tools');
+  });
+
+  it('preserves Antigravity integrations while updating canonical instructions', () => {
+    const targetDir = mkdtempSync(join(tmpdir(), 'team-agy-'));
+    roots.push(targetDir);
+    const options = { definitionsDir: join(source, 'agents'), skillDir: join(source, 'skills/autonomous-implement'), config: {}, targetDir, harness: 'antigravity' as const };
+    installTeam(options);
+    const path = join(targetDir, '.agents/agents/lead.md');
+    writeFileSync(path, '---\nname: lead\ndescription: Custom\ntools: [view_file, tracker_create]\nmcpServers: [{name: tracker}]\n---\nOld instructions\n');
+    installTeam({ ...options, config: { lead: { model: 'pro', additionalTools: ['browser_view'] } } });
+    const agent = parseAgentFile(readFileSync(path, 'utf8'));
+    expect(agent.frontmatter.tools).toEqual(['view_file', 'tracker_create', 'browser_view']);
+    expect(agent.frontmatter.mcpServers).toEqual([{ name: 'tracker' }]);
+    expect(agent.frontmatter.model).toBe('pro');
+    expect(agent.body).toContain('single execution coordinator');
+    installTeam({ ...options, config: { lead: { additionalTools: [] } }, overwrite: { lead: false } });
+    const cleared = parseAgentFile(readFileSync(path, 'utf8'));
+    expect(cleared.frontmatter.tools).toEqual(['view_file', 'tracker_create']);
+    expect(cleared.frontmatter.mcpServers).toEqual([{ name: 'tracker' }]);
+  });
+
+  it('rejects unsupported Antigravity models before writing files', () => {
+    const targetDir = mkdtempSync(join(tmpdir(), 'team-bad-agy-'));
+    roots.push(targetDir);
+    expect(() => installTeam({
+      definitionsDir: join(source, 'agents'), skillDir: join(source, 'skills/autonomous-implement'),
+      config: { developer: { model: 'provider/arbitrary' } }, targetDir, harness: 'antigravity',
+    })).toThrow('Antigravity model must be inherit, flash or pro');
+    expect(existsSync(join(targetDir, '.agents'))).toBe(false);
   });
 });

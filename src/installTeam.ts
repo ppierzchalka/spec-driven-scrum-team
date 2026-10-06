@@ -1,8 +1,9 @@
 import { cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parse, stringify } from 'yaml';
+import { parse as parseToml } from 'smol-toml';
 import type { InstallOptions, InstallResult, TeamConfig } from './types.js';
-import { HARNESS_LAYOUTS, locateInstructions, renderAgent, updateTomlChoice, applyHarnessChoice, type Harness } from './harness.js';
+import { HARNESS_LAYOUTS, renderAgent, updateTomlChoice, applyHarnessChoice, reconcileAntigravityTools, type Harness } from './harness.js';
 
 
 export function parseAgentFile(content: string): { frontmatter: Record<string, unknown>; body: string } {
@@ -57,22 +58,36 @@ function writeAgent(
   targetDir: string,
   choice: { model?: string; reasoningEffort?: string } | undefined,
   harness: Harness,
+  previousChoice?: TeamConfig[string],
 ): string {
   const source = join(definitionsDir, `${name}.md`);
   const agent = parseAgentFile(readFileSync(source, 'utf8'));
   const destDir = join(targetDir, HARNESS_LAYOUTS[harness].agents);
   mkdirSync(destDir, { recursive: true });
   const dest = join(destDir, name + HARNESS_LAYOUTS[harness].extension);
-  writeFileSync(dest, renderAgent(name, String(agent.frontmatter.description ?? name), agent.body, choice, harness));
+  let content = renderAgent(name, String(agent.frontmatter.description ?? name), agent.body, choice, harness);
+  if (harness === 'antigravity' && existsSync(dest)) {
+    // Refresh instructions without erasing operator-configured native integrations.
+    const existing = parseAgentFile(readFileSync(dest, 'utf8')).frontmatter;
+    const rendered = parseAgentFile(content);
+    for (const key of ['tools', 'mcpServers']) {
+      if (existing[key] !== undefined) rendered.frontmatter[key] = existing[key];
+    }
+    reconcileAntigravityTools(rendered.frontmatter, previousChoice, choice);
+    applyHarnessChoice(rendered.frontmatter, choice, harness);
+    content = serializeAgentFile(rendered.frontmatter, rendered.body);
+  }
+  writeFileSync(dest, content);
   return dest;
 }
 
-function updateAgentInPlace(targetDir: string, name: string, choice: TeamConfig[string] | undefined, harness: Harness): string {
+function updateAgentInPlace(targetDir: string, name: string, choice: TeamConfig[string] | undefined, harness: Harness, previousChoice?: TeamConfig[string]): string {
   const dest = join(targetDir, HARNESS_LAYOUTS[harness].agents, name + HARNESS_LAYOUTS[harness].extension);
   const content = readFileSync(dest, 'utf8');
   if (harness === 'codex') writeFileSync(dest, updateTomlChoice(content, choice));
   else {
     const agent = parseAgentFile(content);
+    if (harness === 'antigravity') reconcileAntigravityTools(agent.frontmatter, previousChoice, choice);
     applyHarnessChoice(agent.frontmatter, choice, harness);
     writeFileSync(dest, serializeAgentFile(agent.frontmatter, agent.body));
   }
@@ -81,8 +96,14 @@ function updateAgentInPlace(targetDir: string, name: string, choice: TeamConfig[
 
 export function installTeam(options: InstallOptions): InstallResult {
   const { definitionsDir, skillDir, config, targetDir, overwrite = {}, harness = 'opencode' } = options;
+  // Validate all configured tiers before any install writes.
+  if (harness === 'antigravity') {
+    for (const choice of Object.values(config)) applyHarnessChoice({}, choice, harness);
+  }
   const written: string[] = [];
   const preserved: string[] = [];
+  const savedConfig = join(targetDir, HARNESS_LAYOUTS[harness].config);
+  const previousConfig: TeamConfig = existsSync(savedConfig) ? JSON.parse(readFileSync(savedConfig, 'utf8')) as TeamConfig : {};
 
   const names = readdirSync(definitionsDir)
     .filter((file) => file.endsWith('.md'))
@@ -92,9 +113,9 @@ export function installTeam(options: InstallOptions): InstallResult {
   for (const name of names) {
     const choice = config[name];
     if (overwrite[name] === false && existsSync(join(targetDir, HARNESS_LAYOUTS[harness].agents, name + HARNESS_LAYOUTS[harness].extension))) {
-      preserved.push(updateAgentInPlace(targetDir, name, choice, harness));
+      preserved.push(updateAgentInPlace(targetDir, name, choice, harness, previousConfig[name]));
     } else {
-      written.push(writeAgent(definitionsDir, name, targetDir, choice, harness));
+      written.push(writeAgent(definitionsDir, name, targetDir, choice, harness, previousConfig[name]));
     }
   }
 
@@ -103,8 +124,9 @@ export function installTeam(options: InstallOptions): InstallResult {
   const rolesDir = join(targetDir, HARNESS_LAYOUTS[harness].skills, 'autonomous-implement/references/roles');
   mkdirSync(rolesDir, { recursive: true });
   for (const name of names) {
-    const source = parseAgentFile(readFileSync(join(definitionsDir, name + '.md'), 'utf8'));
-    writeFileSync(join(rolesDir, name + '.md'), locateInstructions(source.body, harness));
+    const native = readFileSync(join(targetDir, HARNESS_LAYOUTS[harness].agents, name + HARNESS_LAYOUTS[harness].extension), 'utf8');
+    const body = harness === 'codex' ? String(parseToml(native).developer_instructions ?? '') : parseAgentFile(native).body;
+    writeFileSync(join(rolesDir, name + '.md'), body);
   }
   const configPath = writeConfig(targetDir, config, harness);
 

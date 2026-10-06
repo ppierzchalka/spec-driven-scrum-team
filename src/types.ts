@@ -1,6 +1,7 @@
 export interface AgentChoice {
   model?: string;
   reasoningEffort?: string;
+  additionalTools?: string[];
 }
 
 export type TeamConfig = Record<string, AgentChoice>;

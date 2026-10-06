@@ -1,6 +1,6 @@
 # Updated workflow evaluation
 
-Use these scenarios for forward-testing the revised bundle. The historical cases below retain evidence/permission checks; their mandatory repeated-toggle and Lead-per-Ticket assumptions are superseded.
+Use these scenarios for forward-testing the revised bundle. The historical cases below are retained as archive only, not release expectations. Their repeated-toggle, Lead-per-Ticket and forced single-Ticket isolation assumptions are superseded by the current scenarios above.
 
 | Scenario | Expected behavior |
 | --- | --- |
@@ -17,7 +17,7 @@ Use these scenarios for forward-testing the revised bundle. The historical cases
 | Cost data absent | Unknown metrics; no invented cost or guaranteed monetary cap |
 | Reviewer fixes | Stable findings, bounded delta review; broaden on invalidated shared behavior |
 
-## Historical evidence scenarios
+## Historical evidence scenarios (not current execution expectations)
 
 # Team prompt acceptance scenarios
 

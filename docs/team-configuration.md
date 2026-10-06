@@ -2,7 +2,7 @@
 
 ## Models and updated prompts
 
-Run `npm run setup -- /path/to/target-repo` from this tool repo. First select one harness: OpenCode, Claude Code, Codex, Antigravity or Copilot. Then select an agent and **Model**. OpenCode enumerates its authenticated model catalog with search. Other harnesses accept their native model ID manually and default to inheritance; no OpenCode provider IDs are copied across. Reasoning effort is emitted only for OpenCode/Codex. Other adapters omit unsupported effort fields.
+Run `npm run setup -- /path/to/target-repo` from this tool repo. First select one harness: OpenCode, Claude Code, Codex, Antigravity or Copilot. Then select an agent and **Model**. OpenCode enumerates its authenticated model catalog with search. Claude Code, Codex and Copilot accept native model IDs manually; Antigravity offers inherit/flash/pro tiers. All default to inheritance; no OpenCode provider IDs are copied across. Reasoning effort is emitted only for OpenCode/Codex. Other adapters omit unsupported effort fields.
 
 To apply updated canonical prompts to an existing install, keep **Overwrite instructions** set to **yes** for each agent you want updated. Choose **no** to preserve a locally edited prompt. The five skills and shared policy are copied on each install. Open a fresh session in the selected harness after reinstalling.
 
@@ -18,7 +18,9 @@ One setup invocation installs only the selected harness. Re-run to add another e
 | Antigravity | .agents/agents/*.md | .agents/skills/ | .agents/team.config.json |
 | Copilot | .github/agents/*.agent.md | .github/skills/ | .github/team.config.json |
 
-The JSON file stores installer choices, not a runtime configuration. Native definitions contain the supported model settings. The installer never edits .gitignore, removes tracked files, enables runtime features, or changes permissions globally.
+The JSON file stores installer choices, not a runtime configuration. Native definitions contain the supported model settings. Antigravity uses an explicit native tool allowlist. Its TUI permits additional runtime tool names; configure required MCP servers in its native agent frontmatter. Existing Antigravity tools/mcpServers survive instruction refresh. Remote tracker and rendered browser checks require their tools to be configured and available; the default list provides local shell/file operations, not those integrations.
+
+The installer never edits .gitignore, removes tracked files, enables runtime features, or changes permissions globally.
 
 For noninteractive installation use `npm run setup -- /path/to/repo --harness=codex --defaults` (replace codex as needed). Without --harness, interactive setup asks; legacy --defaults retains OpenCode for compatibility. Non-OpenCode defaults inherit the parent model.
 
