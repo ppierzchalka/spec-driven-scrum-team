@@ -6,11 +6,19 @@ Run `npm run setup -- /path/to/target-repo` from this tool repo. Select an agent
 
 To apply updated canonical prompts to an existing install, keep **Overwrite instructions** set to **yes** for each agent you want updated. Choose **no** to preserve a locally edited prompt. The skill and its shared `TEAM-POLICY.md` are copied on each install. Open a fresh opencode session after reinstalling.
 
-## Pipeline selection
+## Planning and execution
 
-Invoke `/autonomous-implement` as Lead with your Ticket references or PR feedback. Before execution, Lead asks you to confirm the on/off state of architect, security, UX, tester, developer, and reviewer, plus relevant checks and command/publication permissions. Lead stays on as coordinator.
+Use the primary **Planner** for /wayfinder (direction/new ideas), /refine (one behavior contract), /plan (specs and Tickets), and /project-setup (artifact/tracker conventions). Use primary **Lead** with /autonomous-implement for ready Tickets. You can enter at any stage; existing mature specs do not require repeated discovery. Both agents have independent model/effort settings in the installer.
 
-Repo defaults and command arguments are suggestions for that confirmation, not a way to bypass it. For local game mechanics, security is normally proposed off; networking, accounts, untrusted content, or sensitive data can make it relevant. Your confirmed selection governs the run and its fix loops.
+Wayfinder and Refine default to at most three consequential questions per round and two rounds before a provisional result. Unknown blockers remain explicit; the budget does not license guessing. Planner saves stable criteria, dependencies and readiness; Lead consumes references rather than the planning conversation.
+
+At handover, Lead proposes one batch contract covering all six execution roles, independent proposal candidates/evaluator, concurrency, worktrees, checks, limits, PR mode and scoped permissions. Explicit user selections already apply; only missing/material choices need confirmation. Do not repeat configuration per Ticket or unchanged fix loop.
+
+Recommend Developer + Reviewer for routine work. Enable Tester for independent behavior/test design, Architect for structural decisions, Security for actual trust boundaries, UX for consequential interaction/design work. Independent read-only analysis can run concurrently when inputs permit. Selected roles may produce two isolated proposals with distinct lenses, evaluated once before implementation. Code/test writing stays single-owner.
+
+One Lead manages the dependency frontier; no Lead-per-Ticket by default. One Ticket uses the current checkout; concurrent Tickets use isolated worktrees. Choose local, separate PRs, stacked PRs or one consolidated PR. Consolidation requires assembled-result verification and integration review. Deployment/cleanup are separate choices.
+
+These are prompt-driven protocols, not a new scheduling daemon or tracker API client. Trackers use the project's available authorized tools. Usage reporting records actual data where available and unknown otherwise; monetary ceilings need runtime metering to be hard limits.
 
 ## Provider-balanced model defaults
 
@@ -18,7 +26,8 @@ The default allocation puts OpenAI capacity into planning, architecture, and UX;
 
 | Agent | Preferred model | Effort | Workload rationale |
 | --- | --- | --- | --- |
-| Lead | `openai/gpt-6.1-sol` | medium | Requirements grilling, specs, overall planning, and coordination |
+| Planner | `openai/gpt-6.1-sol` | medium | Direction, bounded refinement, specs, Tickets and tracker conventions |
+| Lead | `openai/gpt-6.1-sol` | medium | Execution scheduling, run configuration and coordination |
 | Architect | `openai/gpt-6-luna` | xhigh | Architecture, invariants, and consequential tradeoffs |
 | Security | `opencode-go/deepseek-v4-pro` | high | Scoped trust-boundary assessment when enabled |
 | UX | `openai/gpt-6.1-sol` | medium | Product-specific visual/interaction decisions and rendered contract review |
@@ -57,28 +66,28 @@ Add your preferences to the target repo's `AGENTS.md`. For example:
 - Commits, pushes, PR creation/updates, and deployments require my explicit authorization for the current run.
 ```
 
-Use your actual forbidden commands and allowed alternatives. All seven agents read the shared policy and applicable project instructions; Lead also passes restrictions to subagents. Commands executed through scripts or other agents have the same restrictions.
+Use your actual forbidden commands and allowed alternatives. All eight agents read the shared policy and applicable project instructions; Lead also passes restrictions to subagents. Commands executed through scripts or other agents have the same restrictions.
 
 Prompt instructions guide model behavior. Configure runtime tool permissions or hooks as well when you need commands mechanically blocked.
 
 ## Workflow and evidence contracts
 
-### Plan elsewhere, implement in your terminal
+### Artifact handover
 
-Use your chosen grilling/planning skills and save the agreed specs, criteria, decisions, and dependencies as GitHub issues or local files. Then invoke the single `/autonomous-implement` skill with those existing artifacts:
+Configure tracker conventions once with /project-setup: GitHub Issues, Azure DevOps or local Markdown. Existing docs/agents/issue-tracker.md and AGENTS.md take precedence. Direction, specs and Tickets have distinct ownership; use links instead of editable copies.
 
-```text
-/autonomous-implement https://github.com/<owner>/<repo>/issues/<number>
-/autonomous-implement .scratch/<feature>/spec.md
-```
+Examples:
+- Planner: /wayfinder assess adding a waitlist to our booking app
+- Planner: /refine the selected waitlist idea
+- Planner: /plan create a spec and Tickets from this refined contract
+- Lead: /autonomous-implement <Ticket refs> — Developer + Reviewer; current checkout; local only
+- Lead: /autonomous-implement <batch refs> — Architect x2 evaluated by Lead; concurrency 2; worktrees; one consolidated PR; scoped commit/push/PR/integration authorized
 
-No handover skill, preparation command, or extra dispatch document is required. The implementation session reads the supplied artifacts and linked decisions directly; it does not need planning-chat history or tracker setup for a directly supplied local spec. It asks focused questions only if consequential requirements are missing or contradictory.
+A supplied local spec works without remote tracker setup. Follow native field/state/dependency mappings and verify remote writes; unavailable access is a blocker, not a reason to fabricate Tickets.
 
-A single Ticket uses the current worktree; Lead asks whether you want to use it instead of proposing a new one. Parallel Tickets each use a new branch and independent worktree. Lead dispatches specialist subagents directly for one Ticket. For parallel Tickets, Lead dispatches one Lead-role subagent per Ticket in the current session. Open another terminal yourself when you want an independent session. Dependent tasks wait for an agreed usable prerequisite commit.
+The installer ships five skills and their references. Reinstall with overwrite enabled to update canonical prompts; Planner receives its own configurable model entry. Existing custom agent prompts are retained when overwrite is disabled, so they may still use the previous workflow until manually updated. Existing project conventions are never rewritten by installation.
 
-Worktrees isolate Git branches and checkouts only. Publication, integration, and cleanup require scoped permission. See the installed `references/worktrees.md` for setup rules.
-
-The installer ships only `/autonomous-implement` and its references. Reset Architect to its new Luna/xhigh default when applying the revised allocation; ordinary reconfiguration preserves saved model choices.
+See the installed run-contract.md, proposals.md, worktrees.md and usage.md for execution protocols.
 
 ### GLM 5.2 option
 
@@ -86,8 +95,9 @@ The local catalog includes `opencode-go/glm-5.2` with `high` and `max` variants,
 
 Every role has an ordered workflow with completion criteria. Results use a common task-fit, outcome, scope, findings, verification, remaining-work, and next-owner format. Findings have consistent severity; Reviewer must explicitly conclude approved, changes required, or blocked.
 
-Lead records the confirmed configuration separately from `team.config.json`, which remains the installer's per-agent model settings. The configuration covers all six toggles, scope, workspace/base, required/manual checks, fix-round limit, command restrictions, and publication permissions. See the installed skill's `references/run-contract.md` for the exact startup question and dispatch packet.
+Lead records the confirmed configuration separately from `team.config.json`, which remains the installer's per-agent model settings. The configuration covers all six toggles, candidate/evaluator choices, concurrency, scope, workspace/base, delivery mode, checks, bounds, command restrictions and publication permissions. See the installed skill's `references/run-contract.md` for the exact startup question and dispatch packet.
 
 Framework/engine guidance lives in the skill's conditional `references/stack-guidance.md`. Agents consult the relevant section rather than applying web-specific advice to every game task.
 
 For behavior-regression scenarios and evidence requirements, see [prompt-evaluation.md](prompt-evaluation.md).
+

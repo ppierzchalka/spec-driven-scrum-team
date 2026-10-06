@@ -1,5 +1,5 @@
 import { cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import type { InstallOptions, InstallResult, TeamConfig } from './types.js';
 
@@ -54,6 +54,21 @@ function copySkill(skillDir: string, targetDir: string): string {
   return dest;
 }
 
+// Keep the legacy skillDir API; discover only the shipped planning siblings.
+// Never copy a target repo's unrelated skills or configuration.
+function copyPlanningSkills(skillDir: string, targetDir: string): string[] {
+  const paths: string[] = [];
+  for (const name of ['wayfinder', 'refine', 'plan', 'project-setup']) {
+    const source = join(dirname(skillDir), name);
+    if (!existsSync(join(source, 'SKILL.md'))) continue;
+    const destination = join(targetDir, SKILLS_DIR, name);
+    mkdirSync(destination, { recursive: true });
+    cpSync(source, destination, { recursive: true });
+    paths.push(join(destination, 'SKILL.md'));
+  }
+  return paths;
+}
+
 function writeAgent(
   definitionsDir: string,
   name: string,
@@ -98,7 +113,8 @@ export function installTeam(options: InstallOptions): InstallResult {
   }
 
   const skillPath = copySkill(skillDir, targetDir);
+  const skillPaths = [skillPath, ...copyPlanningSkills(skillDir, targetDir)];
   const configPath = writeConfig(targetDir, config);
 
-  return { written, preserved, configPath, skillPath };
+  return { written, preserved, configPath, skillPath, skillPaths };
 }

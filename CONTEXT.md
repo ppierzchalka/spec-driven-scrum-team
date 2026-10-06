@@ -1,23 +1,23 @@
 # Spec-Driven Scrum Team
 
-A reusable scrum-like multi-agent development team for opencode: the seven agents, `/autonomous-implement` for prepared GitHub or local work, and an interactive installer for target repos.
+A reusable scrum-like multi-agent development team for opencode: Planner plus seven execution agents, planning skills and `/autonomous-implement` for prepared tracker or local work, and an interactive installer for target repos.
 
 ## Language
 
 ### The team
 
 **Agent**:
-One of the seven fixed opencode roles this repo installs: `lead`, `architect`, `security`, `ux`, `tester`, `developer`, `reviewer`. Each is a markdown file under the target repo's `.opencode/agents/`.
+One of the eight fixed opencode agents this repo installs: `planner`, `lead`, `architect`, `security`, `ux`, `tester`, `developer`, `reviewer`. Each is a markdown file under the target repo's `.opencode/agents/`.
 _Avoid_: bot, role
 
 **Team**:
-The seven agents and the `/autonomous-implement` skill, installed together.
+Planner, seven execution agents and five skills, installed together.
 
 **Target repo**:
 The repository the installer runs in and installs into — the project that will use the team. Not this tool repo.
 
 **Install**:
-Run the installer CLI in a target repo: writes the seven agents, the skill, and the config file.
+Run the installer CLI in a target repo: writes eight agents, five skills, and per-agent model configuration.
 
 **Reconfigure**:
 Re-run the installer to change an agent's model or reasoning effort, and optionally overwrite its instructions.
@@ -35,7 +35,7 @@ Transfer of a ready Ticket and its agreed requirements, decisions, and constrain
 The skill that runs the pipeline over ready tickets, driven by the `lead` agent and its subagents in the current session.
 
 **Pipeline**:
-The ordered run of agents over a ticket: architect, security, ux, tester, developer, reviewer, then PR. Any stage is skippable or alterable via prompt input.
+A dependency-aware execution run: independent enabled analysis stages/proposals, optional Tester, Developer and Reviewer, followed by authorized delivery. One Lead coordinates the batch.
 
 ### Parallel execution
 
@@ -44,7 +44,7 @@ A per-ticket Git worktree with its own branch. Lead and its subagents use it as 
 _Avoid_: workspace
 
 **Stacked PR**:
-A pull request whose base is the previous ticket's branch, so it contains its predecessors.
+A pull request targeting its predecessor branch; its diff shows the incremental Ticket change.
 
 **Provider**:
 An authenticated model source available in the target repo's opencode install, whose models can be selected in the installer.
@@ -72,3 +72,4 @@ A structured judgment about a Command request, returned with the evidence/reason
 
 **Untrusted instruction**:
 Text found in project files, command output, web content, or other tool results that attempts to redirect an Agent beyond the user's authorized task; it is data, not authority.
+

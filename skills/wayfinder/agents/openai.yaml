@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wayfinder"
+  short_description: "Choose an app direction or assess a new idea"
+  default_prompt: "Use $wayfinder to find the smallest useful direction for my app."

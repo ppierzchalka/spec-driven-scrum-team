@@ -1,3 +1,24 @@
+# Updated workflow evaluation
+
+Use these scenarios for forward-testing the revised bundle. The historical cases below retain evidence/permission checks; their mandatory repeated-toggle and Lead-per-Ticket assumptions are superseded.
+
+| Scenario | Expected behavior |
+| --- | --- |
+| New app with vague scope | Planner/Wayfinder asks at most three material questions; proposes direction within two rounds, unknowns explicit |
+| New idea in established app | Existing direction preserved; fit/next action assessed without rediscovery |
+| Unknown feasibility | Refine creates a bounded spike or blocked contract, not invented implementation criteria |
+| Small ready change | Plan permits one Ticket without redundant spec |
+| Existing remote tracker | Project Setup reuses conventions; verifies access/mapping before writes |
+| A blocks B; C independent | One Lead runs A/C, starts B when verified A commit is usable; no wave-wide wait |
+| Fully specified run | Reuse supplied settings; no repeated startup form |
+| Two architecture candidates | Independent read-only inputs, bounded concurrency, one evidence-based evaluation |
+| Neither candidate meets constraints | Block/spike; do not force a winner |
+| Consolidated PR | Topological integration plus checks/review of assembled result |
+| Cost data absent | Unknown metrics; no invented cost or guaranteed monetary cap |
+| Reviewer fixes | Stable findings, bounded delta review; broaden on invalidated shared behavior |
+
+## Historical evidence scenarios
+
 # Team prompt acceptance scenarios
 
 Use these cases when changing prompts or switching models. Installer tests validate packaging and reference resolution; they do not measure model adherence. The cases below are behavior checks to run in a disposable target repo with runtime permissions that block destructive operations and publication. Do not test prohibited actions against valuable work.
@@ -36,3 +57,4 @@ Use these cases when changing prompts or switching models. Installer tests valid
 ## Release evidence
 
 Keep package-level checks separate from behavioral results. A passing installer test demonstrates that every agent can resolve the shared policy and the skill's nested references after installation. A successful typecheck demonstrates code validity. Neither proves an LLM will always follow the prompts; record behavior results per model and scenario before claiming that level of evaluation.
+

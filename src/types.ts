@@ -18,4 +18,5 @@ export interface InstallResult {
   preserved: string[];
   configPath: string;
   skillPath: string;
+  skillPaths: string[];
 }

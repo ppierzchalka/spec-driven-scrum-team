@@ -1,7 +1,7 @@
 {
   "name": "spec-driven-scrum-team",
   "version": "0.1.0",
-  "description": "Installer + autonomous-implement pipeline for a seven-agent scrum team on opencode",
+  "description": "Installer + product planning and configurable eight-agent execution team on opencode",
   "type": "module",
   "private": true,
   "bin": {
@@ -29,3 +29,4 @@
     "yaml": "^2.9.1"
   }
 }
+

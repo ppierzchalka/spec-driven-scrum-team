@@ -140,7 +140,7 @@ describe('installTeam', () => {
       config: {},
       targetDir: destination,
     });
-    expect(result.written).toHaveLength(7);
+    expect(result.written).toHaveLength(8);
 
     // Every role's shared-policy pointer must work in the installed repo.
     for (const path of result.written) {
@@ -157,7 +157,7 @@ describe('installTeam', () => {
     // Exercise recursive copying and resolve local Markdown links, including
     // the conditional references needed only by some stages.
     const installedSkill = join(destination, '.opencode/skills/autonomous-implement');
-    const documents = ['SKILL.md', 'TEAM-POLICY.md', 'references/run-contract.md', 'references/worktrees.md', 'references/stack-guidance.md', 'references/interface-design.md'];
+    const documents = ['SKILL.md', 'TEAM-POLICY.md', 'references/run-contract.md', 'references/worktrees.md', 'references/stack-guidance.md', 'references/interface-design.md', 'references/proposals.md', 'references/usage.md'];
     for (const document of documents) {
       const path = join(installedSkill, document);
       expect(existsSync(path), document).toBe(true);
@@ -169,6 +169,37 @@ describe('installTeam', () => {
     const skill = parseAgentFile(readFileSync(result.skillPath, 'utf8'));
     expect(skill.frontmatter.name).toBe('autonomous-implement');
     expect(skill.frontmatter.description).toEqual(expect.any(String));
-    expect(readdirSync(join(destination, '.opencode/skills'))).toEqual(['autonomous-implement']);
+    expect(readdirSync(join(destination, '.opencode/skills')).sort()).toEqual(['autonomous-implement', 'plan', 'project-setup', 'refine', 'wayfinder']);
+    expect(result.skillPaths).toHaveLength(5);
+    for (const path of result.skillPaths) {
+      const content = readFileSync(path, 'utf8');
+      expect(parseAgentFile(content).frontmatter.description).toEqual(expect.any(String));
+      for (const link of content.matchAll(/\]\(([^)]+\.md)\)/g)) {
+        expect(existsSync(join(dirname(path), link[1])), `${path}: ${link[1]}`).toBe(true);
+      }
+    }
+  });
+
+  it('preserves project tracker conventions and unrelated skills during reinstall', () => {
+    const shippedRoot = fileURLToPath(new URL('../', import.meta.url));
+    const destination = join(root, 'existing-project');
+    const tracker = join(destination, 'docs/agents/issue-tracker.md');
+    const customSkill = join(destination, '.opencode/skills/custom/SKILL.md');
+    mkdirSync(dirname(tracker), { recursive: true });
+    mkdirSync(dirname(customSkill), { recursive: true });
+    writeFileSync(tracker, 'Azure project-specific fields and workflow');
+    writeFileSync(customSkill, 'User-owned skill');
+    for (let pass = 0; pass < 2; pass++) {
+      installTeam({
+        definitionsDir: join(shippedRoot, 'agents'),
+        skillDir: join(shippedRoot, 'skills/autonomous-implement'),
+        config: { planner: { model: 'custom/planning' }, lead: { model: 'custom/execution' } },
+        targetDir: destination,
+      });
+    }
+    expect(readFileSync(tracker, 'utf8')).toBe('Azure project-specific fields and workflow');
+    expect(readFileSync(customSkill, 'utf8')).toBe('User-owned skill');
+    expect(parseAgentFile(readFileSync(join(destination, '.opencode/agents/planner.md'), 'utf8')).frontmatter.model).toBe('custom/planning');
+    expect(parseAgentFile(readFileSync(join(destination, '.opencode/agents/lead.md'), 'utf8')).frontmatter.model).toBe('custom/execution');
   });
 });

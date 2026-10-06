@@ -1,21 +1,20 @@
-# Worktrees
+# Worktrees and delivery
 
-Use this reference only when the confirmed work needs a separate Git branch and checkout — that is, for parallel Tickets. For a single Ticket, default to the current worktree: during the startup question, ask whether the user wants to use the current worktree instead of creating a new one. A worktree is Git isolation, not an execution environment.
+Worktrees isolate Git checkouts/branches, not processes or model context. One Ticket defaults to current checkout; concurrent Tickets use separate worktrees. Selected sequential work may reuse current checkout.
 
-## Prepare a worktree
+## Preparation
 
-1. Inspect Git status, branches, and `git worktree list --porcelain` before changing anything.
-2. Agree the base ref, branch name, and unused path with the user. Never reset, stash, clean, force-checkout, or remove an existing worktree.
-3. Create the worktree with `git worktree add <path> -b <branch> <base-ref>` only after confirmation.
-4. Give the worktree path, branch, Ticket/spec, confirmed agent toggles, applicable instructions, and required checks to every subagent working on that Ticket.
-5. Keep parallel Tickets in separate worktrees. Dependent Tickets wait for an agreed prerequisite commit or branch; do not copy uncommitted changes between worktrees.
+Inspect status, branches and git worktree list --porcelain. Preserve existing work; record unused paths, branches and known bases in the run contract. Never reset/stash/clean/force-checkout user work. Create only authorized worktrees.
 
-## Dispatch
+One Lead dispatches specialists directly. Serialize shared-file writes; check tooling/dependencies/environment per worktree.
 
-All work happens through subagents in the current interactive session. For one Ticket, Lead dispatches the enabled specialist stages directly. For parallel Tickets, Lead dispatches one `general` subagent per Ticket with the Lead role and its complete Ticket context; each Lead subagent dispatches its enabled specialist stages.
+Dependents start from usable verified prerequisite commits. Multiple parents need an agreed integration base containing all prerequisites. If required local commits are unauthorized, report that blocker. Do not copy uncommitted changes.
 
-The user opens another terminal when they want an independent session.
+## Delivery
 
-## Finish
+- Local: leave scoped changes/integration plan; no implicit commit/push.
+- Separate: independent PRs target selected base; dependent PR bases must contain prerequisites.
+- Stacked: dependent PR targets predecessor branch, with only its incremental diff relative to that base. Multiple parents need an integration base or consolidation. Record merge order; update descendants after parent merge without unapproved force pushes.
+- Consolidated: integrate selected commits in topological order onto agreed delivery branch, resolve scoped conflicts, run assembled-result gates and integration review, then open one PR. Preserve source branches/worktrees until cleanup authorization; do not auto-close existing PRs.
 
-After the subagents finish, inspect the scoped diff and required verification in the applicable worktree. Commit, publish, integrate, and remove worktrees only with the user's explicit authorization.
+Inspect status/diff/base before publication and stage only intended files. Per-branch checks do not verify the assembled result. Integration, cleanup, existing PR closure and deployment require corresponding permission. Requesting a PR authorizes necessary scoped commit/push, not deployment/deletion.

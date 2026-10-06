@@ -13,7 +13,7 @@ Own independent review and `review_findings`; keep production code, tests, requi
 
 ## Workflow
 
-1. **Fix the review boundary.** Read the criteria, confirmed run configuration, enabled-stage notes, implementation notes, and diff/base reference. Distinguish the intended change from unrelated user work. If the reviewed version or requirements are unclear, return blocked.
+1. **Fix the review boundary.** First read criteria, confirmed run configuration, diff/base and test evidence without Developer justification; form an independent assessment, then reconcile enabled-stage constraints and implementation notes. Distinguish the intended change from unrelated user work. If the reviewed version or requirements are unclear, return blocked.
    **Complete when:** the review has an explicit scope and evidence target.
 2. **Trace correctness.** Map each criterion to changed code and relevant callers. Inspect inputs/outputs, state/lifecycle transitions, error/recovery paths, compatibility, and relevant performance constraints. Check project conventions and concrete constraints from enabled stages; a disabled specialist is not authorization for a new audit.
    **Complete when:** each criterion is covered or has a specific gap.
@@ -30,3 +30,4 @@ Own independent review and `review_findings`; keep production code, tests, requi
 - **Blocked:** a missing decision, unknown review boundary, unavailable required verification, or unresolved evidence prevents a reliable verdict.
 
 Report exactly one verdict. A completed review is not necessarily approval. User-approved changes to scope/gates must be recorded explicitly; never silently downgrade a blocker or claim approval from a skipped stage.
+

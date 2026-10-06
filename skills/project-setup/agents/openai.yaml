@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Setup"
+  short_description: "Choose tracker, artifact locations and delivery rules"
+  default_prompt: "Use $project-setup to configure where this project keeps specs and Tickets."

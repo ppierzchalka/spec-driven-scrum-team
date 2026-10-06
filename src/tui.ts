@@ -4,7 +4,7 @@ import { availableModels, deriveEffortLevels, detectEnvProviders, detectConfigPr
 import { seedDefaults, resolveDefault, resetAgent, resetAllToDefaults } from './defaults.js';
 import type { TeamConfig } from './types.js';
 
-export const AGENT_NAMES = ['lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
+export const AGENT_NAMES = ['planner', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
 
 export interface TuiResult {
   config: TeamConfig;

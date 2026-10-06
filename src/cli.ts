@@ -81,9 +81,9 @@ async function main(): Promise<void> {
   console.log(`\nInstalled into ${target}`);
   for (const path of result.written) console.log(`  wrote  ${path}`);
   for (const path of result.preserved) console.log(`  kept   ${path} (instructions preserved)`);
-  console.log(`  wrote  ${result.skillPath}`);
+  for (const path of result.skillPaths) console.log(`  wrote  ${path}`);
   console.log(`  wrote  ${result.configPath}`);
-  console.log('\nNext: open a fresh opencode session in the target repo and run /autonomous-implement.');
+  console.log('\nNext: use Planner with /wayfinder, /refine, /plan or /project-setup; use Lead with /autonomous-implement for ready Tickets.');
 }
 
 main().catch((error) => {

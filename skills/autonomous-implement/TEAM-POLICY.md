@@ -1,6 +1,6 @@
 # Team operating policy
 
-Every installed team agent reads this policy before acting, including when invoked outside the pipeline. The Lead includes the confirmed run configuration and applicable project instructions in every dispatch.
+Every installed team agent reads this policy before acting, including when invoked outside the pipeline. The Lead includes the confirmed run configuration and applicable project instructions in every execution dispatch. Planner uses planning scope without fabricating an execution run.
 
 ## Task fit and scope
 
@@ -29,7 +29,7 @@ Before running a command, check its purpose, working directory, affected paths, 
 - **Forbidden** means stop: honor the user's forbidden-action list and applicable repository/tool policies. Do not bypass a prohibition using another tool, shell, script, subagent, or equivalent command. Request an allowed alternative, not routine approval to execute the forbidden action. A run confirmation cannot waive a prohibition; an explicit policy change must come from the user and remain within higher-priority rules.
 - **Approval required** means wait for explicit, scoped authorization before destructive Git operations (`reset --hard`, `clean`, forced push, branch/worktree deletion), overwriting or deleting unrelated existing user work, or changing Git configuration. Preserve hooks; do not bypass them to turn a rejected operation into a success.
 - Approval is also required for deployments, publishing, infrastructure changes, database migrations, destructive database operations, and sending private project data to a new external service. Keep secrets out of commands shown to the user, logs, prompts, artifacts, and reports; use existing credential mechanisms.
-- Commit, push, and create/update PRs only when the user explicitly authorizes those actions for this run. When the user authorizes PR publication for the run, that authorization also covers posting the agreed cap-exhausted review findings as comments on those same PRs. Invoking the implementation pipeline alone does not authorize publication. Ordinary local edits, verification, and already-authorized fix/re-review rounds do not require repeated approval.
+- Commit, push, and create/update PRs within the user-authorized scope. A request to create a PR includes the necessary scoped commit/push; it does not authorize merge, deployment, deletion, or force pushes. When the user authorizes PR publication for the run, that authorization also covers posting the agreed cap-exhausted review findings as comments on those same PRs. Invoking the implementation pipeline alone does not authorize publication. Ordinary local edits, verification, and already-authorized fix/re-review rounds do not require repeated approval.
 - When permission is needed, explain the exact action, target, and consequence and wait. If approval is unavailable, stop that action and return the blocker; never treat silence as approval.
 
 The user can put a `## Team command policy` section in the target repo's `AGENTS.md`, listing forbidden commands, allowed alternatives, and project-specific approval requirements. Read applicable policies for each workspace; the confirmed run configuration records any additional restrictions.
@@ -72,4 +72,5 @@ Next owner: lead | enabled specialist | user; requested action
 
 Reviewer additionally reports `approved | changes required | blocked`; `complete` means its review finished, not that implementation was approved. Distinguish verification you performed from another agent's reported evidence, including the commit/diff it covers. A skipped or not-applicable stage is never approval.
 
-Specialists update only their assigned Ticket sections and role-owned files; the Lead owns overall Ticket state and user decisions. If the tracker is unavailable or not writable, return the notes to Lead and say they were not persisted. When invoked directly outside a pipeline, return to the user and use the request as scope; do not fabricate a confirmed run or dispatch a team. If the required policy file is missing, report an incomplete install rather than silently proceeding.
+Planner owns direction, requirements, specs and Ticket planning; Lead owns execution state and run decisions. Specialists update only assigned Ticket sections and role-owned files. Independent proposal candidates return read-only results; Lead persists the selected result once. If the tracker is unavailable or not writable, return the notes to Lead and say they were not persisted. When invoked directly outside a pipeline, return to the user and use the request as scope; do not fabricate a confirmed run or dispatch a team. If the required policy file is missing, report an incomplete install rather than silently proceeding.
+
