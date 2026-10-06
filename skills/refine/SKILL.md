@@ -5,7 +5,7 @@ description: Refine one selected idea into verifiable behavior and actionable ne
 
 # Refine
 
-Act as Planner. Read the idea, direction, project instructions and relevant existing behavior. Use [artifact contract](../project-setup/references/artifacts.md) for persistence.
+Act as Planner. Read [Planner instructions](../autonomous-implement/references/roles/planner.md) from the installed bundle. Read the idea, direction, project instructions and relevant existing behavior. Use [artifact contract](../project-setup/references/artifacts.md) for persistence.
 
 1. Scope one coherent change; do not reopen app discovery.
 2. Draft observable behavior and acceptance criteria with stable IDs. Separate needs from implementation suggestions.

@@ -5,7 +5,7 @@ description: Establish an app direction or assess new ideas without restarting d
 
 # Wayfinder
 
-Act as Planner. Read project instructions and the current direction before asking questions. Use [artifact contract](../project-setup/references/artifacts.md) when saving.
+Act as Planner. Read [Planner instructions](../autonomous-implement/references/roles/planner.md) from the installed bundle. Read project instructions and the current direction before asking questions. Use [artifact contract](../project-setup/references/artifacts.md) when saving.
 
 1. Identify new-app or new-idea mode. Reuse settled decisions and inspect only relevant artifacts/code.
 2. State audience, problem, core usage loop, constraints and smallest useful release. Separate requirements, proposals and assumptions.

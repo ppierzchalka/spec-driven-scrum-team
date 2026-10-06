@@ -1,13 +1,13 @@
 # Spec-Driven Scrum Team
 
-A reusable scrum-like multi-agent development team for opencode: Planner plus seven execution agents, planning skills and `/autonomous-implement` for prepared tracker or local work, and an interactive installer for target repos.
+A reusable scrum-like multi-agent development team across supported multi-agent harnesses: Planner plus seven execution agents, planning skills and `/autonomous-implement` for prepared tracker or local work, and an interactive installer for target repos.
 
 ## Language
 
 ### The team
 
 **Agent**:
-One of the eight fixed opencode agents this repo installs: `planner`, `lead`, `architect`, `security`, `ux`, `tester`, `developer`, `reviewer`. Each is a markdown file under the target repo's `.opencode/agents/`.
+One of the eight canonical agents this repo installs: `planner`, `lead`, `architect`, `security`, `ux`, `tester`, `developer`, `reviewer`. Source instructions are Markdown; the selected harness adapter renders native Markdown/YAML or TOML definitions.
 _Avoid_: bot, role
 
 **Team**:

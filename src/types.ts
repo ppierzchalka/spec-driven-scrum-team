@@ -6,6 +6,7 @@ export interface AgentChoice {
 export type TeamConfig = Record<string, AgentChoice>;
 
 export interface InstallOptions {
+  harness?: import('./harness.js').Harness;
   definitionsDir: string;
   skillDir: string;
   config: TeamConfig;

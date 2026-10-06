@@ -12,6 +12,8 @@ Dependents start from usable verified prerequisite commits. Multiple parents nee
 
 ## Delivery
 
+Ask for the mode before execution unless already supplied. Stack/consolidate only on explicit selection, including later on-demand changes. A batch alone chooses neither.
+
 - Local: leave scoped changes/integration plan; no implicit commit/push.
 - Separate: independent PRs target selected base; dependent PR bases must contain prerequisites.
 - Stacked: dependent PR targets predecessor branch, with only its incremental diff relative to that base. Multiple parents need an integration base or consolidation. Record merge order; update descendants after parent merge without unapproved force pushes.

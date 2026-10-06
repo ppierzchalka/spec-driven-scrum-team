@@ -1,0 +1,67 @@
+import { stringify as yamlStringify } from 'yaml';
+import { parse as tomlParse, stringify as tomlStringify } from 'smol-toml';
+import type { AgentChoice } from './types.js';
+
+export const HARNESS_NAMES = ['opencode', 'claude-code', 'codex', 'antigravity', 'copilot'] as const;
+export type Harness = typeof HARNESS_NAMES[number];
+
+export const HARNESS_LAYOUTS: Record<Harness, { agents: string; skills: string; config: string; extension: string }> = {
+  opencode: { agents: '.opencode/agents', skills: '.opencode/skills', config: '.opencode/team.config.json', extension: '.md' },
+  'claude-code': { agents: '.claude/agents', skills: '.claude/skills', config: '.claude/team.config.json', extension: '.md' },
+  codex: { agents: '.codex/agents', skills: '.agents/skills', config: '.codex/team.config.json', extension: '.toml' },
+  antigravity: { agents: '.agents/agents', skills: '.agents/skills', config: '.agents/team.config.json', extension: '.md' },
+  copilot: { agents: '.github/agents', skills: '.github/skills', config: '.github/team.config.json', extension: '.agent.md' },
+};
+
+export function isHarness(value: string): value is Harness {
+  return HARNESS_NAMES.some((name) => name === value);
+}
+
+export function supportsEffort(harness: Harness): boolean {
+  return harness === 'opencode' || harness === 'codex';
+}
+
+export function locateInstructions(body: string, harness: Harness): string {
+  return body.replaceAll('skills/autonomous-implement/', HARNESS_LAYOUTS[harness].skills + '/autonomous-implement/')
+    .replaceAll('skills/wayfinder/', HARNESS_LAYOUTS[harness].skills + '/wayfinder/')
+    .replaceAll('skills/refine/', HARNESS_LAYOUTS[harness].skills + '/refine/')
+    .replaceAll('skills/plan/', HARNESS_LAYOUTS[harness].skills + '/plan/')
+    .replaceAll('skills/project-setup/', HARNESS_LAYOUTS[harness].skills + '/project-setup/');
+}
+
+export function applyHarnessChoice(metadata: Record<string, unknown>, choice: AgentChoice | undefined, harness: Harness): void {
+  const modelKey = 'model';
+  const effortKey = harness === 'codex' ? 'model_reasoning_effort' : 'reasoningEffort';
+  if (choice?.model) metadata[modelKey] = choice.model;
+  else delete metadata[modelKey];
+  if (supportsEffort(harness) && choice?.reasoningEffort) metadata[effortKey] = choice.reasoningEffort;
+  else delete metadata[effortKey];
+}
+
+export function renderAgent(name: string, description: string, body: string, choice: AgentChoice | undefined, harness: Harness): string {
+  const primary = name === 'planner' || name === 'lead';
+  const metadata: Record<string, unknown> = { name, description };
+  if (harness === 'opencode') metadata.mode = primary ? 'primary' : 'all';
+  if (harness === 'antigravity') {
+    metadata.mainAgent = primary;
+    metadata.subagent = true;
+    metadata.tools = ['view_file', 'grep_search', 'run_command', 'list_dir'];
+    if (['planner', 'lead', 'developer', 'tester'].includes(name)) {
+      (metadata.tools as string[]).push('replace_file_content', 'write_to_file');
+    }
+    if (name === 'lead') (metadata.tools as string[]).push('invoke_subagent');
+  }
+  if (harness === 'copilot' && name === 'lead') {
+    metadata.tools = ['agent', 'read', 'search', 'edit', 'execute'];
+  }
+  applyHarnessChoice(metadata, choice, harness);
+  const instructions = locateInstructions(body, harness);
+  if (harness === 'codex') return tomlStringify({ ...metadata, developer_instructions: instructions } as Parameters<typeof tomlStringify>[0]);
+  return '---\n' + yamlStringify(metadata).trimEnd() + '\n---\n' + instructions;
+}
+
+export function updateTomlChoice(content: string, choice: AgentChoice | undefined): string {
+  const data = tomlParse(content);
+  applyHarnessChoice(data, choice, 'codex');
+  return tomlStringify(data);
+}

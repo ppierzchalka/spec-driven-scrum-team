@@ -2,25 +2,52 @@
 
 ## Models and updated prompts
 
-Run `npm run setup -- /path/to/target-repo` from this tool repo. Select an agent, then **Model**. Type part of a provider or model ID (for example `muse` or `openai/gpt`) to filter the list, use arrow keys to select, and press Enter. Clear the search to find **Don't set** or **Type your own model id…**.
+Run `npm run setup -- /path/to/target-repo` from this tool repo. First select one harness: OpenCode, Claude Code, Codex, Antigravity or Copilot. Then select an agent and **Model**. OpenCode enumerates its authenticated model catalog with search. Other harnesses accept their native model ID manually and default to inheritance; no OpenCode provider IDs are copied across. Reasoning effort is emitted only for OpenCode/Codex. Other adapters omit unsupported effort fields.
 
-To apply updated canonical prompts to an existing install, keep **Overwrite instructions** set to **yes** for each agent you want updated. Choose **no** to preserve a locally edited prompt. The skill and its shared `TEAM-POLICY.md` are copied on each install. Open a fresh opencode session after reinstalling.
+To apply updated canonical prompts to an existing install, keep **Overwrite instructions** set to **yes** for each agent you want updated. Choose **no** to preserve a locally edited prompt. The five skills and shared policy are copied on each install. Open a fresh session in the selected harness after reinstalling.
+
+## Selected harness installation
+
+One setup invocation installs only the selected harness. Re-run to add another explicitly; existing installations are not removed or changed. Shared source agent instructions are rendered into native definitions:
+
+| Harness | Native agents | Skills | Saved installer choices |
+| --- | --- | --- | --- |
+| OpenCode | .opencode/agents/*.md | .opencode/skills/ | .opencode/team.config.json |
+| Claude Code | .claude/agents/*.md | .claude/skills/ | .claude/team.config.json |
+| Codex | .codex/agents/*.toml | .agents/skills/ | .codex/team.config.json |
+| Antigravity | .agents/agents/*.md | .agents/skills/ | .agents/team.config.json |
+| Copilot | .github/agents/*.agent.md | .github/skills/ | .github/team.config.json |
+
+The JSON file stores installer choices, not a runtime configuration. Native definitions contain the supported model settings. The installer never edits .gitignore, removes tracked files, enables runtime features, or changes permissions globally.
+
+For noninteractive installation use `npm run setup -- /path/to/repo --harness=codex --defaults` (replace codex as needed). Without --harness, interactive setup asks; legacy --defaults retains OpenCode for compatibility. Non-OpenCode defaults inherit the parent model.
+
+Skills include portable role instructions in autonomous-implement/references/roles/. Native custom agents are preferred; where the harness exposes general subagents instead of named roles, Lead supplies these instructions to native subagents. Multi-agent capability remains required: no silent single-agent substitute. Planner/Lead availability in primary-agent menus varies; invoking their planning/execution skills loads the appropriate instructions regardless of menu support.
+
+Discovery depends on the installed harness version, workspace trust and native multi-agent access. CLI and GUI clients must open the same repository. The adapters are format/install integrations, not implementations of each harness's runtime.
+
+Sources checked for this layout:
+- [OpenCode agents](https://opencode.ai/docs/agents/) and [skills](https://opencode.ai/docs/skills/)
+- [Claude Code subagents](https://code.claude.com/docs/en/sub-agents) and [skills](https://code.claude.com/docs/en/skills)
+- [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+- [Antigravity subagents](https://antigravity.google/docs/subagents/) and [skills](https://antigravity.google/docs/skills/)
+- [Copilot custom agents](https://code.visualstudio.com/docs/agent-customization/custom-agents) and [skills](https://code.visualstudio.com/docs/agent-customization/agent-skills)
 
 ## Planning and execution
 
-Use the primary **Planner** for /wayfinder (direction/new ideas), /refine (one behavior contract), /plan (specs and Tickets), and /project-setup (artifact/tracker conventions). Use primary **Lead** with /autonomous-implement for ready Tickets. You can enter at any stage; existing mature specs do not require repeated discovery. Both agents have independent model/effort settings in the installer.
+Use **Planner** for /wayfinder (direction/new ideas), /refine (one behavior contract), /plan (specs and Tickets), and /project-setup (artifact/tracker conventions). Use **Lead** with /autonomous-implement for ready Tickets. You can enter at any stage; existing mature specs do not require repeated discovery. Both agents have independent model/effort settings in the installer.
 
 Wayfinder and Refine default to at most three consequential questions per round and two rounds before a provisional result. Unknown blockers remain explicit; the budget does not license guessing. Planner saves stable criteria, dependencies and readiness; Lead consumes references rather than the planning conversation.
 
-At handover, Lead proposes one batch contract covering all six execution roles, independent proposal candidates/evaluator, concurrency, worktrees, checks, limits, PR mode and scoped permissions. Explicit user selections already apply; only missing/material choices need confirmation. Do not repeat configuration per Ticket or unchanged fix loop.
+At handover, Lead proposes one batch contract explicitly asking for local/separate/stacked/consolidated delivery and covering all six execution roles, independent proposal candidates/evaluator, concurrency, worktrees, checks, limits, PR mode and scoped permissions. Explicit user selections already apply; only missing/material choices need confirmation. Do not repeat configuration per Ticket or unchanged fix loop.
 
 Recommend Developer + Reviewer for routine work. Enable Tester for independent behavior/test design, Architect for structural decisions, Security for actual trust boundaries, UX for consequential interaction/design work. Independent read-only analysis can run concurrently when inputs permit. Selected roles may produce two isolated proposals with distinct lenses, evaluated once before implementation. Code/test writing stays single-owner.
 
-One Lead manages the dependency frontier; no Lead-per-Ticket by default. One Ticket uses the current checkout; concurrent Tickets use isolated worktrees. Choose local, separate PRs, stacked PRs or one consolidated PR. Consolidation requires assembled-result verification and integration review. Deployment/cleanup are separate choices.
+One Lead manages the dependency frontier; no Lead-per-Ticket by default. One Ticket uses the current checkout; concurrent Tickets use isolated worktrees. Lead asks you to choose local, separate PRs, stacked PRs or one consolidated PR before execution unless already specified. Stack/consolidate only on explicit selection; later on-demand changes are also supported without auto-closing PRs or deleting branches. Consolidation requires assembled-result verification and integration review. Deployment/cleanup are separate choices.
 
 These are prompt-driven protocols, not a new scheduling daemon or tracker API client. Trackers use the project's available authorized tools. Usage reporting records actual data where available and unknown otherwise; monetary ceilings need runtime metering to be hard limits.
 
-## Provider-balanced model defaults
+## OpenCode provider-balanced model defaults
 
 The default allocation puts OpenAI capacity into planning, architecture, and UX; OpenCode Go handles implementation/tests, and OpenCode Go/Zen handles review/security. Effort is selected per role rather than raised uniformly. It is a routing policy, not a benchmark or a guarantee about a model's capabilities, usage limits, or billing.
 

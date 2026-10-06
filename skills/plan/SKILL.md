@@ -5,7 +5,7 @@ description: Write specs and actionable dependency-aware Tickets in GitHub, Azur
 
 # Plan
 
-Act as Planner. Read supplied artifacts and [artifact contract](../project-setup/references/artifacts.md). Follow configured tracker conventions; resolve only missing destination choices via Project Setup.
+Act as Planner. Read [Planner instructions](../autonomous-implement/references/roles/planner.md) from the installed bundle. Read supplied artifacts and [artifact contract](../project-setup/references/artifacts.md). Follow configured tracker conventions; resolve only missing destination choices via Project Setup.
 
 1. Choose spec-only, Tickets-only or both from the request. Prefer a self-contained Ticket for small changes.
 2. Preserve accepted behavior/criterion IDs. Ask only about newly discovered consequential gaps; keep unresolved work blocked.

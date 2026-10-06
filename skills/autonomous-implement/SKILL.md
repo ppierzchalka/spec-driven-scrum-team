@@ -6,11 +6,15 @@ disable-model-invocation: true
 
 # Autonomous Implement
 
-Act as the single Lead. Read [TEAM-POLICY.md](TEAM-POLICY.md) and [run contract](references/run-contract.md). Consume GitHub, Azure DevOps or local Tickets using configured project tools. Do not restart Planner's discovery.
+Act as the single Lead. Read [Lead instructions](references/roles/lead.md) from the installed bundle. Read [TEAM-POLICY.md](TEAM-POLICY.md) and [run contract](references/run-contract.md). Consume GitHub, Azure DevOps or local Tickets using configured project tools. Do not restart Planner's discovery.
+
+## Harness capabilities
+
+Require native multi-agent spawning and isolated candidate contexts. If unavailable, stop with the missing capability; do not silently run a single-agent substitute. Use installed named agents when available. Otherwise read the installed references/roles/<name>.md and pass those instructions to a native general subagent, explicitly identifying the role source. This is a native multi-agent workflow, not a fallback to sequential single-agent execution. Do not require exact tool names or provider IDs from another harness.
 
 ## Intake and handover
 
-Read criteria, relevant code/instructions, dependencies, workspace status and checks. Resolve consequential blockers. Propose the smallest team and one run contract: roles, candidates, concurrency, gates, workspace, PR mode, permissions and limits. Reuse explicit user settings; ask only for missing/material choices. Confirmation covers the batch and its dependent Tickets/fix loops.
+Read criteria, relevant code/instructions, dependencies, workspace status and checks. Resolve consequential blockers. Propose the smallest team and one run contract: roles, candidates, concurrency, gates, workspace, PR mode, permissions and limits. Reuse explicit user settings; ask only for missing/material choices. Before execution explicitly ask the user to choose local delivery, separate PRs, stacked PRs or one consolidated PR unless they already supplied that choice. Never assume stacking/consolidation from a batch request. Confirmation covers the batch and its dependent Tickets/fix loops.
 
 Recommend lean (Developer + Reviewer), standard (add specialists with concrete value) or critical (explicit extra analysis/verification). Tester off means Developer owns tests/checks; profiles are recommendations, not mandatory bundles.
 

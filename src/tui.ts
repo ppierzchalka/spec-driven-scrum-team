@@ -3,8 +3,16 @@ import { execFileSync } from 'node:child_process';
 import { availableModels, deriveEffortLevels, detectEnvProviders, detectConfigProviders } from './model-catalog.js';
 import { seedDefaults, resolveDefault, resetAgent, resetAllToDefaults } from './defaults.js';
 import type { TeamConfig } from './types.js';
+import { HARNESS_NAMES, supportsEffort, type Harness } from './harness.js';
 
 export const AGENT_NAMES = ['planner', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
+
+export async function selectHarness(): Promise<Harness> {
+  return guard(await select<Harness>({
+    message: 'Install for which harness?',
+    options: HARNESS_NAMES.map((value) => ({ value, label: value })),
+  }));
+}
 
 export interface TuiResult {
   config: TeamConfig;
@@ -36,7 +44,7 @@ export function enumerateAvailableModels(): string[] {
 }
 
 function currentHint(choice: { model?: string; reasoningEffort?: string } | undefined): string {
-  if (!choice?.model) return 'unset (opencode default)';
+  if (!choice?.model) return 'unset (inherit harness model)';
   return choice.reasoningEffort ? `${choice.model} @ ${choice.reasoningEffort}` : choice.model;
 }
 
@@ -44,7 +52,16 @@ async function pickModel(
   name: string,
   config: TeamConfig,
   models: string[],
+  harness: Harness,
 ): Promise<void> {
+  if (harness !== 'opencode') {
+    const model = guard(await text({
+      message: `Native model ID for ${name} (${harness}); blank = inherit`,
+      initialValue: config[name]?.model ?? '',
+    })).trim();
+    config[name] = { ...config[name], model: model || undefined };
+    return;
+  }
   const choice = guard(
     await autocomplete<string>({
       message: `Model for ${name}`,
@@ -103,26 +120,27 @@ async function configureAgent(
   config: TeamConfig,
   overwrite: Record<string, boolean>,
   models: string[],
+  harness: Harness,
 ): Promise<void> {
   let back = false;
   while (!back) {
     const current = config[name] ?? {};
-    const defaultChoice = resolveDefault(name, models);
+    const defaultChoice = harness === 'opencode' ? resolveDefault(name, models) : undefined;
     const option = guard(
       await select<string>({
         message: `${name} — ${currentHint(current)}`,
         options: [
-          { value: 'model', label: 'Model', hint: current.model ?? 'unset (opencode default)' },
-          { value: 'effort', label: 'Reasoning effort', hint: current.reasoningEffort ?? 'not set' },
+          { value: 'model', label: 'Model', hint: current.model ?? 'unset (inherit harness model)' },
+          ...(supportsEffort(harness) ? [{ value: 'effort', label: 'Reasoning effort', hint: current.reasoningEffort ?? 'not set' }] : []),
           { value: 'overwrite', label: 'Overwrite instructions', hint: overwrite[name] ? 'yes (canonical prompt)' : 'no (keep my edits)' },
-          { value: 'reset', label: 'Reset to default', hint: defaultChoice ? `${defaultChoice.model}${defaultChoice.reasoningEffort ? ` @ ${defaultChoice.reasoningEffort}` : ''}` : 'no default available' },
+          { value: 'reset', label: harness === 'opencode' ? 'Reset to default' : 'Reset to inherited model', hint: defaultChoice ? `${defaultChoice.model}${defaultChoice.reasoningEffort ? ` @ ${defaultChoice.reasoningEffort}` : ''}` : 'no default available' },
           { value: 'back', label: 'Back' },
         ],
       }),
     );
     switch (option) {
       case 'model':
-        await pickModel(name, config, models);
+        await pickModel(name, config, models, harness);
         break;
       case 'effort':
         await pickEffort(name, config);
@@ -131,8 +149,9 @@ async function configureAgent(
         overwrite[name] = !overwrite[name];
         break;
       case 'reset': {
-        const reset = resetAgent(config, name, models);
-        note(reset ? `Reset ${name} to ${reset.model}${reset.reasoningEffort ? ` @ ${reset.reasoningEffort}` : ''}.` : `No default available for ${name} — keeping current choice.`);
+        const reset = harness === 'opencode' ? resetAgent(config, name, models) : undefined;
+        if (harness !== 'opencode') config[name] = {};
+        note(harness !== 'opencode' ? `Reset ${name} to inheritance.` : reset ? `Reset ${name} to ${reset.model}${reset.reasoningEffort ? ` @ ${reset.reasoningEffort}` : ''}.` : `No default available for ${name} — keeping current choice.`);
         break;
       }
       case 'back':
@@ -142,12 +161,13 @@ async function configureAgent(
   }
 }
 
-export async function runTui(options: { existing: TeamConfig }): Promise<TuiResult> {
+export async function runTui(options: { existing: TeamConfig; harness?: Harness }): Promise<TuiResult> {
   intro('Spec-Driven Scrum Team');
 
-  const models = enumerateAvailableModels();
-  const config = seedDefaults(options.existing, models);
-  if (!config.ux?.model) {
+  const harness = options.harness ?? 'opencode';
+  const models = harness === 'opencode' ? enumerateAvailableModels() : [];
+  const config = harness === 'opencode' ? seedDefaults(options.existing, models) : structuredClone(options.existing);
+  if (harness === 'opencode' && !config.ux?.model) {
     note('No recommended Sol model is available for UX. An unset UX model inherits opencode’s current model; select a suitable model explicitly before running design work.', 'UX model selection');
   }
   const overwrite: Record<string, boolean> = {};
@@ -164,7 +184,7 @@ export async function runTui(options: { existing: TeamConfig }): Promise<TuiResu
             label: name,
             hint: currentHint(config[name]),
           })),
-          { value: '__reset_all__', label: 'Reset all to defaults', hint: 'restore recommended models, discarding manual picks' },
+          { value: '__reset_all__', label: harness === 'opencode' ? 'Reset all to defaults' : 'Reset all to inherited models', hint: 'discard manual model picks' },
           { value: '__install__', label: 'Install & exit', hint: 'write files into the target repo' },
         ],
       }),
@@ -174,13 +194,13 @@ export async function runTui(options: { existing: TeamConfig }): Promise<TuiResu
       break;
     }
     if (agent === '__reset_all__') {
-      const reset = resetAllToDefaults(config, AGENT_NAMES, models);
+      const reset = harness === 'opencode' ? resetAllToDefaults(config, AGENT_NAMES, models) : AGENT_NAMES.map((name) => { config[name] = {}; return name; });
       note(reset.length > 0
         ? `Reset to defaults: ${reset.join(', ')}.`
         : 'No defaults available for resolved models — nothing changed.');
       continue;
     }
-    await configureAgent(agent, config, overwrite, models);
+    await configureAgent(agent, config, overwrite, models, harness);
   }
 
   outro('Install complete.');
