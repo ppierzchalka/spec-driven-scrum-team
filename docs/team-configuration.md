@@ -47,7 +47,7 @@ Recommend Developer + Reviewer for routine work. Enable Tester for independent b
 
 One Lead manages the dependency frontier; no Lead-per-Ticket by default. One Ticket uses the current checkout; concurrent Tickets use isolated worktrees. Lead asks you to choose local, separate PRs, stacked PRs or one consolidated PR before execution unless already specified. Stack/consolidate only on explicit selection; later on-demand changes are also supported without auto-closing PRs or deleting branches. Consolidation requires assembled-result verification and integration review. Deployment/cleanup are separate choices.
 
-These are prompt-driven protocols, not a new scheduling daemon or tracker API client. Trackers use the project's available authorized tools. Usage reporting records actual data where available and unknown otherwise; monetary ceilings need runtime metering to be hard limits.
+These are prompt-driven protocols, not a new scheduling daemon or tracker API client. Trackers use the project's available authorized tools. Usage reporting is requested only for metrics/budgets and records actual data where available and unknown otherwise; monetary ceilings need runtime metering to be hard limits.
 
 ## OpenCode provider-balanced model defaults
 
@@ -123,7 +123,7 @@ See the installed run-contract.md, proposals.md, worktrees.md and usage.md for e
 
 The local catalog includes `opencode-go/glm-5.2` with `high` and `max` variants, and the effort picker supports them. “Max” is an effort setting, not a separately named model. Pricing/quota research and replacement recommendations are in [research/glm-opencode-go.md](research/glm-opencode-go.md). It is available as an explicit experiment; the current role defaults use the agreed matrix above.
 
-Every role has an ordered workflow with completion criteria. Results use a common task-fit, outcome, scope, findings, verification, remaining-work, and next-owner format. Findings have consistent severity; Reviewer must explicitly conclude approved, changes required, or blocked.
+Every role has an ordered workflow with completion criteria. Default results are compact: changes/decision, versioned verification evidence and blockers; detailed structured reports are conditional. Findings have consistent severity; Reviewer must explicitly conclude approved, changes required, or blocked.
 
 Lead records the confirmed configuration separately from `team.config.json`, which remains the installer's per-agent model settings. The configuration covers all six toggles, candidate/evaluator choices, concurrency, scope, workspace/base, delivery mode, checks, bounds, command restrictions and publication permissions. See the installed skill's `references/run-contract.md` for the exact startup question and dispatch packet.
 
@@ -157,3 +157,13 @@ Toady refers to itself in third person and uses brief, comic villain titles base
 | Antigravity | `.agents/rules/toady.md` with `trigger: always_on` |
 
 Existing instructions outside the marked block are preserved. Disabling removes only the marked persona block/entry. Each harness saves its own switch beside its team config; other installed harnesses are not reconfigured. Shared native rule files such as `AGENTS.md` may also be discovered by other tools according to their own compatibility rules; these are repo-level instructions, not workstation-global preferences. Malformed managed blocks and unmanaged conflicting Antigravity rules fail without replacement.
+
+## Compact execution protocol
+
+Lead classifies each task as small, standard or complex/high-risk based on scope, uncertainty and risk; explicit user choices remain authoritative. Every class preserves required gates and independent review. Classification changes recommended team/context depth, not permissions.
+
+All roles load the short operating core once per context. Expanded policy, framework, proposal, delivery and usage references are read only when relevant. For a single local task, Lead keeps the agreed configuration and final evidence in one execution/result section on the existing task. Specialists return brief chat handoffs; no mandatory impl_notes, review_findings, fit headers, run report or empty metrics file. Batch graphs/shared settings remain where needed for coordination.
+
+Developer verifies final behavior; baseline checks are conditional. Reviewer independently inspects the actual diff, criteria and tests, reusing reliable evidence for that version. Reviewer reruns checks for stale/missing/unreliable evidence, suspicious behavior or an explicit independent gate. Lead does not rerun already verified checks after review of an unchanged result. Integration or fixes that invalidate evidence still require affected/assembled checks. Rereview defaults to correction deltas.
+
+Reinstall with canonical role overwrite enabled to receive these shorter instructions; preserved custom prompts can retain the old reporting protocol.

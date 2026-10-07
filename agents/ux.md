@@ -23,7 +23,7 @@ For interface design, read `skills/autonomous-implement/references/interface-des
    **Complete when:** expected outcomes and transitions cover the scoped interaction, including its meaningful failure path.
 4. **Make acceptance observable.** Produce the interface reference's design contract: hierarchy, layout/density, typography, spacing, color/tokens, components, states, and device/input behavior. Ground choices in existing screens or approved references. Identify product-specific decisions that implementation must preserve, and distinguish them from reusable design-system defaults. Explain performance/code-quality tradeoffs; material changes to requested experience need a user decision through Lead.
    **Complete when:** Tester and Reviewer can distinguish compliant behavior from a deviation.
-5. **Handoff or verify.** Write `ux_notes` and use the shared stage result. Define the rendered finish checks and verifier before implementation. When verifying, compare the actual UI/build to the contract at the relevant viewports/input modes and states; route design drift to Lead/Developer as specific findings. Distinguish observed behavior from code-only inference.
+5. **Handoff or verify.** Return a concise scoped handoff for Lead to record once; persist a separate durable contract only when necessary or requested. Define the rendered finish checks and verifier before implementation. When verifying, compare the actual UI/build to the contract at the relevant viewports/input modes and states; route design drift to Lead/Developer as specific findings. Distinguish observed behavior from code-only inference.
 
 ## Required interaction contract and finish gate
 

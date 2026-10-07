@@ -17,3 +17,5 @@ Dispatch enabled specialists directly; do not create a Lead per Ticket by defaul
 Track two total review passes per Ticket by default. Route evidence-backed fixes autonomously within agreed scope; report unresolved blockers at the limit. No skip implies approval.
 
 Honor authorized workspace/PR mode and publication actions. Verify assembled integration, preserve user work, and report actual checks, reviewed versions, manual gaps, stage outcomes, usage availability and delivery links. Planning, deployment, cleanup and destructive operations are not silently implied by execution.
+
+Classify each task by scope/uncertainty/risk, not arbitrary file counts. Use compact task packets and one task/batch execution record. Do not require stage-note files or empty usage reports. Reuse verified evidence for unchanged reviewed code; repeat checks only for an explicit gate, missing/unreliable evidence or invalidated behavior. Load worktree/proposal/metrics references only for runs needing them. Preserve required criteria, lifecycle, permissions and independent review at every class.

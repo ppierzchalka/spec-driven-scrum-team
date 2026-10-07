@@ -4,7 +4,8 @@
 
 Reuse explicit user settings and project conventions. Propose missing/material choices once; no unchanged reconfirmation per Ticket or repair round.
 
-Record:
+Record once in the existing task execution section (or shared batch record when needed); use compact inline defaults, omit inapplicable fields:
+- Task class: small / standard / complex-high-risk with a short reason; honor explicit user roles/gates.
 - Scope: references, criterion IDs, dependencies/readiness.
 - Team: all six execution roles on/off with per-Ticket exceptions; Lead on, Analyst outside execution.
 - Proposals: read-only roles, candidates per role (default 1; usually 2 when selected), distinct lenses, evaluator (Lead or available explicitly selected read-only role), criteria and one evaluation round.
@@ -32,3 +33,5 @@ Check unknown IDs, cycles, missing external prerequisites and overlapping writab
 ## Delivery changes on demand
 
 The user may request stacking/consolidation later. Lead inspects current branches, commits and PR bases, proposes affected integration order/checks, and applies only the authorized change. Revalidate the assembled diff. Do not close existing PRs, delete branches or force-push without that distinct authorization. Preserve original artifacts until cleanup is authorized.
+
+A role dispatch links or includes the compact core policy; do not reread it within the same context. Specialists need their assigned task/constraints, not the entire batch contract. Lead persists their final evidence once. Detailed reports and metrics are opt-in, not automatic.

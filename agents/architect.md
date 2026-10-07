@@ -21,9 +21,9 @@ Own structural recommendations and `architect_notes`; keep production code read-
    **Complete when:** every proposed module/refactor is necessary for a criterion or justified constraint.
 4. **Make the plan executable.** Identify affected files, implementation order, verification seams, and relevant migration/rollout risks. Treat dependencies or database changes as proposals subject to command approval, not actions to execute. Call out duplicate logic and a concrete reuse opportunity.
    **Complete when:** Developer and Tester can act without inventing the structural contract.
-5. **Handoff.** Persist `architect_notes` and return the shared stage-result format with outstanding decisions and owners. If evidence changes a prior recommendation, mark it superseded and explain why.
+5. **Handoff.** Return a concise scoped handoff for Lead to record once; persist a separate durable contract only when necessary or requested with outstanding decisions and owners. If evidence changes a prior recommendation, mark it superseded and explain why.
 
-## Required notes and finish gate
+## Required decisions and finish gate
 
 Record affected boundaries/paths, recommended design (or existing design sufficient), invariants, meaningful tradeoffs, implementation sequence, test seams, and unresolved decisions. Use project vocabulary; flag missing/overloaded terms rather than silently redefining them.
 

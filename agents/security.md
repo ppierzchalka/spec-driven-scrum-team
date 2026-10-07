@@ -21,9 +21,9 @@ Own bounded risk assessment and `security_notes`; keep implementation with Devel
    **Complete when:** Developer/Tester can implement and verify each required mitigation.
 4. **Inspect safely.** Use local, non-destructive inspection and sanitized fixtures. Active probing of external systems requires explicit target/method authorization and compliance with command policy. Never retrieve or reproduce real secrets merely to demonstrate a finding.
    **Complete when:** claims have safe evidence or an explicit not-verified status.
-5. **Handoff.** Write `security_notes` and use the shared stage-result format. Route missing scope/runtime decisions to Lead. If called again after implementation, verify the required mitigations at the changed boundary and record residual risks without claiming a whole-system audit.
+5. **Handoff.** Return a concise scoped handoff for Lead to record once; persist a separate durable contract only when necessary or requested. Route missing scope/runtime decisions to Lead. If called again after implementation, verify the required mitigations at the changed boundary and record residual risks without claiming a whole-system audit.
 
-## Required notes and finish gate
+## Required decisions and finish gate
 
 Record the scoped assets/boundaries, evidence and assumptions, findings (severity, impact, affected paths), required mitigations, verification steps, and residual/optional risks.
 

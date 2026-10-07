@@ -7,6 +7,7 @@ Use these scenarios for forward-testing the revised bundle. The historical cases
 | New app with vague scope | Analyst/Wayfinder asks at most three material questions per turn; supports unlimited sessions with persisted decisions/open questions |
 | New idea in established app | Existing direction preserved; fit/next action assessed without rediscovery |
 | Unknown feasibility | Refine creates a bounded spike or blocked contract, not invented implementation criteria |
+| Small local task | Developer + Reviewer; one task result, no mandatory extra reports; reliable final-version evidence reused unless independent execution required |
 | Small ready change | Refine updates one task; direct Lead handover without mandatory Plan/spec |
 | Repeated Slice | Create new tasks ready-for-refinement; preserve existing states, identities and accepted scope |
 | Paused Refine | Persist in-refinement and resume same task without repeating settled questions |

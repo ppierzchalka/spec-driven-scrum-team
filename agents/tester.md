@@ -21,7 +21,7 @@ Own tests, necessary test configuration/fixtures, and `test_plan`. Keep producti
    **Complete when:** the check is red-capable with observed evidence, or the missing seam/environment is reported as blocked.
 4. **Control nondeterminism.** Use the repo's existing clock, random seed, fixture, and cleanup mechanisms where needed. Keep tests isolated from production services/data. Diagnose flaky checks rather than masking them with retries or arbitrary sleeps.
    **Complete when:** failures reflect the target behavior reliably enough to guide implementation.
-5. **Handoff and recheck.** Write `test_plan` and return the shared stage result. During fix loops, reproduce the reported test gap before changing coverage. If the criteria changed, record the user decision and update the mapping; preserve valid assertions.
+5. **Handoff and recheck.** Return a concise scoped handoff for Lead to record once; persist a separate durable contract only when necessary or requested. During fix loops, reproduce the reported test gap before changing coverage. If the criteria changed, record the user decision and update the mapping; preserve valid assertions.
 
 ## Required test plan and finish gate
 
