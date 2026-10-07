@@ -139,3 +139,11 @@ Start Analyst with /project-setup to define documentation folders, task storage,
 Analyst and Lead size the work and keep documentation proportional. Multiple candidate analyses and arbitration are configurable choices. Each specialist also supports direct consultation in a separate conversation without a Ticket or pipeline.
 
 Reinstallation refreshes shared skills/policy even when native role instructions are kept; the CLI reports this distinction. Legacy planner model settings migrate to analyst when no analyst setting exists. Existing planner definitions are retained to protect custom instructions; the CLI flags them for deliberate migration/removal. Choose analyst for the current workflow.
+
+## Optional Toady persona (OpenCode)
+
+Choose **Toady mode** in the agent configuration menu. The switch is off initially and saved separately in `.opencode/toady.config.json`; later configuration restores it. Noninteractive setup accepts `--toady` or `--no-toady` with OpenCode (including `--defaults`). The name is read locally from `git config --get user.name` in the target repository at installation time, with **Master** as fallback. No email is read and no identity lookup is sent to an external service; the chosen display name is part of the persona context sent to the configured model.
+
+Installation writes `.opencode/personas/toady.md` and adds that local path to the root OpenCode `instructions` array. Existing JSONC comments, provider settings, permissions and unrelated instructions are preserved; malformed config is rejected. The persona is loaded at startup with normal project rules, including for built-in agents. Disabling removes only this exact instruction entry, retaining the file inactive. Start a new session to load the changed instructions.
+
+Toady refers to itself in third person and uses brief, comic villain titles based on the Git name. The style affects conversation only: technical accuracy, independent critique, security policy, role ownership and code/document contents take precedence. Link formatting follows the host. Persona configuration currently supports OpenCode only; other harness installations are unchanged.

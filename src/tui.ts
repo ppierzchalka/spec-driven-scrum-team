@@ -15,6 +15,7 @@ export async function selectHarness(): Promise<Harness> {
 }
 
 export interface TuiResult {
+  toadyMode?: boolean;
   config: TeamConfig;
   overwrite: Record<string, boolean>;
 }
@@ -182,7 +183,7 @@ async function configureAgent(
   }
 }
 
-export async function runTui(options: { existing: TeamConfig; harness?: Harness }): Promise<TuiResult> {
+export async function runTui(options: { existing: TeamConfig; harness?: Harness; toadyMode?: boolean }): Promise<TuiResult> {
   intro('Spec-Driven Scrum Team');
 
   const harness = options.harness ?? 'opencode';
@@ -195,6 +196,7 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness 
   const overwrite: Record<string, boolean> = {};
   for (const name of AGENT_NAMES) overwrite[name] = true;
 
+  let toadyMode = options.toadyMode ?? false;
   let done = false;
   while (!done) {
     const agent = guard(
@@ -207,10 +209,12 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness 
             hint: currentHint(config[name]),
           })),
           { value: '__reset_all__', label: harness === 'opencode' ? 'Reset all to defaults' : 'Reset all to inherited models', hint: 'discard manual model picks' },
+          ...(harness === 'opencode' ? [{ value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — cartoon henchman persona' : 'off' }] : []),
           { value: '__install__', label: 'Install & exit', hint: 'write files into the target repo' },
         ],
       }),
     );
+    if (agent === '__toady__') { toadyMode = !toadyMode; continue; }
     if (agent === '__install__') {
       done = true;
       break;
@@ -226,5 +230,5 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness 
   }
 
   outro('Install complete.');
-  return { config, overwrite };
+  return { config, overwrite, toadyMode };
 }

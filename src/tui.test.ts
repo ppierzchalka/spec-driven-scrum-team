@@ -47,3 +47,10 @@ describe('selected harness TUI', () => {
     expect(text).not.toHaveBeenCalled();
   });
 });
+
+it('toggles and retains the OpenCode persona setting independently of model choices', async () => {
+  vi.mocked(select).mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__install__');
+  const result = await runTui({ existing: { lead: { model: 'vertex/gemini' } }, harness: 'opencode', toadyMode: false });
+  expect(result.toadyMode).toBe(true);
+  expect(result.config.lead?.model).toBe('vertex/gemini');
+});
