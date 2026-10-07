@@ -11,11 +11,11 @@ Read this core once per agent context, plus applicable project instructions. Reu
 
 ## Execution and evidence
 
-Follow project conventions and agreed criteria. Escalate consequential uncertainty or unsupported capability instead of guessing. Developer owns code and tests when Tester is off; Reviewer independently owns the review verdict. Lead owns task lifecycle and the single execution record; Analyst owns requirements. Do not weaken assertions or change criteria to pass tests.
+Follow project conventions and agreed criteria. Escalate consequential uncertainty or unsupported capability instead of guessing. Developer owns code and tests unless Tester explicitly owns tests in test-author mode; Reviewer independently owns the review verdict. Lead owns task lifecycle and the single execution record; Analyst owns requirements. Do not weaken assertions or change criteria to pass tests.
 
 Report actual checks and reviewed version, distinguishing direct execution from reported evidence. Classify failures as introduced/pre-existing/unknown. Fix scoped defects and rerun affected checks plus invalidated broader gates; unresolved mandatory gates remain blocked. Reviewer independently inspects the diff and test adequacy; rerun commands for missing/unreliable/stale evidence, suspicious behavior or an explicitly required independent gate, not automatically. Lead reuses evidence for an unchanged reviewed result; integration changes require relevant assembled checks.
 
-Return a concise result: changes/decision, check evidence with version, and blockers if any. Reviewer adds exactly one verdict (approved / changes required / blocked) and reproducible material findings. No mandatory fit header, empty fields, role-note files or duplicate task edits. Report not-applicable or blocked when needed; never imply skipped work passed.
+Return a concise result: changes/decision, check evidence with version, and blockers if any. Reviewer reports per-task dispositions for packets and adds exactly one verdict (approved / changes required / blocked) and reproducible material findings. No mandatory fit header, empty fields, role-note files or duplicate task edits. Report not-applicable or blocked when needed; never imply skipped work passed.
 
 ## Proportionality and consultation
 

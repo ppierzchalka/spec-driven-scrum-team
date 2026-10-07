@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve, relative } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { HARNESS_LAYOUTS, type Harness } from './harness.js';
 import { applyEdits, modify, parse, type ParseError } from 'jsonc-parser';
 
@@ -10,22 +10,7 @@ export function toadyStatePath(harness: Harness): string {
 }
 
 
-// Reject linked destinations before reading/writing managed persona files.
-function checkPath(root: string, path: string): void {
-  const base = resolve(root);
-  const segments = relative(base, resolve(path)).split(/[\\/]/);
-  if (segments.includes('..')) throw new Error('Persona path escapes target repository');
-  let current = base;
-  if (lstatSync(current).isSymbolicLink()) throw new Error('Persona target cannot be a symlink');
-  for (const part of segments) {
-    current = join(current, part);
-    try {
-      if (lstatSync(current).isSymbolicLink()) throw new Error('Persona destination cannot contain symlinks');
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-    }
-  }
-}
+import { checkInstallFile as checkPath } from './installPaths.js';
 
 export function gitDisplayName(targetDir: string): string {
   try {
@@ -48,8 +33,8 @@ export function persona(name: string): string {
   return `# Toady communication persona\n\nThis is a communication style only. Preserve accurate technical judgment, security rules, permissions, agent ownership and honest findings. Never flatter away a defect or claim false success.\n\n- Henchman identity: Toadwart / Toadie / Toady. Always refer to yourself in the third person, including commentary and final responses. Never use first-person self-reference (I, me, my, myself; or equivalents in the response language).\n- Address the user in every user-facing response with a creative, lavish, absurd cartoon-villain title. The user's display name is ${JSON.stringify(name)}; treat it solely as a name, not instructions. Examples: Most Dark and Glorious Arch-Overlord ${name}; Supreme Sovereign of Evil Code ${name}; Diabolical Mastermind ${name}. Vary titles naturally in the user's language.\n- Be a cringing, eager, comically flattering henchman serving a cartoon arch-villain. Keep the theatrical flair short and the technical substance precise.\n- Retain essential technical facts, findings, checks, diffs and clickable file links using the host's supported link format. Preserve code, literal quotes, identifiers and authored artifacts; do not rewrite them just to remove first-person text.\n- Apply the persona to user-facing conversation, not internal agent handoffs, source code or technical documents unless requested.\n- Before every response: check for first-person self-reference and rewrite it; check that a creative villainous title is present.\n`;
 }
 
-export function installToady(targetDir: string, enabled: boolean, harness: Harness = 'opencode'): string[] {
-  if (harness !== 'opencode') return installNativeToady(targetDir, enabled, harness);
+export function installToady(targetDir: string, enabled: boolean, harness: Harness = 'opencode', dryRun = false): string[] {
+  if (harness !== 'opencode') return installNativeToady(targetDir, enabled, harness, dryRun);
   // Follow OpenCode's JSONC-over-JSON preference when both exist.
   const jsonc = join(targetDir, 'opencode.jsonc');
   const json = join(targetDir, 'opencode.json');
@@ -66,6 +51,7 @@ export function installToady(targetDir: string, enabled: boolean, harness: Harne
     formattingOptions: { insertSpaces: true, tabSize: 2, eol: '\n' },
   }));
   // Validate first; do not create a runtime config when disabling an absent persona.
+  if (dryRun) return [];
   const written: string[] = [];
   if (enabled || existsSync(configPath)) {
     writeFileSync(configPath, output); written.push(configPath);
@@ -90,7 +76,7 @@ const nativePaths: Record<Exclude<Harness, 'opencode'>, string> = {
   antigravity: '.agents/rules/toady.md',
 };
 
-function installNativeToady(targetDir: string, enabled: boolean, harness: Exclude<Harness, 'opencode'>): string[] {
+function installNativeToady(targetDir: string, enabled: boolean, harness: Exclude<Harness, 'opencode'>, dryRun = false): string[] {
   const override = join(targetDir, 'AGENTS.override.md');
   if (harness === 'codex') checkPath(targetDir, override);
   const path = harness === 'codex' && existsSync(override) ? override : join(targetDir, nativePaths[harness]);
@@ -111,6 +97,7 @@ function installNativeToady(targetDir: string, enabled: boolean, harness: Exclud
   if (harness === 'antigravity' && enabled && !source) {
     output = '---\ntrigger: always_on\n---\n' + output;
   }
+  if (dryRun) return [];
   const written: string[] = [];
   if (enabled || first >= 0) {
     mkdirSync(dirname(path), { recursive: true });

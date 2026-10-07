@@ -4,7 +4,7 @@ description: Split product direction or a large feature into areas, domains and 
 ---
 # Slice
 
-Act as Analyst. Read [role instructions](../autonomous-implement/references/roles/analyst.md), selected Wayfinder artifacts and [artifact contract](../project-setup/references/artifacts.md). Reuse configured destinations; use Project Setup only for missing material choices.
+Act as Analyst. Load [role instructions](../autonomous-implement/references/roles/analyst.md) only if absent from context. Read selected Wayfinder artifacts and [artifact contract](../project-setup/references/artifacts.md). Reuse configured destinations; use Project Setup only for missing material choices.
 
 1. Select the requested scope; identify areas/domain boundaries and useful increments. Update relevant glossary, domain docs, specs or ADRs only where the decomposition adds information.
 2. Create manageable tasks, preferably vertical outcomes rather than arbitrary database/API/UI layers. Allow technical enablers or spikes when independently justified. Distinguish grouping areas from executable tasks.

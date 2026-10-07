@@ -13,6 +13,8 @@ export interface InstallOptions {
   config: TeamConfig;
   targetDir: string;
   overwrite?: Record<string, boolean>;
+  /** Explicit authorization to replace conflicting, unowned shipped skill names. */
+  replaceSkills?: boolean;
 }
 
 export interface InstallResult {

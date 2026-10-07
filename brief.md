@@ -1,3 +1,5 @@
+> **Historical proposal — superseded.** This brief records the initial OpenCode-only design, not current execution instructions. For the supported workflow read README.md and docs/team-configuration.md. Automatic stacking, stage-specific task states and mandatory note sections below are no longer defaults.
+
 # Spec‑Driven Multi‑Agent Dev Team for OpenCode
 
 This document defines a reusable, BMAD‑style multi‑agent development team tailored to my workflow, implemented entirely as OpenCode agents plus skills. It is **project‑agnostic**: the same team should work for different repos (Godot game, Next.js SaaS, etc.), with per‑repo configuration handled separately by setup skills (e.g. AI Hero /setup-* skills).
@@ -425,3 +427,4 @@ Once agents are generated from this artifact, I will be able to:
 - Install the same multi‑agent team across machines.
 - Point it at different repos (Godot game, Next.js SaaS).
 - Iterate specs with Lead and let the pipeline handle implementation while I’m away.
+

@@ -1,6 +1,6 @@
 # Worktrees and delivery
 
-Worktrees isolate Git checkouts/branches, not processes or model context. One Ticket defaults to current checkout; concurrent Tickets use separate worktrees. Selected sequential work may reuse current checkout.
+Worktrees isolate Git checkouts/branches, not processes or model context. One Ticket or coherent execution packet defaults to current checkout; concurrent writable packets use separate worktrees. Selected sequential work may reuse current checkout.
 
 ## Preparation
 
@@ -8,7 +8,7 @@ Inspect status, branches and git worktree list --porcelain. Preserve existing wo
 
 One Lead dispatches specialists directly. Serialize shared-file writes; check tooling/dependencies/environment per worktree.
 
-Dependents start from usable verified prerequisite commits. Multiple parents need an agreed integration base containing all prerequisites. If required local commits are unauthorized, report that blocker. Do not copy uncommitted changes.
+Cross-worktree dependents start from usable verified prerequisite commits; same-checkout sequential packet tasks may use verified local state after required intermediate gates. Multiple parents need an agreed integration base containing all prerequisites. If required local commits are unauthorized, report that blocker. Do not copy uncommitted changes.
 
 ## Delivery
 

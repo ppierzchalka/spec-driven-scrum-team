@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-import { text, cancel } from '@clack/prompts';
+import { text, cancel, confirm } from '@clack/prompts';
 import { dirname, join, resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { runTui, selectHarness, enumerateAvailableModels, AGENT_NAMES } from './tui.js';
-import { installTeam } from './installTeam.js';
+import { installTeam, preflightTeam, conflictingSkills } from './installTeam.js';
 import { resolveDefault } from './defaults.js';
 import { HARNESS_LAYOUTS, isHarness } from './harness.js';
 import { installToady, readToadyMode, toadyStatePath } from './toady.js';
+import { checkInstallPath } from './installPaths.js';
 import type { TeamConfig } from './types.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -51,6 +52,7 @@ async function main(): Promise<void> {
   const target = await resolveTarget(positional[0]);
 
   const configPath = join(target, HARNESS_LAYOUTS[harness].config);
+  checkInstallPath(target, configPath);
   let existing: TeamConfig = {};
   if (existsSync(configPath)) {
     existing = JSON.parse(readFileSync(configPath, 'utf8')) as TeamConfig;
@@ -87,8 +89,18 @@ async function main(): Promise<void> {
     toadyMode = tui.toadyMode ?? false;
   }
 
-  const personaPaths = (toadyMode || existsSync(join(target, toadyStatePath(harness))) || args.includes('--no-toady')) ? installToady(target, toadyMode, harness) : [];
-  const result = installTeam({ definitionsDir, skillDir, config, targetDir: target, overwrite, harness });
+  const options = { definitionsDir, skillDir, config, targetDir: target, overwrite, harness, replaceSkills: args.includes('--replace-skills') };
+  const conflicts = conflictingSkills(options);
+  if (conflicts.length && !options.replaceSkills && !useDefaults) {
+    const answer = await confirm({ message: `Adopt/replace unowned skill folders: ${conflicts.join(', ')}? Existing skill contents may be overwritten.`, initialValue: false });
+    if (answer !== true) throw new Error('Installation cancelled; no files written.');
+    options.replaceSkills = true;
+  }
+  preflightTeam(options);
+  const configurePersona = toadyMode || existsSync(join(target, toadyStatePath(harness))) || args.includes('--no-toady');
+  if (configurePersona) installToady(target, toadyMode, harness, true);
+  const result = installTeam(options);
+  const personaPaths = configurePersona ? installToady(target, toadyMode, harness) : [];
 
   console.log(`\nInstalled ${harness} into ${target}`);
   for (const path of personaPaths) console.log(`  wrote  ${path}`);

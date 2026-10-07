@@ -22,7 +22,7 @@ describe('harness installations', () => {
     });
     const layout = HARNESS_LAYOUTS[harness];
     expect(result.written).toHaveLength(8);
-    expect(result.skillPaths).toHaveLength(6);
+    expect(result.skillPaths).toHaveLength(12);
     expect(readFileSync(join(targetDir, '.gitignore'), 'utf8')).toBe('# user rules\nprivate/\n');
     for (const other of HARNESS_NAMES) {
       if (other !== harness) expect(existsSync(join(targetDir, HARNESS_LAYOUTS[other].agents))).toBe(false);
@@ -65,9 +65,9 @@ describe('harness installations', () => {
 
   it('renders native metadata rather than leaking OpenCode mode/effort', () => {
     const claude = parseAgentFile(renderAgent('reviewer', 'Review', 'Body', { model: 'sonnet', reasoningEffort: 'high' }, 'claude-code'));
-    expect(claude.frontmatter).toEqual({ name: 'reviewer', description: 'Review', model: 'sonnet' });
+    expect(claude.frontmatter).toEqual({ name: 'reviewer', description: 'Review', model: 'sonnet', disallowedTools: ['Write', 'Edit', 'NotebookEdit'] });
     const codex = parseToml(renderAgent('reviewer', 'Review', 'Body', { model: 'native', reasoningEffort: 'high' }, 'codex'));
-    expect(codex).toEqual({ name: 'reviewer', description: 'Review', model: 'native', model_reasoning_effort: 'high', developer_instructions: 'Body' });
+    expect(codex).toEqual({ name: 'reviewer', description: 'Review', model: 'native', model_reasoning_effort: 'high', sandbox_mode: 'read-only', developer_instructions: 'Body' });
   });
 
   it('inherits Copilot tools so configured tracker and MCP integrations remain available', () => {

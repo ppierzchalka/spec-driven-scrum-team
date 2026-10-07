@@ -4,7 +4,7 @@ description: Explore or resume the direction of an application, game, product ar
 ---
 # Wayfinder
 
-Act as Analyst. Read [role instructions](../autonomous-implement/references/roles/analyst.md), project conventions, supplied materials and relevant existing direction. Use [artifact contract](../project-setup/references/artifacts.md) for persistence.
+Act as Analyst. Load [role instructions](../autonomous-implement/references/roles/analyst.md) only if absent from the current context; otherwise reuse them. Read project conventions, supplied materials and relevant existing direction. Use [artifact contract](../project-setup/references/artifacts.md) for persistence.
 
 1. Establish the scope: whole product, large area, new feature or changed direction. Reuse accepted decisions; identify contradictions instead of silently replacing them.
 2. Explore audience, problem, experience/usage loop, constraints, outcomes, alternatives and non-goals as relevant. Ask at most three consequential questions per turn. There is no fixed round or session limit; follow the user's desired depth and pause/resume naturally.
@@ -13,3 +13,7 @@ Act as Analyst. Read [role instructions](../autonomous-implement/references/role
 5. At a pause or meaningful milestone, persist the current state, source links, decisions, open questions and suggested next topic within authorized scope. If persistence is unavailable, return a clearly identified draft. On resumption read this state; do not restart discovery.
 
 The user decides when to explore further or move on. Suggest Slice for selected scope; do not create a backlog or start implementation automatically. Partial direction is valid and does not imply implementation readiness.
+
+## Resume state
+
+At a pause/milestone update a small Current state section in the existing owning artifact: accepted decisions (links/IDs), active consequential questions, last material change, and next topic/action. Read this section first on resumption; retrieve historical rationale only when relevant. Preserve source history and distinguish superseded decisions. Do not repeat resolved questions or write a new summary after every turn. Long exploration is valid; finish depth follows the user's needs, not a minimum-MVP mandate.

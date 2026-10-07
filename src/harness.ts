@@ -22,12 +22,7 @@ export function supportsEffort(harness: Harness): boolean {
 }
 
 export function locateInstructions(body: string, harness: Harness): string {
-  return body.replaceAll('skills/autonomous-implement/', HARNESS_LAYOUTS[harness].skills + '/autonomous-implement/')
-    .replaceAll('skills/wayfinder/', HARNESS_LAYOUTS[harness].skills + '/wayfinder/')
-    .replaceAll('skills/slice/', HARNESS_LAYOUTS[harness].skills + '/slice/')
-    .replaceAll('skills/refine/', HARNESS_LAYOUTS[harness].skills + '/refine/')
-    .replaceAll('skills/plan/', HARNESS_LAYOUTS[harness].skills + '/plan/')
-    .replaceAll('skills/project-setup/', HARNESS_LAYOUTS[harness].skills + '/project-setup/');
+  return body.replace(/(?<![\w./-])skills\/(autonomous-implement|wayfinder|slice|refine|plan|project-setup|architecture-assess|security-assess|interface-assess|test-design|implement-task|review-change)\//g, (_, name: string) => HARNESS_LAYOUTS[harness].skills + '/' + name + '/');
 }
 
 export function applyHarnessChoice(metadata: Record<string, unknown>, choice: AgentChoice | undefined, harness: Harness): void {
@@ -65,6 +60,11 @@ export function renderAgent(name: string, description: string, body: string, cho
       (metadata.tools as string[]).push('replace_file_content');
     }
     if (name === 'lead') (metadata.tools as string[]).push('invoke_subagent');
+  }
+  if (name === 'reviewer') {
+    if (harness === 'opencode') metadata.permission = { edit: 'deny' };
+    if (harness === 'claude-code') metadata.disallowedTools = ['Write', 'Edit', 'NotebookEdit'];
+    if (harness === 'codex') metadata.sandbox_mode = 'read-only';
   }
   applyHarnessChoice(metadata, choice, harness);
   const instructions = locateInstructions(body, harness);

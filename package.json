@@ -1,7 +1,7 @@
 {
   "name": "spec-driven-scrum-team",
   "version": "0.1.0",
-  "description": "Installer + product planning and configurable eight-agent execution team with selected harness adapters",
+  "description": "Installer + product planning and skill-based procedures and configurable eight-agent execution with selected harness adapters",
   "type": "module",
   "private": true,
   "bin": {
