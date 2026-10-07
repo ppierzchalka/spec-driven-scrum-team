@@ -50,3 +50,36 @@ describe('Toady startup persona', () => {
     expect(readFileSync(join(outside, 'personas/toady.md'), 'utf8')).toBe('untouched');
   });
 });
+
+describe('native harness persona adapters', () => {
+  const layouts = [
+    ['claude-code', 'CLAUDE.md'], ['codex', 'AGENTS.md'],
+    ['copilot', '.github/copilot-instructions.md'], ['antigravity', '.agents/rules/toady.md'],
+  ] as const;
+  it.each(layouts)('installs and disables %s without replacing unrelated instructions', (harness, destination) => {
+    const root = workspace(), path = join(root, destination);
+    mkdirSync(join(path, '..'), { recursive: true });
+    const existing = harness === 'antigravity' ? '' : 'Existing company policy\n';
+    if (existing) writeFileSync(path, existing);
+    installToady(root, true, harness); installToady(root, true, harness);
+    const active = readFileSync(path, 'utf8');
+    expect(active.split('spec-driven-scrum-team:toady:start')).toHaveLength(2);
+    expect(active).toContain('third person');
+    if (harness === 'antigravity') expect(active).toMatch(/^---\ntrigger: always_on/);
+    else expect(active.startsWith(existing)).toBe(true);
+    expect(readToadyMode(root, harness)).toBe(true);
+    installToady(root, false, harness);
+    const disabled = readFileSync(path, 'utf8');
+    expect(disabled).not.toContain('Toady communication persona');
+    expect(disabled).toContain(existing);
+    expect(readToadyMode(root, harness)).toBe(false);
+  });
+  it('uses Codex override when present and keeps root AGENTS untouched', () => {
+    const root = workspace();
+    writeFileSync(join(root, 'AGENTS.override.md'), 'Override policy');
+    writeFileSync(join(root, 'AGENTS.md'), 'Base policy');
+    installToady(root, true, 'codex');
+    expect(readFileSync(join(root, 'AGENTS.override.md'), 'utf8')).toContain('Toady communication persona');
+    expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toBe('Base policy');
+  });
+});

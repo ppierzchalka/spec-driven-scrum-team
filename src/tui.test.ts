@@ -54,3 +54,10 @@ it('toggles and retains the OpenCode persona setting independently of model choi
   expect(result.toadyMode).toBe(true);
   expect(result.config.lead?.model).toBe('vertex/gemini');
 });
+
+it.each(['claude-code', 'codex', 'copilot', 'antigravity'] as const)('offers Toady for %s', async (harness) => {
+  vi.mocked(select).mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__install__');
+  const result = await runTui({ existing: {}, harness });
+  expect(result.toadyMode).toBe(true);
+  expect(vi.mocked(select).mock.calls[0][0].options.some((option) => option.value === '__toady__')).toBe(true);
+});

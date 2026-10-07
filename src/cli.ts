@@ -7,7 +7,7 @@ import { runTui, selectHarness, enumerateAvailableModels, AGENT_NAMES } from './
 import { installTeam } from './installTeam.js';
 import { resolveDefault } from './defaults.js';
 import { HARNESS_LAYOUTS, isHarness } from './harness.js';
-import { installToady, readToadyMode } from './toady.js';
+import { installToady, readToadyMode, toadyStatePath } from './toady.js';
 import type { TeamConfig } from './types.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -57,8 +57,7 @@ async function main(): Promise<void> {
   }
 
   if (args.includes('--toady') && args.includes('--no-toady')) throw new Error('Choose --toady or --no-toady');
-  if (harness !== 'opencode' && (args.includes('--toady') || args.includes('--no-toady'))) throw new Error('Toady startup persona currently supports OpenCode');
-  let toadyMode = harness === 'opencode' ? readToadyMode(target) : false;
+  let toadyMode = readToadyMode(target, harness);
   if (args.includes('--toady')) toadyMode = true;
   if (args.includes('--no-toady')) toadyMode = false;
   let config: TeamConfig;
@@ -88,7 +87,7 @@ async function main(): Promise<void> {
     toadyMode = tui.toadyMode ?? false;
   }
 
-  const personaPaths = harness === 'opencode' && (toadyMode || existsSync(join(target, '.opencode/toady.config.json')) || args.includes('--no-toady')) ? installToady(target, toadyMode) : [];
+  const personaPaths = (toadyMode || existsSync(join(target, toadyStatePath(harness))) || args.includes('--no-toady')) ? installToady(target, toadyMode, harness) : [];
   const result = installTeam({ definitionsDir, skillDir, config, targetDir: target, overwrite, harness });
 
   console.log(`\nInstalled ${harness} into ${target}`);

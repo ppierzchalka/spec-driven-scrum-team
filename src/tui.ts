@@ -209,7 +209,7 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
             hint: currentHint(config[name]),
           })),
           { value: '__reset_all__', label: harness === 'opencode' ? 'Reset all to defaults' : 'Reset all to inherited models', hint: 'discard manual model picks' },
-          ...(harness === 'opencode' ? [{ value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — cartoon henchman persona' : 'off' }] : []),
+          { value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — cartoon henchman persona' : 'off' },
           { value: '__install__', label: 'Install & exit', hint: 'write files into the target repo' },
         ],
       }),
