@@ -1,23 +1,23 @@
 # Spec-Driven Scrum Team
 
-A reusable scrum-like multi-agent development team across supported multi-agent harnesses: Planner plus seven execution agents, planning skills and `/autonomous-implement` for prepared tracker or local work, and an interactive installer for target repos.
+A reusable scrum-like multi-agent development team across supported multi-agent harnesses: Analyst plus seven execution agents, planning skills and `/autonomous-implement` for prepared tracker or local work, and an interactive installer for target repos.
 
 ## Language
 
 ### The team
 
 **Agent**:
-One of the eight canonical agents this repo installs: `planner`, `lead`, `architect`, `security`, `ux`, `tester`, `developer`, `reviewer`. Source instructions are Markdown; the selected harness adapter renders native Markdown/YAML or TOML definitions.
+One of the eight canonical agents this repo installs: `analyst`, `lead`, `architect`, `security`, `ux`, `tester`, `developer`, `reviewer`. Source instructions are Markdown; the selected harness adapter renders native Markdown/YAML or TOML definitions.
 _Avoid_: bot, role
 
 **Team**:
-Planner, seven execution agents and five skills, installed together.
+Analyst, seven execution agents and six skills, installed together.
 
 **Target repo**:
 The repository the installer runs in and installs into — the project that will use the team. Not this tool repo.
 
 **Install**:
-Run the installer CLI in a target repo: writes eight agents, five skills, and per-agent model configuration.
+Run the installer CLI in a target repo: writes eight agents, six skills, and per-agent model configuration.
 
 **Reconfigure**:
 Re-run the installer to change an agent's model or reasoning effort, and optionally overwrite its instructions.
@@ -25,8 +25,7 @@ Re-run the installer to change an agent's model or reasoning effort, and optiona
 ### Work items
 
 **Ticket**:
-A unit of work with acceptance criteria, produced by planning skills and stored in the repo's configured issue tracker.
-_Avoid_: task, issue
+A task with stable identity in the configured tracker. Slice creates it ready for refinement; Refine adds agreed behavior and acceptance criteria on the same record before it becomes ready to implement. “Task”, “Ticket” and the tracker’s native issue/work-item terminology refer to the same record.
 
 **Handover**:
 Transfer of a ready Ticket and its agreed requirements, decisions, and constraints from planning to an implementation run.

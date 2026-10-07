@@ -1,17 +1,15 @@
 ---
 name: wayfinder
-description: Establish an app direction or assess new ideas without restarting discovery. Use for early product exploration, MVP scope, or extending an existing direction.
+description: Explore or resume the direction of an application, game, product area or major feature from briefs, documents or discussion, across as many sessions as needed.
 ---
-
 # Wayfinder
 
-Act as Planner. Read [Planner instructions](../autonomous-implement/references/roles/planner.md) from the installed bundle. Read project instructions and the current direction before asking questions. Use [artifact contract](../project-setup/references/artifacts.md) when saving.
+Act as Analyst. Read [role instructions](../autonomous-implement/references/roles/analyst.md), project conventions, supplied materials and relevant existing direction. Use [artifact contract](../project-setup/references/artifacts.md) for persistence.
 
-1. Identify new-app or new-idea mode. Reuse settled decisions and inspect only relevant artifacts/code.
-2. State audience, problem, core usage loop, constraints and smallest useful release. Separate requirements, proposals and assumptions.
-3. Ask at most three consequential questions per round, with recommendations/tradeoffs. Default to two rounds, then present a provisional direction with explicit unknowns. Continue only for a named blocker or at the user's request. Never treat silence as agreement.
-4. For a new idea, propose incorporate now, backlog, spike or reject, explaining fit with existing goals/non-goals. Do not silently redefine the app.
-5. Return a short direction: goal/audience, usage loop, first release, non-goals, constraints, accepted decisions, assumptions, open questions/owners and candidate ideas.
-6. Save/update the configured direction artifact when requested; preserve accepted decisions and record changes explicitly. Do not create a Ticket for every question.
+1. Establish the scope: whole product, large area, new feature or changed direction. Reuse accepted decisions; identify contradictions instead of silently replacing them.
+2. Explore audience, problem, experience/usage loop, constraints, outcomes, alternatives and non-goals as relevant. Ask at most three consequential questions per turn. There is no fixed round or session limit; follow the user's desired depth and pause/resume naturally.
+3. Separate decisions, proposals, assumptions and unresolved questions. Consult architecture/domain specialists within authorized scope when useful; do not require architecture or exhaustive edge cases before recording direction.
+4. Maintain the smallest useful set of configured artifacts: brief/direction, spec, glossary/domain description and ADRs for significant decisions. Do not create every document type by default or a task for every question.
+5. At a pause or meaningful milestone, persist the current state, source links, decisions, open questions and suggested next topic within authorized scope. If persistence is unavailable, return a clearly identified draft. On resumption read this state; do not restart discovery.
 
-Finish at direction or provisional direction. Suggest Refine for a selected idea; do not invoke further stages or implementation automatically. Exhaustive edge cases and architecture are not prerequisites.
+The user decides when to explore further or move on. Suggest Slice for selected scope; do not create a backlog or start implementation automatically. Partial direction is valid and does not imply implementation readiness.

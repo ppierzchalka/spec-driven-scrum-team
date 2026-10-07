@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDefault, seedDefaults, resetAgent, resetAllToDefaults } from './defaults.js';
+import { migratePlannerConfig, resolveDefault, seedDefaults, resetAgent, resetAllToDefaults } from './defaults.js';
 import type { TeamConfig } from './types.js';
 
 const AVAILABLE = [
@@ -24,7 +24,7 @@ const AVAILABLE = [
 describe('resolveDefault', () => {
   it('allocates planning/design to OpenAI and implementation/checks to Muse and DeepSeek at the agreed effort', () => {
     expect(resolveDefault('lead', AVAILABLE)).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
-    expect(resolveDefault('planner', AVAILABLE)).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
+    expect(resolveDefault('analyst', AVAILABLE)).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
     expect(resolveDefault('architect', AVAILABLE)).toEqual({ model: 'openai/gpt-6-luna', reasoningEffort: 'xhigh' });
     expect(resolveDefault('security', AVAILABLE)).toEqual({ model: 'opencode-go/deepseek-v4-pro', reasoningEffort: 'high' });
     expect(resolveDefault('ux', AVAILABLE)).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
@@ -70,7 +70,7 @@ describe('resolveDefault', () => {
   });
 
   it('never defaults any role to Astra', () => {
-    for (const name of ['planner', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer']) {
+    for (const name of ['analyst', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer']) {
       expect(resolveDefault(name, ['openai/gpt-6-astra', 'opencode/gpt-6-astra'])).toBeUndefined();
     }
   });
@@ -100,7 +100,7 @@ describe('resolveDefault', () => {
 describe('seedDefaults', () => {
   it('fills every agent with a default when there is no saved config', () => {
     const seeded = seedDefaults({}, AVAILABLE);
-    for (const name of ['planner', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer']) {
+    for (const name of ['analyst', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer']) {
       expect(seeded[name]?.model).toBeTruthy();
     }
     expect(seeded.lead).toEqual({ model: 'openai/gpt-6.1-sol', reasoningEffort: 'medium' });
@@ -149,5 +149,16 @@ describe('resetAgent / resetAllToDefaults', () => {
     expect(names).toEqual(['lead', 'tester', 'ux']);
     expect(config.lead?.model).toBe('openai/gpt-6.1-sol');
     expect(config.tester?.model).toBe('opencode-go/muse-spark-1.3-contributor');
+  });
+});
+
+describe('Planner to Analyst migration', () => {
+  it('copies legacy choices without mutating the source or overriding Analyst', () => {
+    const previous = { planner: { model: 'custom/model', reasoningEffort: 'high', additionalTools: ['lookup'] } };
+    const migrated = migratePlannerConfig(previous);
+    expect(migrated.analyst).toEqual(previous.planner);
+    migrated.analyst.additionalTools?.push('other');
+    expect(previous.planner.additionalTools).toEqual(['lookup']);
+    expect(migratePlannerConfig({ ...previous, analyst: {} }).analyst).toEqual({});
   });
 });

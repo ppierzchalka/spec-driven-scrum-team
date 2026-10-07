@@ -31,3 +31,7 @@ Manual checks must name the scene/page/build, setup, input/actions, expected obs
 
 Finish when each criterion has a meaningful check with evidence or a declared limitation. A blocked test environment is not a verified red result. Production changes and overall Ticket state remain outside your ownership.
 
+
+## Independent use
+
+When consulted directly outside a pipeline, follow the shared policy’s standalone mode: answer the scoped question, request only necessary context and return findings/recommendations to the user. No Ticket or Lead is required. Persist a requested note/ADR within scope; do not initiate the implementation pipeline.

@@ -170,8 +170,8 @@ describe('installTeam', () => {
     const skill = parseAgentFile(readFileSync(result.skillPath, 'utf8'));
     expect(skill.frontmatter.name).toBe('autonomous-implement');
     expect(skill.frontmatter.description).toEqual(expect.any(String));
-    expect(readdirSync(join(destination, '.opencode/skills')).sort()).toEqual(['autonomous-implement', 'plan', 'project-setup', 'refine', 'wayfinder']);
-    expect(result.skillPaths).toHaveLength(5);
+    expect(readdirSync(join(destination, '.opencode/skills')).sort()).toEqual(['autonomous-implement', 'plan', 'project-setup', 'refine', 'slice', 'wayfinder']);
+    expect(result.skillPaths).toHaveLength(6);
     for (const path of result.skillPaths) {
       const content = readFileSync(path, 'utf8');
       expect(parseAgentFile(content).frontmatter.description).toEqual(expect.any(String));
@@ -194,13 +194,13 @@ describe('installTeam', () => {
       installTeam({
         definitionsDir: join(shippedRoot, 'agents'),
         skillDir: join(shippedRoot, 'skills/autonomous-implement'),
-        config: { planner: { model: 'custom/planning' }, lead: { model: 'custom/execution' } },
+        config: { analyst: { model: 'custom/planning' }, lead: { model: 'custom/execution' } },
         targetDir: destination,
       });
     }
     expect(readFileSync(tracker, 'utf8')).toBe('Azure project-specific fields and workflow');
     expect(readFileSync(customSkill, 'utf8')).toBe('User-owned skill');
-    expect(parseAgentFile(readFileSync(join(destination, '.opencode/agents/planner.md'), 'utf8')).frontmatter.model).toBe('custom/planning');
+    expect(parseAgentFile(readFileSync(join(destination, '.opencode/agents/analyst.md'), 'utf8')).frontmatter.model).toBe('custom/planning');
     expect(parseAgentFile(readFileSync(join(destination, '.opencode/agents/lead.md'), 'utf8')).frontmatter.model).toBe('custom/execution');
   });
 });

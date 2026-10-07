@@ -1,30 +1,11 @@
 # Issue tracker: Local Markdown
 
-Issues and specs for this repo live as markdown files in `.scratch/`.
+Tasks live at `.scratch/<feature>/issues/<NN>-<slug>.md`, one file per stable task identity. Use `Status:` with the defaults in `triage-labels.md`; record blockers separately as `Blocked:` and `Blocked by:` IDs/paths. Comments/history append under `## Comments`.
 
-## Conventions
+Documentation defaults: direction/briefs in `docs/product/`, shared specs in `docs/specs/`, decisions in `docs/adr/`, domain vocabulary in `docs/domain/glossary.md`. Existing `CONTEXT.md` remains repository-wide context. Create only useful artifacts.
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The spec is `.scratch/<feature-slug>/spec.md`
-- Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`, never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading
+Wayfinder maintains direction, decisions and resume notes, potentially over many sessions. Slice creates actual tasks ready for refinement. Refine updates those same files until ready to implement. Lead records implementation/review progress against the same identities. Optional Plan adds technical details without duplicating tasks.
 
-## When a skill says "publish to the issue tracker"
+For this repo, done requires accepted scope, passing applicable checks, independent review and merged delivery. Local completion or a published PR alone is not done. A different target repo defines its own done gate in Project Setup.
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
-
-## When a skill says "fetch the relevant ticket"
-
-Read the file at the referenced path. The user will normally pass the path or the issue number directly.
-
-## Wayfinding operations
-
-Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
-
-- **Map**: `.scratch/<effort>/map.md` (the Notes / Decisions-so-far / Fog body).
-- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
-- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
-- **Claim**: set `Status: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.
+Read existing records before writes and preserve IDs and unrelated content. Resolve task links after creation, distinguish hard dependencies from suggested order, and report any unpersisted drafts. Changing tracker destination requires explicit setup; never silently move tasks between stores.

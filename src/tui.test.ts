@@ -20,14 +20,14 @@ describe('selected harness TUI', () => {
 
   it('uses native manual model IDs without an OpenCode catalog for Codex', async () => {
     vi.mocked(select)
-      .mockResolvedValueOnce('planner')
+      .mockResolvedValueOnce('analyst')
       .mockResolvedValueOnce('model')
       .mockResolvedValueOnce('back')
       .mockResolvedValueOnce('__install__');
     vi.mocked(text).mockResolvedValueOnce('gpt-native-model');
     const existing = { lead: { model: 'existing-native-model' } };
     const result = await runTui({ existing, harness: 'codex' });
-    expect(result.config.planner).toEqual({ model: 'gpt-native-model' });
+    expect(result.config.analyst).toEqual({ model: 'gpt-native-model' });
     expect(result.config.lead).toEqual(existing.lead);
     expect(existing).toEqual({ lead: { model: 'existing-native-model' } });
     expect(autocomplete).not.toHaveBeenCalled();

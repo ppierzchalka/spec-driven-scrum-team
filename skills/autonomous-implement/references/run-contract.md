@@ -6,7 +6,7 @@ Reuse explicit user settings and project conventions. Propose missing/material c
 
 Record:
 - Scope: references, criterion IDs, dependencies/readiness.
-- Team: all six execution roles on/off with per-Ticket exceptions; Lead on, Planner outside execution.
+- Team: all six execution roles on/off with per-Ticket exceptions; Lead on, Analyst outside execution.
 - Proposals: read-only roles, candidates per role (default 1; usually 2 when selected), distinct lenses, evaluator (Lead or available explicitly selected read-only role), criteria and one evaluation round.
 - Scheduling: Ticket concurrency, independent analysis stages, shared-file ownership and separate proposal concurrency limit.
 - Workspace: one Ticket/current checkout; concurrent Tickets/isolated worktrees; bases, paths, branches.

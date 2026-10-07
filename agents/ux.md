@@ -31,3 +31,7 @@ Record **goal → entry/trigger → state/action → visible feedback → recove
 
 Finish when the scoped flow and required states are actionable and checkable, or a blocker is explicit. Do not claim visual or gameplay inspection from source code alone; leave the manual verification owner and procedure when access is unavailable.
 
+
+## Independent use
+
+When consulted directly outside a pipeline, follow the shared policy’s standalone mode: answer the scoped question, request only necessary context and return findings/recommendations to the user. No Ticket or Lead is required. Persist a requested note/ADR within scope; do not initiate the implementation pipeline.

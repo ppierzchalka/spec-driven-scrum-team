@@ -1,11 +1,11 @@
 import { autocomplete, select, text, intro, outro, cancel, note } from '@clack/prompts';
 import { execFileSync } from 'node:child_process';
 import { availableModels, deriveEffortLevels, detectEnvProviders, detectConfigProviders } from './model-catalog.js';
-import { seedDefaults, resolveDefault, resetAgent, resetAllToDefaults } from './defaults.js';
+import { migratePlannerConfig, seedDefaults, resolveDefault, resetAgent, resetAllToDefaults } from './defaults.js';
 import type { TeamConfig } from './types.js';
 import { HARNESS_NAMES, supportsEffort, type Harness } from './harness.js';
 
-export const AGENT_NAMES = ['planner', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
+export const AGENT_NAMES = ['analyst', 'lead', 'architect', 'security', 'ux', 'tester', 'developer', 'reviewer'] as const;
 
 export async function selectHarness(): Promise<Harness> {
   return guard(await select<Harness>({
@@ -187,7 +187,8 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness 
 
   const harness = options.harness ?? 'opencode';
   const models = harness === 'opencode' ? enumerateAvailableModels() : [];
-  const config = harness === 'opencode' ? seedDefaults(options.existing, models) : structuredClone(options.existing);
+  const existing = migratePlannerConfig(options.existing);
+  const config = harness === 'opencode' ? seedDefaults(existing, models) : existing;
   if (harness === 'opencode' && !config.ux?.model) {
     note('No recommended Sol model is available for UX. An unset UX model inherits opencode’s current model; select a suitable model explicitly before running design work.', 'UX model selection');
   }

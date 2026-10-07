@@ -4,10 +4,13 @@ Use these scenarios for forward-testing the revised bundle. The historical cases
 
 | Scenario | Expected behavior |
 | --- | --- |
-| New app with vague scope | Planner/Wayfinder asks at most three material questions; proposes direction within two rounds, unknowns explicit |
+| New app with vague scope | Analyst/Wayfinder asks at most three material questions per turn; supports unlimited sessions with persisted decisions/open questions |
 | New idea in established app | Existing direction preserved; fit/next action assessed without rediscovery |
 | Unknown feasibility | Refine creates a bounded spike or blocked contract, not invented implementation criteria |
-| Small ready change | Plan permits one Ticket without redundant spec |
+| Small ready change | Refine updates one task; direct Lead handover without mandatory Plan/spec |
+| Repeated Slice | Create new tasks ready-for-refinement; preserve existing states, identities and accepted scope |
+| Paused Refine | Persist in-refinement and resume same task without repeating settled questions |
+| Standalone Architect | Consult without Ticket or Lead; return recommendations/authorized ADR without starting pipeline |
 | Existing remote tracker | Project Setup reuses conventions; verifies access/mapping before writes |
 | A blocks B; C independent | One Lead runs A/C, starts B when verified A commit is usable; no wave-wide wait |
 | Fully specified run | Reuse supplied settings; no repeated startup form |

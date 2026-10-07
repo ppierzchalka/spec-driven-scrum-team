@@ -1,15 +1,7 @@
-# Triage Labels
+# Task lifecycle defaults
 
-The skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's issue tracker.
+Use the lifecycle in `skills/project-setup/references/artifacts.md`:
+`ready-for-refinement` → `in-refinement` → `ready-to-implement` → `in-progress` → `in-review` → `done`.
+`cancelled` records a deliberate decision not to continue. `blocked` is an independent marker with a reason/owner, not a replacement lifecycle status.
 
-| Label in mattpocock/skills | Label in our tracker | Meaning                                  |
-| -------------------------- | -------------------- | ---------------------------------------- |
-| `needs-triage`             | `needs-triage`       | Maintainer needs to evaluate this issue  |
-| `needs-info`               | `needs-info`         | Waiting on reporter for more information |
-| `ready-for-agent`          | `ready-for-agent`    | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
-| `wontfix`                  | `wontfix`            | Will not be actioned                     |
-
-When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
-
-Edit the right-hand column to match whatever vocabulary you actually use.
+This repo uses these exact strings in local task `Status:` lines and an optional `Blocked:` line. Existing projects map these meanings during Project Setup; do not silently overwrite their vocabulary. Remove only obsolete lifecycle labels when transitioning, preserving unrelated tags.

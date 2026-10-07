@@ -24,6 +24,7 @@ export function supportsEffort(harness: Harness): boolean {
 export function locateInstructions(body: string, harness: Harness): string {
   return body.replaceAll('skills/autonomous-implement/', HARNESS_LAYOUTS[harness].skills + '/autonomous-implement/')
     .replaceAll('skills/wayfinder/', HARNESS_LAYOUTS[harness].skills + '/wayfinder/')
+    .replaceAll('skills/slice/', HARNESS_LAYOUTS[harness].skills + '/slice/')
     .replaceAll('skills/refine/', HARNESS_LAYOUTS[harness].skills + '/refine/')
     .replaceAll('skills/plan/', HARNESS_LAYOUTS[harness].skills + '/plan/')
     .replaceAll('skills/project-setup/', HARNESS_LAYOUTS[harness].skills + '/project-setup/');
@@ -53,14 +54,14 @@ export function reconcileAntigravityTools(metadata: Record<string, unknown>, pre
 }
 
 export function renderAgent(name: string, description: string, body: string, choice: AgentChoice | undefined, harness: Harness): string {
-  const primary = name === 'planner' || name === 'lead';
+  const primary = name === 'analyst' || name === 'lead';
   const metadata: Record<string, unknown> = { name, description };
   if (harness === 'opencode') metadata.mode = primary ? 'primary' : 'all';
   if (harness === 'antigravity') {
     metadata.mainAgent = primary;
     metadata.subagent = true;
     metadata.tools = ['view_file', 'grep_search', 'run_command'];
-    if (['planner', 'lead', 'developer', 'tester'].includes(name)) {
+    if (['analyst', 'lead', 'developer', 'tester'].includes(name)) {
       (metadata.tools as string[]).push('replace_file_content');
     }
     if (name === 'lead') (metadata.tools as string[]).push('invoke_subagent');

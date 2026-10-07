@@ -4,7 +4,7 @@
 
 Run `npm run setup -- /path/to/target-repo` from this tool repo. First select one harness: OpenCode, Claude Code, Codex, Antigravity or Copilot. Then select an agent and **Model**. OpenCode enumerates its authenticated model catalog with search. Claude Code, Codex and Copilot accept native model IDs manually; Antigravity offers inherit/flash/pro tiers. All default to inheritance; no OpenCode provider IDs are copied across. Reasoning effort is emitted only for OpenCode/Codex. Other adapters omit unsupported effort fields.
 
-To apply updated canonical prompts to an existing install, keep **Overwrite instructions** set to **yes** for each agent you want updated. Choose **no** to preserve a locally edited prompt. The five skills and shared policy are copied on each install. Open a fresh session in the selected harness after reinstalling.
+To apply updated canonical prompts to an existing install, keep **Overwrite instructions** set to **yes** for each agent you want updated. Choose **no** to preserve a locally edited prompt. The six skills and shared policy are copied on each install. Open a fresh session in the selected harness after reinstalling.
 
 ## Selected harness installation
 
@@ -24,7 +24,7 @@ The installer never edits .gitignore, removes tracked files, enables runtime fea
 
 For noninteractive installation use `npm run setup -- /path/to/repo --harness=codex --defaults` (replace codex as needed). Without --harness, interactive setup asks; legacy --defaults retains OpenCode for compatibility. Non-OpenCode defaults inherit the parent model.
 
-Skills include portable role instructions in autonomous-implement/references/roles/. Native custom agents are preferred; where the harness exposes general subagents instead of named roles, Lead supplies these instructions to native subagents. Multi-agent capability remains required: no silent single-agent substitute. Planner/Lead availability in primary-agent menus varies; invoking their planning/execution skills loads the appropriate instructions regardless of menu support.
+Skills include portable role instructions in autonomous-implement/references/roles/. Native custom agents are preferred; where the harness exposes general subagents instead of named roles, Lead supplies these instructions to native subagents. Multi-agent capability remains required: no silent single-agent substitute. Analyst/Lead availability in primary-agent menus varies; invoking their planning/execution skills loads the appropriate instructions regardless of menu support.
 
 Discovery depends on the installed harness version, workspace trust and native multi-agent access. CLI and GUI clients must open the same repository. The adapters are format/install integrations, not implementations of each harness's runtime.
 
@@ -37,9 +37,9 @@ Sources checked for this layout:
 
 ## Planning and execution
 
-Use **Planner** for /wayfinder (direction/new ideas), /refine (one behavior contract), /plan (specs and Tickets), and /project-setup (artifact/tracker conventions). Use **Lead** with /autonomous-implement for ready Tickets. You can enter at any stage; existing mature specs do not require repeated discovery. Both agents have independent model/effort settings in the installer.
+Use **Analyst** for /project-setup (docs/tracker conventions), /wayfinder (direction), /slice (backlog tasks), and /refine (one task). /plan provides optional technical planning. Use **Lead** with /autonomous-implement for ready Tickets. You can enter at any stage; existing mature specs do not require repeated discovery. Both agents have independent model/effort settings in the installer.
 
-Wayfinder and Refine default to at most three consequential questions per round and two rounds before a provisional result. Unknown blockers remain explicit; the budget does not license guessing. Planner saves stable criteria, dependencies and readiness; Lead consumes references rather than the planning conversation.
+Wayfinder and Refine ask at most three consequential questions per turn and support unlimited rounds across resumable sessions. Unknown blockers remain explicit; a paused conversation does not imply readiness. Analyst saves stable criteria, dependencies and readiness; Lead consumes references rather than the planning conversation.
 
 At handover, Lead proposes one batch contract explicitly asking for local/separate/stacked/consolidated delivery and covering all six execution roles, independent proposal candidates/evaluator, concurrency, worktrees, checks, limits, PR mode and scoped permissions. Explicit user selections already apply; only missing/material choices need confirmation. Do not repeat configuration per Ticket or unchanged fix loop.
 
@@ -55,7 +55,7 @@ The default allocation puts OpenAI capacity into planning, architecture, and UX;
 
 | Agent | Preferred model | Effort | Workload rationale |
 | --- | --- | --- | --- |
-| Planner | `openai/gpt-6.1-sol` | medium | Direction, bounded refinement, specs, Tickets and tracker conventions |
+| Analyst | `openai/gpt-6.1-sol` | medium | Direction, bounded refinement, specs, Tickets and tracker conventions |
 | Lead | `openai/gpt-6.1-sol` | medium | Execution scheduling, run configuration and coordination |
 | Architect | `openai/gpt-6-luna` | xhigh | Architecture, invariants, and consequential tradeoffs |
 | Security | `opencode-go/deepseek-v4-pro` | high | Scoped trust-boundary assessment when enabled |
@@ -106,15 +106,16 @@ Prompt instructions guide model behavior. Configure runtime tool permissions or 
 Configure tracker conventions once with /project-setup: GitHub Issues, Azure DevOps or local Markdown. Existing docs/agents/issue-tracker.md and AGENTS.md take precedence. Direction, specs and Tickets have distinct ownership; use links instead of editable copies.
 
 Examples:
-- Planner: /wayfinder assess adding a waitlist to our booking app
-- Planner: /refine the selected waitlist idea
-- Planner: /plan create a spec and Tickets from this refined contract
+- Analyst: /wayfinder assess adding a waitlist to our booking app
+- Analyst: /slice the waitlist direction into backlog tasks
+- Analyst: /refine <selected task reference>
+- Analyst: /plan <ready task reference> — optional technical planning
 - Lead: /autonomous-implement <Ticket refs> — Developer + Reviewer; current checkout; local only
 - Lead: /autonomous-implement <batch refs> — Architect x2 evaluated by Lead; concurrency 2; worktrees; one consolidated PR; scoped commit/push/PR/integration authorized
 
 A supplied local spec works without remote tracker setup. Follow native field/state/dependency mappings and verify remote writes; unavailable access is a blocker, not a reason to fabricate Tickets.
 
-The installer ships five skills and their references. Reinstall with overwrite enabled to update canonical prompts; Planner receives its own configurable model entry. Existing custom agent prompts are retained when overwrite is disabled, so they may still use the previous workflow until manually updated. Existing project conventions are never rewritten by installation.
+The installer ships six skills and their references. Reinstall with overwrite enabled to update canonical prompts; Analyst receives its own configurable model entry. Existing custom agent prompts are retained when overwrite is disabled, so they may still use the previous workflow until manually updated. Existing project conventions are never rewritten by installation.
 
 See the installed run-contract.md, proposals.md, worktrees.md and usage.md for execution protocols.
 
@@ -130,3 +131,11 @@ Framework/engine guidance lives in the skill's conditional `references/stack-gui
 
 For behavior-regression scenarios and evidence requirements, see [prompt-evaluation.md](prompt-evaluation.md).
 
+
+## Resumable product workflow
+
+Start Analyst with /project-setup to define documentation folders, task storage, lifecycle mappings and done gates. /wayfinder explores any product, game, area or major feature across unlimited sessions, maintaining briefs/specs/ADRs/glossary only where useful. /slice decomposes that direction into areas/domains and actual tasks marked ready-for-refinement. /refine updates one task across sessions until ready-to-implement. Handover one or more refined task references directly to Lead with /autonomous-implement. /plan is optional, never a mandatory extra product phase.
+
+Analyst and Lead size the work and keep documentation proportional. Multiple candidate analyses and arbitration are configurable choices. Each specialist also supports direct consultation in a separate conversation without a Ticket or pipeline.
+
+Reinstallation refreshes shared skills/policy even when native role instructions are kept; the CLI reports this distinction. Legacy planner model settings migrate to analyst when no analyst setting exists. Existing planner definitions are retained to protect custom instructions; the CLI flags them for deliberate migration/removal. Choose analyst for the current workflow.

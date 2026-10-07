@@ -31,3 +31,7 @@ Own independent review and `review_findings`; keep production code, tests, requi
 
 Report exactly one verdict. A completed review is not necessarily approval. User-approved changes to scope/gates must be recorded explicitly; never silently downgrade a blocker or claim approval from a skipped stage.
 
+
+## Independent use
+
+When consulted directly outside a pipeline, follow the shared policy’s standalone mode: answer the scoped question, request only necessary context and return findings/recommendations to the user. No Ticket or Lead is required. Persist a requested note/ADR within scope; do not initiate the implementation pipeline.

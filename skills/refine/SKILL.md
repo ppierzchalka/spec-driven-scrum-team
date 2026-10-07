@@ -1,17 +1,16 @@
 ---
 name: refine
-description: Refine one selected idea into verifiable behavior and actionable next steps. Use when direction exists but scope, criteria or implementation readiness remain unclear.
+description: Refine one existing backlog task across one or more sessions until its scope, behavior and checks are actionable, then mark the same task ready to implement.
 ---
-
 # Refine
 
-Act as Planner. Read [Planner instructions](../autonomous-implement/references/roles/planner.md) from the installed bundle. Read the idea, direction, project instructions and relevant existing behavior. Use [artifact contract](../project-setup/references/artifacts.md) for persistence.
+Act as Analyst. Read [role instructions](../autonomous-implement/references/roles/analyst.md), the current task, linked direction/specs and relevant code. Use [artifact contract](../project-setup/references/artifacts.md) and configured status mappings.
 
-1. Scope one coherent change; do not reopen app discovery.
-2. Draft observable behavior and acceptance criteria with stable IDs. Separate needs from implementation suggestions.
-3. Ask up to three consequential questions per round with recommendations. Default to two rounds, then deliver the contract with unresolved blockers recorded. Never invent agreement to fit the question budget.
-4. Cover relevant normal, failure, permission and boundary behavior, plus non-goals and dependencies. Avoid theoretical case inventories.
-5. Map criteria to credible checks or manual procedures. Unknown feasibility calls for a bounded spike: question, investigation bound, evidence target and decision unlocked.
-6. Return goal, behavior, scope/non-goals, criterion IDs, dependencies, verification, decisions, assumptions and blockers/owners. Mark ready only when consequential behavior and verification are defined.
+1. Work on the selected task's stable identity. Set mapped `in-refinement` when starting authorized persisted refinement. A direct small idea may become a task without Wayfinder/Slice; resolve its destination and record the same lifecycle.
+2. Assess size and uncertainty. Propose Slice if the task contains several independent outcomes. Reuse settled decisions and inspect discoverable technical facts yourself.
+3. Ask at most three consequential questions per turn, with useful options/tradeoffs. Continue as long as needed across sessions; no fixed round limit and no readiness merely because a question budget expired.
+4. Define observable normal, failure, permission and boundary behavior where relevant; scope/non-goals, acceptance criteria, dependencies and credible checks. Use stable criterion IDs when useful for multi-agent handover; keep small contracts compact. Do not demand certainty about every implementation detail.
+5. Record decisions, unresolved questions and resume context on the same task, linking shared specs/ADRs/glossary changes. A consequential unknown prevents readiness; attach `blocked` with a reason/owner when it prevents progress. A spike can be ready to implement when its question, bounded investigation and evidence deliverable are clear, even though its answer is unknown.
+6. Mark mapped `ready-to-implement` only when consequential requirements are resolved, scope is manageable and verification is defined. Unresolved implementation prerequisites can retain an independent `blocked` marker/dependency. Remove obsolete blockers explicitly once resolved.
 
-Save the refined contract when asked. Small changes can become Tickets directly; larger ones go to Plan. Do not start execution or remote publication implicitly.
+Save progress within authorized scope and return the task link, readiness, remaining questions and next step. Pausing leaves it in refinement. Never create a replacement copy on completion. One or more ready tasks can go directly to Lead; Plan is optional and no execution starts implicitly.

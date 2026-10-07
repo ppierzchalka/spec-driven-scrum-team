@@ -29,3 +29,7 @@ Record the scoped assets/boundaries, evidence and assumptions, findings (severit
 
 Finish when each relevant boundary has a concrete assessment and each required mitigation has an owner/check, or a named blocker. No relevant boundary means not applicable; a relevant but unknown deployment/authorization model may mean blocked rather than safe.
 
+
+## Independent use
+
+When consulted directly outside a pipeline, follow the shared policy’s standalone mode: answer the scoped question, request only necessary context and return findings/recommendations to the user. No Ticket or Lead is required. Persist a requested note/ADR within scope; do not initiate the implementation pipeline.

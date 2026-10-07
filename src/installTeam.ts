@@ -41,7 +41,7 @@ function copySkill(skillDir: string, targetDir: string, harness: Harness): strin
 // Never copy a target repo's unrelated skills or configuration.
 function copyPlanningSkills(skillDir: string, targetDir: string, harness: Harness): string[] {
   const paths: string[] = [];
-  for (const name of ['wayfinder', 'refine', 'plan', 'project-setup']) {
+  for (const name of ['wayfinder', 'slice', 'refine', 'plan', 'project-setup']) {
     const source = join(dirname(skillDir), name);
     if (!existsSync(join(source, 'SKILL.md'))) continue;
     const destination = join(targetDir, HARNESS_LAYOUTS[harness].skills, name);

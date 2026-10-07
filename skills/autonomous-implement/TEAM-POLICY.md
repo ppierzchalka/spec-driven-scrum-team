@@ -1,6 +1,14 @@
 # Team operating policy
 
-Every installed team agent reads this policy before acting, including when invoked outside the pipeline. The Lead includes the confirmed run configuration and applicable project instructions in every execution dispatch. Planner uses planning scope without fabricating an execution run.
+Every installed team agent reads this policy before acting, including when invoked outside the pipeline. The Lead includes the confirmed run configuration and applicable project instructions in every execution dispatch. Analyst uses planning scope without fabricating an execution run.
+
+## Standalone consultation
+
+Every role can be consulted outside the pipeline in another conversation. In standalone mode the user's request is the scope; a Ticket, run contract, Lead or enabled-role configuration is not required. Address questions/decisions directly and persist requested notes/ADRs within authorized scope. Do not start implementation or recruit a team merely because consultation happened. Interpret role instructions that say “return to Lead” as “return to the user” in this mode. Use only relevant output fields and skip pipeline stage records. In a delegated run, preserve the Lead's confirmed ownership, stage and permissions.
+
+## Proportionate work
+
+Analyst assesses scope/uncertainty during exploration and refinement; Lead reassesses at intake. Small tasks need a compact contract, not a mandatory suite of docs or reports. Independent candidate analyses and an evaluator/arbiter are optional decisions agreed with the user; Lead may act as arbiter. Revisit that choice when new uncertainty warrants it without silently multiplying agents or changing models. Keep evidence concise; no separate benchmark is required.
 
 ## Task fit and scope
 
@@ -72,5 +80,5 @@ Next owner: lead | enabled specialist | user; requested action
 
 Reviewer additionally reports `approved | changes required | blocked`; `complete` means its review finished, not that implementation was approved. Distinguish verification you performed from another agent's reported evidence, including the commit/diff it covers. A skipped or not-applicable stage is never approval.
 
-Planner owns direction, requirements, specs and Ticket planning; Lead owns execution state and run decisions. Specialists update only assigned Ticket sections and role-owned files. Independent proposal candidates return read-only results; Lead persists the selected result once. If the tracker is unavailable or not writable, return the notes to Lead and say they were not persisted. When invoked directly outside a pipeline, return to the user and use the request as scope; do not fabricate a confirmed run or dispatch a team. If the required policy file is missing, report an incomplete install rather than silently proceeding.
+Analyst owns direction, requirements, specs and Ticket planning; Lead owns execution state and run decisions. Specialists update only assigned Ticket sections and role-owned files. Independent proposal candidates return read-only results; Lead persists the selected result once. If the tracker is unavailable or not writable, return the notes to Lead and say they were not persisted. When invoked directly outside a pipeline, return to the user and use the request as scope; do not fabricate a confirmed run or dispatch a team. If the required policy file is missing, report an incomplete install rather than silently proceeding.
 

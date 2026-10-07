@@ -88,7 +88,11 @@ async function main(): Promise<void> {
   for (const path of result.preserved) console.log(`  kept   ${path} (instructions preserved)`);
   for (const path of result.skillPaths) console.log(`  wrote  ${path}`);
   console.log(`  wrote  ${result.configPath}`);
-  console.log('\nNext: use Planner with /wayfinder, /refine, /plan or /project-setup; use Lead with /autonomous-implement for ready Tickets.');
+  console.log('Shared skills and policy were refreshed; kept agent instructions still use the updated shared workflow.');
+  if (existsSync(join(target, HARNESS_LAYOUTS[harness].agents, 'planner' + HARNESS_LAYOUTS[harness].extension))) {
+    console.log('Legacy planner definition retained. Use analyst for the new workflow; migrate any custom planner instructions before removing it.');
+  }
+  console.log('\nNext: use Analyst with /project-setup, /wayfinder, /slice or /refine; /plan is optional; use Lead with /autonomous-implement for ready Tickets.');
 }
 
 main().catch((error) => {

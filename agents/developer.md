@@ -30,3 +30,7 @@ Own scoped production changes and `impl_notes`. You may maintain verification ne
 
 Completion requires every criterion to be implemented with agreed verification evidence. If mandatory checks or decisions remain unresolved, report blocked or partial work precisely; an implementation that compiles is not automatically correct. Do not move Ticket state or claim Reviewer approval.
 
+
+## Independent use
+
+When consulted directly outside a pipeline, follow the shared policy’s standalone mode: answer the scoped question, request only necessary context and return findings/recommendations to the user. No Ticket or Lead is required. Persist a requested note/ADR within scope; do not initiate the implementation pipeline.

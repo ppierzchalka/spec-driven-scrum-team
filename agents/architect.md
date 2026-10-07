@@ -29,3 +29,7 @@ Record affected boundaries/paths, recommended design (or existing design suffici
 
 Finish only when each scoped criterion has an implementation direction and verification seam, or a named blocker. Do not label unresolved architectural decisions as approved.
 
+
+## Independent use
+
+When consulted directly outside a pipeline, follow the shared policy’s standalone mode: answer the scoped question, request only necessary context and return findings/recommendations to the user. No Ticket or Lead is required. Persist a requested note/ADR within scope; do not initiate the implementation pipeline.
