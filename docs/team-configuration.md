@@ -39,7 +39,7 @@ Eight named agents remain available: Analyst, Lead, Architect, Security, UX, Tes
 
 No procedure depends on external Matt Pocock skills being installed. Existing TDD/debugging skills can be used when relevant; do not invoke two procedures for the same work automatically. Agents load only assigned procedures and absent role/core instructions. Standalone consultation needs no Ticket, Lead or pipeline.
 
-Wayfinder/Refine support unlimited resumable sessions, at most three consequential questions per turn, and a small Current state section in the owning artifact. Long exploration is valid. Slice creates real tasks ready-for-refinement; Refine updates the same IDs until ready-to-implement. Plan remains optional.
+Wayfinder/Refine support unlimited resumable sessions, at most three consequential questions per turn, and a small Current state section in the owning artifact. Long exploration is valid. Slice creates real tasks ready-for-refinement; Refine updates the same IDs until ready-to-implement. Plan remains optional. Existing analysis skills also select questions by decision prerequisites, recommend options, actively challenge domain terms/relationships against code and concrete scenarios, and persist settled vocabulary inline. ADRs require meaningful reversal cost, a future need for rationale and a genuine tradeoff unless explicitly requested. Refine checks remaining Developer guesses and behavioral verification seams before accepted readiness. These are integrated disciplines, not additional skills, sessions or mandatory reports.
 
 ## Execution choices
 

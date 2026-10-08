@@ -40,9 +40,9 @@ Multi-context repo (presence of `CONTEXT-MAP.md` at the root):
 
 ## Use the glossary's vocabulary
 
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
+When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in the configured glossary (`docs/domain/glossary.md` in this repo); use `CONTEXT.md` for repository context. In repos where the glossary lives inside context documents, follow that established convention. Don't drift to synonyms the glossary explicitly avoids.
 
-If the concept you need isn't in the glossary yet, that's a signal: either you're inventing language the project doesn't use (reconsider) or there's a real gap (record it for Analyst).
+If the concept you need isn't in the glossary yet, reconsider invented language or record a real gap for Analyst. Analyst actively resolves overloaded terms, checks affected relationships/invariants with concrete scenarios and relevant code, and updates accepted vocabulary inline through the current analysis skill's artifact contract. Keep glossary definitions separate from behavioral specifications and implementation details.
 
 ## Flag ADR conflicts
 
