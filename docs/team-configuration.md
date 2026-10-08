@@ -1,6 +1,6 @@
 # Installation and team configuration
 
-Run `npm run setup` to browse target folders: open a folder, add it, select more folders if needed, then continue. The current absolute path and selection count are visible; you can remove selections. Existing CLI paths remain a shortcut: `npm run setup -- ../repo-a ../repo-b`. Select one harness in the TUI, configure agent models/effort, canonical prompt overwrite and optional Toady. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
+Run `npm run setup` to browse target folders: open a folder, add it, select more folders if needed, then continue. Enter on a folder opens it; inside the desired folder choose **Add this folder** and press Enter to select it. Repeat, then choose **Continue with N targets**. Space is search input, not a checkbox shortcut. The picker displays these controls, the current absolute path, selection count and selected-folder markers; you can remove selections. Existing CLI paths remain a shortcut: `npm run setup -- ../repo-a ../repo-b`. Select one harness in the TUI, configure agent models/effort, canonical prompt overwrite and optional Toady. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
 
 ## Multiple targets
 

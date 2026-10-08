@@ -16,13 +16,14 @@ export function normalizeTargets(paths: string[]): string[] {
 export async function browseTargets(startDirectory = process.cwd()): Promise<string[]> {
   let directory = resolve(startDirectory);
   const targets = new Set<string>();
+  note('Enter on a folder opens it. Inside the desired folder, choose Add this folder and press Enter to select it.\nRepeat for more targets, then choose Continue with N targets.\nSpace is search input; selection uses the Add/Remove actions.', 'Target folder controls');
   while (true) {
     let folders: { value: string; label: string; hint: string }[];
     try {
       folders = readdirSync(directory, { withFileTypes: true })
         .filter(entry => entry.isDirectory())
         .sort((a, b) => a.name.localeCompare(b.name))
-        .map(entry => ({ value: 'dir:' + join(directory, entry.name), label: entry.name + '/', hint: 'open folder' }));
+        .map(entry => ({ value: 'dir:' + join(directory, entry.name), label: entry.name + '/' + (targets.has(join(directory, entry.name)) ? ' [selected]' : ''), hint: 'Enter: open folder' }));
     } catch (error) {
       note(error instanceof Error ? error.message : 'Cannot read directory', 'Target browser');
       const parent = dirname(directory);
@@ -33,9 +34,9 @@ export async function browseTargets(startDirectory = process.cwd()): Promise<str
     const parent = dirname(directory);
     const choice = await autocomplete<string>({
       message: `Select target folders — ${directory} (${targets.size} selected)`,
-      placeholder: 'Type to filter; open a folder, then add it',
+      placeholder: 'Enter opens folders; Add this folder + Enter selects; type to filter',
       options: [
-        { value: '__toggle__', label: targets.has(directory) ? 'Remove this folder' : 'Add this folder', hint: directory },
+        { value: '__toggle__', label: targets.has(directory) ? 'Remove this folder' : 'Add this folder', hint: 'Enter: ' + (targets.has(directory) ? 'unselect ' : 'select ') + directory },
         ...(parent !== directory ? [{ value: '__parent__', label: '../', hint: 'parent folder' }] : []),
         ...folders,
         ...[...targets].map(path => ({ value: 'remove:' + path, label: 'Remove selected: ' + path, hint: 'selected target' })),
