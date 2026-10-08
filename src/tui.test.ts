@@ -28,7 +28,7 @@ describe('selected harness TUI', () => {
       .mockResolvedValueOnce('analyst')
       .mockResolvedValueOnce('model')
       .mockResolvedValueOnce('back')
-      .mockResolvedValueOnce('__install__');
+      .mockResolvedValueOnce('__next__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
     vi.mocked(text).mockResolvedValueOnce('gpt-native-model');
     const existing = { lead: { model: 'existing-native-model' } };
     const result = await runTui({ existing, harness: 'codex' });
@@ -44,7 +44,7 @@ describe('selected harness TUI', () => {
       .mockResolvedValueOnce('model')
       .mockResolvedValueOnce('flash')
       .mockResolvedValueOnce('back')
-      .mockResolvedValueOnce('__install__');
+      .mockResolvedValueOnce('__next__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
     const result = await runTui({ existing: {}, harness: 'antigravity' });
     expect(result.config.developer).toEqual({ model: 'flash' });
     const tierOptions = vi.mocked(select).mock.calls[2][0].options;
@@ -54,17 +54,17 @@ describe('selected harness TUI', () => {
 });
 
 it('toggles and retains the OpenCode persona setting independently of model choices', async () => {
-  vi.mocked(select).mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__install__');
+  vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
   const result = await runTui({ existing: { lead: { model: 'vertex/gemini' } }, harness: 'opencode', toadyMode: false });
   expect(result.toadyMode).toBe(true);
   expect(result.config.lead?.model).toBe('vertex/gemini');
 });
 
 it.each(['claude-code', 'codex', 'copilot', 'antigravity'] as const)('offers Toady for %s', async (harness) => {
-  vi.mocked(select).mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__install__');
+  vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
   const result = await runTui({ existing: {}, harness });
   expect(result.toadyMode).toBe(true);
-  expect(vi.mocked(select).mock.calls[0][0].options.some((option) => option.value === '__toady__')).toBe(true);
+  expect(vi.mocked(select).mock.calls[1][0].options.some((option) => option.value === '__toady__')).toBe(true);
 });
 
 
@@ -73,20 +73,20 @@ it('imports additional rules independently of Toady and keeps model settings unt
   try {
     const path = join(root, 'rules.md');
     writeFileSync(path, 'Azure DevOps is read-only. Use custom commit format.');
-    vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('load').mockResolvedValueOnce('__install__');
+    vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('load').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
     vi.mocked(text).mockResolvedValueOnce(path);
     const result = await runTui({ existing: { lead: { model: 'vertex/gemini' } }, harness: 'codex', toadyMode: false, toadyRules: 'old' });
     expect(result.toadyRules).toBe('Azure DevOps is read-only. Use custom commit format.');
     expect(result.config.lead?.model).toBe('vertex/gemini');
     expect(result.toadyMode).toBe(false);
-    const options = vi.mocked(select).mock.calls[0][0].options;
+    const options = vi.mocked(select).mock.calls[1][0].options;
     const toadyIndex = options.findIndex(option => option.value === '__toady__');
     expect(options[toadyIndex + 1]).toMatchObject({ value: '__toady_rules__', label: 'Additional rules (loaded to persona)' });
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
 it('clears only extra Toady rules', async () => {
-  vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('clear').mockResolvedValueOnce('__install__');
+  vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('clear').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
   const result = await runTui({ existing: {}, harness: 'copilot', toadyMode: true, toadyRules: 'custom' });
   expect(result.toadyRules).toBe('');
   expect(result.toadyMode).toBe(true);
@@ -98,7 +98,7 @@ it('imports a browsed file without enabling Toady', async () => {
   try {
     const path = join(root, 'rules.md');
     writeFileSync(path, 'Use Conventional Commits.');
-    vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__install__');
+    vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
     vi.mocked(browseRulesFile).mockResolvedValueOnce(path);
     const result = await runTui({ existing: {}, harness: 'codex', toadyMode: false });
     expect(result.toadyRules).toBe('Use Conventional Commits.');
@@ -108,8 +108,48 @@ it('imports a browsed file without enabling Toady', async () => {
 });
 
 it('keeps existing rules when leaving the browser without a selection', async () => {
-  vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__install__');
+  vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
   vi.mocked(browseRulesFile).mockResolvedValueOnce(undefined);
   const result = await runTui({ existing: {}, harness: 'codex', toadyRules: 'Keep this rule.' });
   expect(result.toadyRules).toBe('Keep this rule.');
+});
+
+
+it('separates configuration stages and retains edits when navigating back', async () => {
+  vi.mocked(select)
+    .mockResolvedValueOnce('developer')
+    .mockResolvedValueOnce('model')
+    .mockResolvedValueOnce('overwrite')
+    .mockResolvedValueOnce('back')
+    .mockResolvedValueOnce('__next__')
+    .mockResolvedValueOnce('__toady__')
+    .mockResolvedValueOnce('__back__')
+    .mockResolvedValueOnce('__next__')
+    .mockResolvedValueOnce('__next__')
+    .mockResolvedValueOnce('__back__')
+    .mockResolvedValueOnce('__next__')
+    .mockResolvedValueOnce('__install__');
+  vi.mocked(text).mockResolvedValueOnce('native-model');
+  const result = await runTui({ existing: {}, harness: 'codex', toadyRules: 'Use strict types.', targets: ['/repo-a', '/repo-b'] });
+  expect(result).toMatchObject({
+    config: { developer: { model: 'native-model' } },
+    overwrite: { developer: false },
+    toadyMode: true,
+    toadyRules: 'Use strict types.',
+  });
+  const menus = vi.mocked(select).mock.calls.map(([menu]) => menu);
+  const agents = menus.filter(menu => menu.message === 'Step 2 of 4 — Agents and models');
+  const persona = menus.filter(menu => menu.message === 'Step 3 of 4 — Personal instructions');
+  const install = menus.filter(menu => menu.message === 'Review and install');
+  expect(agents).toHaveLength(3);
+  expect(persona).toHaveLength(4);
+  expect(install).toHaveLength(2);
+  for (const menu of agents) {
+    expect(menu.options.some(option => option.value === 'developer')).toBe(true);
+    expect(menu.options.some(option => ['__toady__', '__toady_rules__', '__install__'].includes(String(option.value)))).toBe(false);
+  }
+  for (const menu of persona) {
+    expect(menu.options.some(option => option.value === '__toady__')).toBe(true);
+    expect(menu.options.some(option => ['developer', '__install__'].includes(String(option.value)))).toBe(false);
+  }
 });

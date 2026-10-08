@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { confirm, cancel } from './prompts.js';
+import { confirm, cancel, intro, note } from './prompts.js';
 import { dirname, join, resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -36,10 +36,12 @@ async function main(): Promise<void> {
   if (harnessName && !isHarness(harnessName)) throw new Error('Unknown harness: ' + harnessName);
   const positional = args.filter((arg) => !arg.startsWith('-'));
   if (useDefaults && !positional.length) throw new Error('Provide target folders with --defaults, or run setup without --defaults to browse');
+  if (!useDefaults) { intro('Spec-Driven Scrum Team'); note('Select the repositories to configure.', 'Step 1 of 4 — Targets'); }
   const targets = positional.length ? normalizeTargets(positional) : await browseTargets();
   const target = targets[0];
   console.log(`Selected ${targets.length} target(s):\n${targets.map(path => '  ' + path).join('\n')}`);
-  if (targets.length > 1 && !useDefaults) console.log(`One shared profile will be applied to all targets. Agent settings come from ${target}; Install & exit applies your selected models, prompt overwrite and one personal persona/rules profile. Native provider settings and operator controls remain per repo.`);
+  if (targets.length > 1 && !useDefaults) console.log(`One shared profile will be applied to all targets. Agent settings come from ${target}; the final Install step applies your selected models, prompt overwrite and one personal persona/rules profile. Native provider settings and operator controls remain per repo.`);
+  if (!useDefaults) note('Choose a harness, then configure its agents and models.', 'Step 2 of 4 — Agents and models');
   const harness = harnessName && isHarness(harnessName) ? harnessName : useDefaults ? 'opencode' : await selectHarness();
   console.log('Persona and additional rules use private user configuration and apply across projects in this harness. Agent definitions and skills remain per repository.');
   const savedPersonas = targets.map(path => readToadySettings(path, harness));
@@ -85,7 +87,7 @@ async function main(): Promise<void> {
       console.log('No recommended Sol model is available for UX. An unset UX model inherits opencode’s current model; select a suitable model explicitly before running design work.');
     }
   } else {
-    const tui = await runTui({ existing, harness, toadyMode, toadyRules });
+    const tui = await runTui({ existing, harness, toadyMode, toadyRules, targets });
     config = tui.config;
     overwrite = tui.overwrite;
     toadyMode = tui.toadyMode ?? false;

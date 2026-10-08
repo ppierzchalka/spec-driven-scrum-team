@@ -1,4 +1,4 @@
-import { autocomplete, select, text, intro, outro, cancel, note } from './prompts.js';
+import { autocomplete, select, text, outro, cancel, note } from './prompts.js';
 import { browseRulesFile } from './file-picker.js';
 import { loadToadyRulesFile } from './toady.js';
 import { resolve } from 'node:path';
@@ -187,12 +187,8 @@ async function configureAgent(
   }
 }
 
-export async function runTui(options: { existing: TeamConfig; harness?: Harness; toadyMode?: boolean; toadyRules?: string }): Promise<TuiResult> {
-  intro('Spec-Driven Scrum Team');
-
+export async function runTui(options: { existing: TeamConfig; harness?: Harness; toadyMode?: boolean; toadyRules?: string; targets?: string[] }): Promise<TuiResult> {
   const harness = options.harness ?? 'opencode';
-  note('Toady and additional rules are personal: stored outside the repo in your user configuration and applied across projects for this harness. Team agents and skills stay per repo.', 'Personal setup');
-  if (harness === 'copilot') note('The personal instruction file is supported by Copilot CLI; IDE personal settings are separate.', 'Copilot scope');
   const models = harness === 'opencode' ? enumerateAvailableModels() : [];
   const existing = migratePlannerConfig(options.existing);
   const config = harness === 'opencode' ? seedDefaults(existing, models) : existing;
@@ -204,24 +200,55 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
 
   let toadyMode = options.toadyMode ?? false;
   let toadyRules = options.toadyRules ?? '';
-  let done = false;
-  while (!done) {
+  let personalInstructionsExplained = false;
+  let step: 'agents' | 'persona' | 'install' = 'agents';
+  while (true) {
+    if (step === 'install') {
+      note([
+        `Harness: ${harness}`,
+        ...(options.targets ?? []).map(target => `Target: ${target}`),
+        ...AGENT_NAMES.map(name => `${name}: ${currentHint(config[name])}; instructions ${overwrite[name] ? 'refresh' : 'preserve'}`),
+        `Toady: ${toadyMode ? 'on' : 'off'}`,
+        `Additional rules: ${toadyRules.trim() ? 'loaded' : 'none'}`,
+        'Agents and skills are installed per target. Persona and rules are saved in private user configuration.',
+      ].join('\n'), 'Step 4 of 4 — Install');
+      const action = guard(await select<string>({
+        message: 'Review and install',
+        options: [
+          { value: '__install__', label: 'Install', hint: 'apply this configuration to all selected targets' },
+          { value: '__back__', label: 'Back to personal instructions' },
+        ],
+      }));
+      if (action === '__install__') break;
+      step = 'persona';
+      continue;
+    }
+    if (step === 'persona' && !personalInstructionsExplained) {
+      personalInstructionsExplained = true;
+      note('Toady and additional rules are personal: stored outside the repo in your user configuration and applied across projects for this harness.', 'Step 3 of 4 — Personal instructions');
+      if (harness === 'copilot') note('The personal instruction file is supported by Copilot CLI; IDE personal settings are separate.', 'Copilot scope');
+    }
     const agent = guard(
       await select<string>({
-        message: 'Select an agent to configure',
-        options: [
+        message: step === 'agents' ? 'Step 2 of 4 — Agents and models' : 'Step 3 of 4 — Personal instructions',
+        options: step === 'agents' ? [
           ...AGENT_NAMES.map((name) => ({
             value: name,
             label: name,
             hint: currentHint(config[name]),
           })),
           { value: '__reset_all__', label: harness === 'opencode' ? 'Reset all to defaults' : 'Reset all to inherited models', hint: 'discard manual model picks' },
+          { value: '__next__', label: 'Next: personal instructions' },
+        ] : [
           { value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — cartoon henchman persona' : 'off' },
           { value: '__toady_rules__', label: 'Additional rules (loaded to persona)', hint: toadyRules ? 'custom rules saved' : 'none — independent of Toady mode' },
-          { value: '__install__', label: 'Install & exit', hint: 'install team in repo; save persona privately' },
+          { value: '__next__', label: 'Next: review and install' },
+          { value: '__back__', label: 'Back to agents and models' },
         ],
       }),
     );
+    if (agent === '__next__') { step = step === 'agents' ? 'persona' : 'install'; continue; }
+    if (agent === '__back__') { step = 'agents'; continue; }
     if (agent === '__toady__') { toadyMode = !toadyMode; continue; }
     if (agent === '__toady_rules__') {
       const action = guard(await select<string>({ message: 'Additional rules embedded in the startup persona', options: [
@@ -247,10 +274,6 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
         note('Rules will be embedded in the selected harness startup persona and retained on reinstall.');
       }
       continue;
-    }
-    if (agent === '__install__') {
-      done = true;
-      break;
     }
     if (agent === '__reset_all__') {
       const reset = harness === 'opencode' ? resetAllToDefaults(config, AGENT_NAMES, models) : AGENT_NAMES.map((name) => { config[name] = {}; return name; });
