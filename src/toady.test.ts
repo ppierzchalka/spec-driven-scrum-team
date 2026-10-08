@@ -11,7 +11,7 @@ function workspace() { const root = mkdtempSync(join(tmpdir(), 'persona-')); roo
 beforeEach(() => { context.root = workspace(); });
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 const layouts = [
-  ['opencode', 'personas/spec-driven-scrum-team.md'], ['claude-code', 'CLAUDE.md'],
+  ['opencode', 'AGENTS.md'], ['claude-code', 'CLAUDE.md'],
   ['codex', 'AGENTS.md'], ['copilot', 'copilot-instructions.md'], ['antigravity', 'GEMINI.md'],
 ] as const;
 
@@ -29,10 +29,8 @@ describe('private startup persona', () => {
     body = readFileSync(path, 'utf8');
     expect(body).toContain(rules); expect(body).not.toContain('Henchman identity');
     installToady(target, false, harness, false, '');
-    if (harness === 'opencode') {
-      expect(existsSync(path)).toBe(false);
-      expect(parse(readFileSync(join(context.root, harness, 'opencode.jsonc'), 'utf8')).instructions).toBeUndefined();
-    } else expect(readFileSync(path, 'utf8')).not.toContain(rules);
+    expect(readFileSync(path, 'utf8')).not.toContain(rules);
+    if (harness === 'opencode') expect(existsSync(join(context.root, harness, 'opencode.jsonc'))).toBe(false);
     expect(existsSync(join(target, 'AGENTS.md'))).toBe(false);
     expect(existsSync(join(target, '.opencode'))).toBe(false);
     expect(existsSync(join(target, 'CLAUDE.md'))).toBe(false);
@@ -40,24 +38,25 @@ describe('private startup persona', () => {
     expect(existsSync(join(target, '.agents'))).toBe(false);
     if (process.platform !== 'win32') expect(statSync(personalSettingsPath(harness)).mode & 0o777).toBe(0o600);
   });
-  it('merges user JSONC without changing provider settings, comments or project AGENTS', () => {
+  it('keeps user JSONC, provider settings, comments and project AGENTS unchanged', () => {
     const target = workspace(), user = join(context.root, 'opencode'); mkdirSync(user);
     const source = '// Company routing\n{"model":"vertex/gemini","share":"disabled","instructions":["~/company.md"],}\n';
     writeFileSync(join(user, 'opencode.jsonc'), source);
     writeFileSync(join(target, 'AGENTS.md'), 'Existing project conventions\n');
     installToady(target, true); installToady(target, true);
     const text = readFileSync(join(user, 'opencode.jsonc'), 'utf8');
-    expect(text).toContain('// Company routing');
-    expect(parse(text)).toEqual({ model: 'vertex/gemini', share: 'disabled', instructions: ['~/company.md', join(user, 'personas/spec-driven-scrum-team.md').replaceAll('\\', '/')] });
+    expect(text).toBe(source);
+    expect(readFileSync(join(user, 'AGENTS.md'), 'utf8')).toContain('Henchman identity');
+    expect(parse(text)).toEqual({ model: 'vertex/gemini', share: 'disabled', instructions: ['~/company.md'] });
     expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('Existing project conventions\n');
     expect(existsSync(join(target, 'opencode.jsonc'))).toBe(false);
   });
-  it('uses an existing user JSON config rather than creating a shadow JSONC config', () => {
+  it('does not create a config or inject a reference into an existing user JSON config', () => {
     const target = workspace(), user = join(context.root, 'opencode'); mkdirSync(user);
     writeFileSync(join(user, 'opencode.json'), '{"instructions":["company.md"]}');
     installToady(target, true);
     expect(existsSync(join(user, 'opencode.jsonc'))).toBe(false);
-    expect(parse(readFileSync(join(user, 'opencode.json'), 'utf8')).instructions).toHaveLength(2);
+    expect(parse(readFileSync(join(user, 'opencode.json'), 'utf8')).instructions).toEqual(['company.md']);
   });
   it('migrates old inline and file-based personal content without removing project conventions', () => {
     const target = workspace(); mkdirSync(join(target, '.opencode/personas'), { recursive: true });
@@ -67,7 +66,7 @@ describe('private startup persona', () => {
     for (const file of ['opencode.json', 'opencode.jsonc']) writeFileSync(join(target, file), '{"instructions":["company.md",".opencode/personas/toady.md"]}');
     expect(readToadySettings(target).projectRules).toBe('No any.');
     installToady(target, true);
-    expect(readFileSync(join(context.root, 'opencode/personas/spec-driven-scrum-team.md'), 'utf8')).toContain('No any.');
+    expect(readFileSync(join(context.root, 'opencode/AGENTS.md'), 'utf8')).toContain('No any.');
     expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('Before\n\nAfter');
     expect(existsSync(join(target, '.opencode/toady.config.json'))).toBe(false);
     expect(existsSync(join(target, '.opencode/personas/toady.md'))).toBe(false);
@@ -117,4 +116,51 @@ describe('private startup persona', () => {
     expect(() => persona('Master', '<!-- spec-driven-scrum-team:toady:end -->')).toThrow('markers');
     expect(persona('Master')).not.toContain('Conventional Commits');
   });
+  it('migrates both user configs to one global block, preserving other instructions and rules', () => {
+    const target = workspace(), user = join(context.root, 'opencode');
+    mkdirSync(join(user, 'personas'), { recursive: true });
+    const old = join(user, 'personas/spec-driven-scrum-team.md');
+    const reference = old.replaceAll('\\', '/');
+    writeFileSync(old, persona('Master', 'Azure DevOps is read-only.'));
+    writeFileSync(join(user, 'AGENTS.md'), 'Existing personal policy\n');
+    for (const filename of ['opencode.json', 'opencode.jsonc']) {
+      writeFileSync(join(user, filename), '// Vertex routing\n' + JSON.stringify({ model: 'vertex/gemini', instructions: ['company.md', reference] }));
+    }
+    installToady(target, true, 'opencode', false, 'Azure DevOps is read-only.');
+    installToady(target, true);
+    const content = readFileSync(join(user, 'AGENTS.md'), 'utf8');
+    expect(content).toContain('Existing personal policy');
+    expect(content).toContain('Azure DevOps is read-only.');
+    expect(content.split('Henchman identity')).toHaveLength(2);
+    expect(existsSync(old)).toBe(false);
+    for (const filename of ['opencode.json', 'opencode.jsonc']) {
+      const config = readFileSync(join(user, filename), 'utf8');
+      expect(config).toContain('// Vertex routing');
+      expect(parse(config)).toEqual({ model: 'vertex/gemini', instructions: ['company.md'] });
+    }
+    expect(existsSync(join(target, 'AGENTS.md'))).toBe(false);
+    installToady(target, false, 'opencode', false, '');
+    expect(readFileSync(join(user, 'AGENTS.md'), 'utf8').trim()).toBe('Existing personal policy');
+  });
+  it('preflights malformed global blocks before removing old user references or files', () => {
+    const target = workspace(), user = join(context.root, 'opencode');
+    mkdirSync(join(user, 'personas'), { recursive: true });
+    const old = join(user, 'personas/spec-driven-scrum-team.md');
+    writeFileSync(old, persona('Master'));
+    const config = JSON.stringify({ instructions: [old.replaceAll('\\', '/')] });
+    writeFileSync(join(user, 'opencode.jsonc'), config);
+    writeFileSync(join(user, 'AGENTS.md'), '<!-- spec-driven-scrum-team:toady:start -->');
+    expect(() => installToady(target, true)).toThrow('Malformed');
+    expect(readFileSync(join(user, 'opencode.jsonc'), 'utf8')).toBe(config);
+    expect(existsSync(old)).toBe(true);
+    expect(existsSync(personalSettingsPath('opencode'))).toBe(false);
+  });
+  it('rejects linked global instructions without modifying their contents', () => {
+    const target = workspace(), user = join(context.root, 'opencode'), outside = workspace();
+    mkdirSync(user); writeFileSync(join(outside, 'AGENTS.md'), 'External policy');
+    symlinkSync(join(outside, 'AGENTS.md'), join(user, 'AGENTS.md'));
+    expect(() => installToady(target, true)).toThrow('symlink');
+    expect(readFileSync(join(outside, 'AGENTS.md'), 'utf8')).toBe('External policy');
+  });
+
 });

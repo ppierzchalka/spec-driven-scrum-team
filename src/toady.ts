@@ -114,29 +114,31 @@ export function installToady(targetDir: string, enabled: boolean, harness: Harne
   const pending: PendingFile[] = [];
   const remove: string[] = [];
   const body = persona(gitDisplayName(targetDir), rules, enabled);
+  const override = join(root, 'AGENTS.override.md');
+  if (harness === 'codex') checkPath(root, override);
+  const path = harness === 'opencode' ? join(root, 'AGENTS.md')
+    : harness === 'codex' && existsSync(override) ? override : join(root, nativeFiles[harness]);
+  checkPath(root, path);
+  const source = existsSync(path) ? readFileSync(path, 'utf8') : '';
+  const updated = managedBlock(source, active ? start + '\n' + body + end : '');
+  if (updated !== source) pending.push({ path, body: updated });
   if (harness === 'opencode') {
-    const path = join(root, 'personas', 'spec-driven-scrum-team.md');
-    const jsonc = join(root, 'opencode.jsonc'), json = join(root, 'opencode.json');
-    for (const file of [path, jsonc, json]) checkPath(root, file);
-    const config = existsSync(jsonc) ? jsonc : existsSync(json) ? json : jsonc;
-    // Absolute native paths also work on macOS/Windows; no shell tilde expansion needed.
-    const reference = path.replaceAll('\\', '/');
-    // Remove stale references from the other user config as well to avoid duplicate loading.
-    for (const file of [json, jsonc]) {
-      if (file !== config && !existsSync(file)) continue;
-      const edit = updateInstructionConfig(file, reference, file === config && active);
+    // V2 accepts `instructions` but does not load its entries. Global AGENTS.md
+    // is native startup guidance in both versions and stays outside the repo.
+    const oldPersona = join(root, 'personas', 'spec-driven-scrum-team.md');
+    checkPath(root, oldPersona);
+    const reference = oldPersona.replaceAll('\\', '/');
+    for (const filename of ['opencode.json', 'opencode.jsonc']) {
+      const config = join(root, filename);
+      checkPath(root, config);
+      if (!existsSync(config)) continue;
+      const edit = updateInstructionConfig(config, reference, false);
       if (edit) pending.push(edit);
     }
-    if (active) pending.push({ path, body });
-    else if (existsSync(path)) remove.push(path);
-  } else {
-    const override = join(root, 'AGENTS.override.md');
-    if (harness === 'codex') checkPath(root, override);
-    const path = harness === 'codex' && existsSync(override) ? override : join(root, nativeFiles[harness]);
-    checkPath(root, path);
-    const source = existsSync(path) ? readFileSync(path, 'utf8') : '';
-    const updated = managedBlock(source, active ? start + '\n' + body + end : '');
-    if (updated !== source) pending.push({ path, body: updated });
+    if (existsSync(oldPersona)) {
+      const old = readFileSync(oldPersona, 'utf8');
+      if (old.startsWith('# Toady communication persona\n') || old.startsWith('# Project startup instructions\n')) remove.push(oldPersona);
+    }
   }
   const state = personalSettingsPath(harness);
   checkPath(root, state);

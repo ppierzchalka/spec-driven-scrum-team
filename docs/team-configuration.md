@@ -104,13 +104,13 @@ Persona and imported rules are **personal, user-wide settings** for the selected
 
 | Harness | Private startup instructions |
 | --- | --- |
-| OpenCode | `~/.config/opencode/personas/spec-driven-scrum-team.md`, referenced in the user config `instructions` array |
+| OpenCode | `~/.config/opencode/AGENTS.md` (managed block in private user configuration) |
 | Claude Code | Managed block in `~/.claude/CLAUDE.md` |
 | Codex | Managed block in `~/.codex/AGENTS.override.md` if present, otherwise `~/.codex/AGENTS.md` |
 | Copilot CLI | Managed block in `~/.copilot/copilot-instructions.md` |
 | Antigravity | Managed block in `~/.gemini/GEMINI.md` |
 
-OpenCode respects `XDG_CONFIG_HOME`; Claude Code respects `CLAUDE_CONFIG_DIR`; Codex respects `CODEX_HOME`. Defaults derive from the OS user home, including macOS and Windows. OpenCode uses an absolute path with normalized separators rather than relying on shell `~` expansion. Existing user `opencode.jsonc` wins over `opencode.json`; if neither exists, the installer creates `opencode.jsonc`. Company provider routing, comments and unrelated instruction references are retained. It does not add a fallback block to repo `AGENTS.md`. The `instructions` array is the requested startup mechanism; runtime versions which ignore that field need runtime support for it, not repo instruction injection. See [OpenCode config](https://opencode.ai/docs/config/).
+OpenCode respects `XDG_CONFIG_HOME`; Claude Code respects `CLAUDE_CONFIG_DIR`; Codex respects `CODEX_HOME`. Defaults derive from the OS user home, including macOS and Windows. OpenCode loads the managed persona block from its **global user `AGENTS.md`**, supported by V1 and V2. This is outside the repository; project `AGENTS.md` is not used to install personal rules. Existing global instructions are preserved. On update, the installer removes its old absolute `instructions` reference from existing user JSON/JSONC configs and retires its generated persona file. Provider routing, comments and other references stay unchanged. V2 currently accepts `instructions` but does not load its entries; see [OpenCode V2 instructions](https://opencode.ai/v2/docs/instructions/).
 
 Copilot's file here is a **CLI** user profile; the installer does not configure VS Code/other IDE personal instruction settings. Those clients may need their own user settings. Other adapters use native user instruction files, which may also be discovered by compatible tools.
 
