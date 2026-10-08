@@ -1,62 +1,39 @@
-# Pipeline Contract
+# Run contract
 
-Lead reads this before asking for confirmation and before dispatching specialists.
+## One handover per run
 
-## Startup Question
+Reuse explicit user settings and project conventions. Setup may record execution preferences in the configured docs/agents/execution.md (or an existing equivalent). Defaults are suggestions, not publication authorization; invocation overrides them. Show only material decisions/differences and record the effective contract once. Propose missing/material choices once; no unchanged reconfirmation per Ticket or repair round.
 
-After read-only intake, present all six rows with task-specific reasons:
+Record once in the existing task execution section (or shared batch record when needed); use compact inline defaults, omit inapplicable fields:
+- Task class: small / standard / complex-high-risk with a short reason; honor explicit user roles/gates.
+- Scope: references, criterion IDs, dependencies/readiness.
+- Team: effective enabled/off roles with per-Ticket exceptions, Tester mode test-design (default) or explicitly test-author; Lead on, Analyst outside execution.
+- Proposals: read-only roles, candidates per role (default 1; usually 2 when selected), distinct lenses, evaluator (Lead or available explicitly selected read-only role), criteria and one evaluation round.
+- Scheduling: task-to-packet mapping, review units/bounds, writable-worker concurrency, independent analysis stages, shared-file ownership and separate proposal concurrency limit.
+- Workspace: one task/packet current checkout; concurrent packets isolated worktrees; bases, paths, branches.
+- Delivery: ask explicitly before execution: local, separate PRs, stacked PRs or one consolidated PR? Record target/base and integration order. Reuse a choice already given; never infer stacking/consolidation from multiple Tickets.
+- Gates: focused/assembled checks, manual owners, two total review passes by default.
+- Permissions: scoped commit/push/PR/integration/deployment/cleanup actions and prohibitions.
+- Limits: proposal/dispatch/review bounds and optional cost ceiling, stating whether runtime can enforce it.
 
-```text
-Before I start, which agents should be on/off for this pipeline?
+Example: "Developer + Reviewer; Architect x2/Lead evaluation; 3 Ticket worktrees; consolidate one PR; commit/push/PR authorized; no deployment".
 
-Agent       Proposed   Reason for this task
-architect   on/off     ...
-security    on/off     ...
-ux          on/off     ...
-tester      on/off     ...
-developer   on/off     ...
-reviewer    on/off     ...
+Explicit instructions already authorize those exact choices/actions. Missing material settings get one focused question; silence is never publication permission. Changes to scope/roles/gates/model/provider or destructive actions outside authorization require a focused decision.
 
-Lead stays on to coordinate.
-Scope: Tickets/PR and acceptance criteria ...
-Checks: required automated gates ...; manual checks and verifier ...
-Workspace: one Ticket → use the current worktree by default; do you want to use it, or
-  create a separate worktree/branch instead? Parallel Tickets → one isolated
-  worktree/branch per Ticket ...
-Parallel work: Ticket grouping, dependencies, and concurrency ...
-Review: up to 2 total Reviewer passes, including the initial review
-Commands: inherited forbidden actions ...; any additional restrictions?
-Publication: commit off; push off; create/update PR off
+## Minimal dispatch
 
-Confirm this proposal or list your changes. If you want publication,
-explicitly identify which actions and branch/PR/repository are authorized.
-```
+Give assigned criteria/behavior, role/output, Ticket/spec references, relevant paths and dependency contracts, workspace/base/version, constraints, checks/evidence, permission boundaries, remaining limits and next owner. Link shared policy/specs instead of pasting history. Include only relevant prior decisions; agents may inspect necessary source.
 
-Use one compact interaction where possible. An incomplete answer requires a focused follow-up; it never grants publication permission or overrides a command prohibition.
+Track pending/running/complete/not-applicable/blocked/skipped with evidence. Developer off means no production changes; Reviewer off means unreviewed. Mandatory checks failed/not run prevent verified delivery.
 
-## Dispatch Packet
+## Dependency frontier
 
-Every stage receives:
+Check unknown IDs, cycles, missing external prerequisites and overlapping writable paths. Only pending Tickets with every required verified prerequisite may run. Same-checkout prerequisites can use verified local state after required intermediate gates; cross-worktree prerequisites require usable verified commits and integration scope. Block descendants of blocked Tickets, not unrelated work. Recompute after each completion rather than waiting for a full wave. Bound candidate fan-out separately from active Tickets.
 
-1. Ticket/spec reference, full criteria, and assigned role/output.
-2. Confirmed toggles and the role's bounded task.
-3. Worktree or checkout path, relevant paths/callers, and user changes to preserve.
-4. Current specialist notes, recorded user decisions, resolved findings, and blockers.
-5. Exact required checks, manual verification owners, command prohibitions, and publication permissions.
-6. Remaining review budget and the next enabled owner.
+## Delivery changes on demand
 
-Read-only discovery can fill technical context. It cannot invent requirements, user confirmation, or permissions.
+The user may request stacking/consolidation later. Lead inspects current branches, commits and PR bases, proposes affected integration order/checks, and applies only the authorized change. Revalidate the assembled diff. Do not close existing PRs, delete branches or force-push without that distinct authorization. Preserve original artifacts until cleanup is authorized.
 
-## Stage Transitions
+A role dispatch links or includes the compact core policy; do not reread it within the same context. Specialists need their assigned task/constraints, not the entire batch contract. Lead persists their final evidence once. Detailed reports and metrics are opt-in, not automatic.
 
-- Each stage is pending, complete, not applicable, or blocked. Record actual outcomes and evidence with the Ticket/spec or final handoff. A disabled stage is `skipped: user configuration`; it is not approval.
-- Advance only when the next stage has the information it needs and unresolved blockers do not invalidate it.
-- A review pass is one Reviewer review. The initial review is pass one. Continue fix/re-review work without interruption while actionable findings remain, up to two passes. Stop early on approval.
-- After pass two, report remaining findings. Do not begin a third pass or claim approval.
-- New requirements, changed toggles, new mandatory gates, conflicting decisions, missing tools, or new approval needs go to the user.
-- With Tester off, Developer performs the agreed verification. With Reviewer off, report implementation as unreviewed. With Developer off, do not make production fixes.
-- Mandatory gate failures or unavailable gates prevent a verified-delivery claim. Keep manual checks pending until the named verifier supplies evidence.
-
-## Parallel Dispatch
-
-Lead confirms the batch once, recording per-Ticket differences in the dispatch packet. For each independent Ticket, create the agreed worktree and dispatch a Lead-role `general` subagent in the current session. That subagent uses the supplied packet and dispatches only the enabled specialists for its Ticket. Dependent Tickets wait for their prerequisite commit or branch.
+Group tasks only with compatible scope/permissions/ownership and delivery diffs. Each task retains individual criteria, lifecycle, disposition and remaining gates; a packet verdict never makes partially satisfied tasks done. Changing packet boundaries invalidates affected checks/review and requires a revised material handover choice.

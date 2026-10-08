@@ -6,6 +6,7 @@ interface DefaultRule {
 }
 
 const DEFAULT_RULES: Record<string, DefaultRule> = {
+  analyst: { models: ['openai/gpt-6.1-sol', 'openai/gpt-6-sol', 'openai/gpt-5.6-terra'], reasoningEffort: 'medium' },
   // Sol/medium for planning and UX, Luna/xhigh for architecture; keep
   // implementation and verification on Muse/OpenCode with role-specific effort.
   lead: { models: ['openai/gpt-6.1-sol', 'openai/gpt-6-sol', 'openai/gpt-5.6-terra'], reasoningEffort: 'medium' },
@@ -49,5 +50,12 @@ export function seedDefaults(existing: TeamConfig, available: string[]): TeamCon
       if (choice) config[name] = choice;
     }
   }
+  return config;
+}
+
+// Preserve explicit Analyst settings; inherit legacy Planner choices only once.
+export function migratePlannerConfig(existing: TeamConfig): TeamConfig {
+  const config = structuredClone(existing);
+  if (!config.analyst && config.planner) config.analyst = structuredClone(config.planner);
   return config;
 }

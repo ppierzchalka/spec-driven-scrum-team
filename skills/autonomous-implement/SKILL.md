@@ -1,70 +1,56 @@
 ---
 name: autonomous-implement
-description: "Implement prepared GitHub or local specs with current-session subagents after confirming agent toggles."
+description: Execute ready Tickets with a configurable cost-aware team, dependency scheduling, independent proposals and chosen worktree/PR delivery.
 disable-model-invocation: true
 ---
 
 # Autonomous Implement
 
-You are the **Lead**. Turn ready Tickets or PR feedback into verified changes using a user-confirmed pipeline. Read [TEAM-POLICY.md](TEAM-POLICY.md) before acting; its task-fit, convention, command, and handoff rules apply to every stage.
+Act as the single Lead. Load [Lead instructions](references/roles/lead.md) only when they are not already present in this context. Read [TEAM-POLICY.md](TEAM-POLICY.md) and [run contract](references/run-contract.md) once per context. Consume GitHub, Azure DevOps or local Tickets using configured project tools. Do not restart Analyst's discovery.
 
-Planning/grilling happens separately using the user's chosen skills. This skill consumes the existing Ticket, issue, PR feedback, or local spec in the current session. Ask only about consequential gaps rather than restarting discovery.
+## Harness capabilities
 
-Invoke it as the `lead` agent:
+Require native multi-agent spawning and isolated candidate contexts. If unavailable, stop with the missing capability; do not silently run a single-agent substitute. Use installed named agents when available. Otherwise read the installed references/roles/<name>.md and pass those instructions to a native general subagent, explicitly identifying the role source. This is a native multi-agent workflow, not a fallback to sequential single-agent execution. Read only the assigned role entry in `references/roles/runtime.json` when native dispatch does not resolve its definition. That entry records model/effort and native-definition location. Honor explicit overrides and approved provider boundaries. A general subagent must receive the role instructions **and** enforce the selected supported model/effort/tool constraints through its native launch settings. Passing model names as prompt text is not enforcement. If an explicit selection cannot be applied/verified, report a capability gap and obtain a choice; never silently inherit instead. Inheritance remains valid when selected. Do not require exact tool names or provider IDs from another harness.
 
-- `/autonomous-implement work on ticket <ref>` — implement one ready Ticket.
-- `/autonomous-implement work on tickets <ref>, <ref>, …` — implement several Tickets.
-- `/autonomous-implement address review comments on PR #<n>` — address PR feedback on its branch.
-- `/autonomous-implement <GitHub issue URL or local spec path> [additional artifact refs]` — consume prepared artifacts directly.
+## Intake and handover
 
-## Intake
+Read one or more refined tasks with mapped ready-to-implement status (or an equivalent explicit user-supplied ready contract), criteria, relevant code/instructions, dependencies, workspace status and checks. Preserve task identities. No separate Plan session is required: prepare proportionate technical execution details during intake, consulting Architect when enabled. Return consequential requirement gaps to Analyst/user instead of implementing guesses. Resolve consequential blockers. Propose the smallest team and one run contract: roles, candidates, concurrency, gates, workspace, PR mode, permissions and limits. Reuse explicit user settings and project execution defaults recorded by Setup; present only material choices/differences, not a form of every default. Ask only for missing/material choices. Before execution explicitly ask the user to choose local delivery, separate PRs, stacked PRs or one consolidated PR unless they already supplied that choice. Never assume stacking/consolidation from a batch request. Confirmation covers the batch and its dependent Tickets/fix loops.
 
-1. Read applicable `AGENTS.md` instructions and command restrictions. Read `CONTEXT.md`, relevant ADRs, the existing code, and verification tooling.
-2. Read the supplied GitHub issue/PR or local Markdown/spec directly. Use `gh` for GitHub and local file tools for local artifacts.
-3. Read linked decisions, acceptance criteria, dependencies, and architecture/UX notes. If a source is missing, ambiguous, contradictory, or not ready, ask the user rather than guessing.
-4. Confirm that each criterion is precise and verifiable before dispatching specialists.
+Classify at intake: small (bounded, settled behavior, local surface), standard (multiple boundaries/dependencies), or complex/high-risk (uncertain design, migrations/security or broad integration). Classification chooses context depth and recommended roles, not permission to bypass requirements or gates. Reassess on new evidence; do not expand team/candidates without agreed configuration. Small still uses Developer + independent Reviewer by default.
 
-## Confirm The Pipeline — Mandatory
+Recommend lean (Developer + Reviewer), standard (add specialists with concrete value) or critical (explicit extra analysis/verification). Tester defaults to read-only test-design when enabled; explicit test-author mode assigns test files to Tester. Developer owns tests/checks otherwise; profiles are recommendations, not mandatory bundles.
 
-Before dispatching agents, editing project files, creating worktrees, or executing verification, **always ask the user which agents to toggle on/off**. This applies to implementation, follow-up, and PR-feedback work. Read [references/run-contract.md](references/run-contract.md) and use its startup question, dispatch packet, stage transitions, and stop conditions.
+## Execution packets
 
-- Recommend the smallest sufficient stage set and explain quality/cost tradeoffs. Architect is for consequential structural changes, Security for concrete trust boundaries, and UX for interface/player-interaction work. Developer stays on for production implementation.
-- Record the confirmed toggles with the Ticket/spec and state enabled/disabled stages before starting. A fully disabled specialist pipeline yields planning/handoff, not implementation.
-- Wait for explicit user confirmation even when arguments or repo defaults already specify stages. If input is unavailable, return `blocked: pipeline confirmation required` and perform no execution stages.
+Task identity, execution packet, review unit and PR unit are independent. Propose grouping bounded ready tasks with the same module/context, compatible ownership/permissions/checks and manageable combined scope. Record task IDs/criteria separately; never merge tracker identities or infer consolidated delivery from grouping. Do not group for separate PR delivery when it would blur independent diffs; use separate packets unless the agreed branching plan preserves them.
 
-## Worktrees And Dispatch
+One packet may use one Developer context and one independent Reviewer context, checking each task and interactions. Split on risk, incompatible ownership, context growth or a materially different boundary. Reuse the worker only for a coherent packet, not indefinitely across unrelated work. Keep packet review bounds and per-task results. Grouping is a recommendation in the agreed handover, not a silent change to explicit per-task execution.
 
-Read [references/worktrees.md](references/worktrees.md) before creating a worktree. Worktrees are for parallel work: create one only when multiple Tickets need isolated checkouts. Never propose a new worktree for a single Ticket; during the startup question, default to the current worktree and ask whether the user wants to use it instead of creating a separate one.
+For local sequential dependents in the same checkout, verify the prerequisite's required checks/review before dependent edits; no commit is needed solely to retain local state. For cross-worktree prerequisites require usable verified commits and authorized integration. A packet does not waive a required intermediate gate. If an intermediate review is required, count its scope separately from final packet review rather than inventing approval.
 
-- For one Ticket, Lead dispatches the enabled specialist stages directly in the current worktree (unless the user chose a separate worktree).
-- For parallel Tickets, Lead creates an isolated worktree for each confirmed Ticket and dispatches one `general` subagent per Ticket with the Lead role, complete Ticket context, confirmed toggles, worktree path, and command boundaries. Each Lead subagent dispatches its enabled specialist stages.
-- All work stays in the current session. The user opens another terminal when they want an independent session.
+## Schedule
 
-## Pipeline
+Maintain one dependency graph/stage table. Dispatch enabled specialists directly with task-local context; Lead-per-Ticket requires explicit selection for a complex subproject.
 
-Dispatch only enabled stages in this order, using the named installed agents and the complete dispatch packet. Subagents have their own context; the Ticket/spec and stage notes carry decisions and evidence between them. If a named agent or required tool is unavailable, stop that stage and report the capability gap; never claim a substitute is the configured specialist.
+- Run ready unblocked execution packets up to confirmed worker concurrency; retain per-task frontier/status. Concurrency measures writable workers, not task count.
+- Run Architect/Security/UX concurrently only when inputs are independent. Resolve shared decisions before implementation.
+- Use [independent proposals](references/proposals.md) for configured read-only candidates.
+- Enabled Tester returns independent cases in test-design mode; in explicitly selected test-author mode writes meaningful red tests before implementation. Developer implements/verifies; Reviewer independently checks the final diff.
+- Start cross-worktree dependents when all required usable verified commits exist and permissions allow commits/integration; same-checkout dependents follow the packet gate above. Never copy uncommitted changes between worktrees.
+- Serialize overlapping writable paths or assign distinct ownership.
 
-1. **Architect:** writes affected modules, boundaries, reuse, and contradictory requirements.
-2. **Security:** assesses actual trust boundaries and writes constraints. If none apply, reports not applicable.
-3. **UX:** defines interface/player flows, component structure, consistency, and accessibility. If no UX scope exists, reports not applicable.
-4. **Tester:** writes behavior-focused tests first where a meaningful seam exists, confirms the intended failure, and records manual checks when automation cannot cover the behavior.
-5. **Developer:** implements the criteria, runs applicable checks, and records actual evidence. If Tester was disabled, Developer still owns verification.
-6. **Reviewer:** checks the diff against criteria, required gates, stage notes, and test evidence. It reports only actionable, evidence-backed findings.
+## Review and delivery
 
-Each agent first reports **applicable**, **not applicable**, or **blocked**. If evidence requires a toggle change, explain it and ask the user to reconfirm before dispatching that stage.
+Default to two total Reviewer passes per review unit (one Ticket or the agreed packet); stop early on approval. Route actionable fixes to enabled owners without repeated confirmation. At the limit preserve work and report remaining finding IDs, cause, evidence and a specific next option; do not silently add passes or mark fixes approved without review. Rereview findings/deltas and invalidated evidence; broaden when shared behavior changes.
 
-## Review And Delivery
+Read [worktrees and delivery](references/worktrees.md) only for isolation, dependency integration or PR delivery; a single local task needs no delivery reference. Run required assembled-result checks and review integration effects before final delivery. Deployment requires separate authorization. Preserve unfinished/unrelated work.
 
-- Reviewer may require fixes and re-review up to two total passes, counting the first review as pass one. Run the loop without asking between passes. At pass two, report unresolved findings; do not start a third pass.
-- For interface changes, complete the agreed rendered finish checks. Missing rendered access remains not verified.
-- Run the agreed gates after final changes. Report manual checks and environment blockers explicitly; incomplete verification is not verified delivery.
-- Commit, push, create/update a PR, integrate, or remove a worktree only with explicit user authorization. Before a commit, inspect status, diff, and recent log; stage only intended files.
-- Leave a concise handoff: changed behavior, decisions, verification evidence, enabled/skipped stages, manual checks, blockers, and local changes or PR links.
+Record concise results, verified versions, checks/manual gaps, permissions and integration order. Read [usage reporting](references/usage.md) only when metrics/budgets are requested or available runtime usage is relevant. Do not create empty usage reports. Unknown cost/token values stay unknown.
 
-## Parallel Tickets
+This skill orchestrates the current agent session through instructions. It does not provide a scheduler service, tracker API client, hard billing limiter or process sandbox.
 
-1. Confirm independent/dependent grouping, concurrency limit, and any authorized stacked PR bases. Dependents wait for a usable prerequisite commit; do not copy uncommitted changes between worktrees.
-2. Create one worktree per confirmed parallel Ticket, then dispatch one Lead-role `general` subagent per Ticket in the current session.
-3. Return each Ticket's branch, worktree, verification, blockers, and integration order. Preserve unfinished work.
+Update the same task records using configured lifecycle mappings: in-progress on dispatch, in-review at review, done only after the configured definition of done. Track blocked separately and never dispatch unresolved prerequisites. Preserve unrelated labels and distinguish local completion, PR delivery and merge. See [artifact contract](../project-setup/references/artifacts.md).
 
-Use concise, precise language. Resolve material scope, permission, pipeline, or dependency changes with the user rather than improvising.
+## Compact default protocol
+
+One execution packet contains per-task identities/criteria plus criteria, relevant paths/base, role, checks and permission boundaries. Specialists return short chat results; Lead owns one task execution/result section including agreed configuration, class, checks/version, review verdict and remaining gates. Reuse existing task/spec text. No mandatory separate run record, stage-note files, empty fit headers or duplicated handoffs. For batches maintain only the needed dependency/stage table and shared run settings. Detailed artifacts remain available when useful or required. Preserve resumability and lifecycle statuses.

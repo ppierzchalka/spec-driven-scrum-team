@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refine"
+  short_description: "Turn one idea into a verifiable behavior contract"
+  default_prompt: "Use $refine to make this idea ready for implementation."

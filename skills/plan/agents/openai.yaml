@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan"
+  short_description: "Write specs and dependency-aware actionable Tickets"
+  default_prompt: "Use $plan to turn this refined idea into a spec and Tickets."

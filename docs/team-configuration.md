@@ -1,24 +1,70 @@
-# Configure the installed team
+# Installation and team configuration
 
-## Models and updated prompts
+Run `npm run setup -- /path/to/target-repo`. Select one harness in the TUI, configure agent models/effort, canonical prompt overwrite and optional Toady. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
 
-Run `npm run setup -- /path/to/target-repo` from this tool repo. Select an agent, then **Model**. Type part of a provider or model ID (for example `muse` or `openai/gpt`) to filter the list, use arrow keys to select, and press Enter. Clear the search to find **Don't set** or **Type your own model id…**.
+## Installation ownership and paths
 
-To apply updated canonical prompts to an existing install, keep **Overwrite instructions** set to **yes** for each agent you want updated. Choose **no** to preserve a locally edited prompt. The skill and its shared `TEAM-POLICY.md` are copied on each install. Open a fresh opencode session after reinstalling.
+Validate all team destinations and persona changes before the first installation write. Reject symlink roots/children, dangling links, escaping paths, incompatible file types and malformed known configuration. Recheck skill paths during copying. Source skills must use regular files/directories. These checks prevent ordinary linked-destination writes; this is not an OS sandbox or a defense against a hostile process changing paths concurrently.
 
-## Pipeline selection
+Each installed skill has a .team-owner.json marker. Existing unmarked folders (including previous versions and external packages with the same name) require explicit adoption. Interactive setup asks once for listed collisions; noninteractive setup stops unless you supply `--replace-skills`. Review the listed folders first: adoption authorizes overwriting their shipped paths. Other skills are untouched. Custom contents within owned shipped paths can be replaced during refresh; back up intentional skill edits first. No folder deletion is automatic.
 
-Invoke `/autonomous-implement` as Lead with your Ticket references or PR feedback. Before execution, Lead asks you to confirm the on/off state of architect, security, UX, tester, developer, and reviewer, plus relevant checks and command/publication permissions. Lead stays on as coordinator.
+Refresh canonical agent instructions with overwrite=yes; overwrite=no retains edited prompts while updating model choices. Operator-defined native permissions, tools, hooks and MCP integrations survive instruction refresh. Shared procedures always refresh. Legacy planner settings migrate to Analyst during interactive configuration; after successful installation, known unchanged retired `planner` definitions and their portable role copy are removed for the selected harness. Model/effort preferences do not prevent cleanup; edited instructions, permissions, tools, integrations, unknown metadata or malformed files are preserved and reported for manual migration. Cleanup never scans unrelated names or other harness folders.
 
-Repo defaults and command arguments are suggestions for that confirmation, not a way to bypass it. For local game mechanics, security is normally proposed off; networking, accounts, untrusted content, or sensitive data can make it relevant. Your confirmed selection governs the run and its fix loops.
+Preflight is read-only validation, not a filesystem transaction. Disk errors or concurrent modifications after validation can still cause partial writes. Do not run the installer against a concurrently mutated checkout.
 
-## Provider-balanced model defaults
+## Selected-harness layout
+
+| Harness | Agents | Skills | Model default |
+| --- | --- | --- | --- |
+| OpenCode | .opencode/agents/*.md | .opencode/skills/ | Existing agreed routing matrix below |
+| Claude Code | .claude/agents/*.md | .claude/skills/ | Inherit |
+| Codex | .codex/agents/*.toml | .agents/skills/ | Inherit |
+| Antigravity | .agents/agents/*.md | .agents/skills/ | Inherit; optional flash/pro tiers |
+| Copilot | .github/agents/*.agent.md | .github/skills/ | Inherit |
+
+CLI/GUI discovery depends on version, project trust and native multi-agent access. The installer writes formats; it does not enable runtime features. Portable role bodies and references/roles/runtime.json preserve the selected model/effort and native-definition path for general-subagent dispatch. Model text in a prompt is not a runtime override: unavailable explicit selections require a capability decision rather than silent inheritance.
+
+Fresh Reviewer defaults use OpenCode edit-deny, Claude denied Write/Edit/NotebookEdit and Codex read-only sandbox. Existing native controls take precedence on reinstall. Removing edit tools alone does not stop shell writes; enforce meaningful shell/network limits in the runtime. Architecture/Security/UX retain possible authorized document persistence and prompt ownership boundaries. Antigravity integrations can be added in native configuration; defaults are not a universal MCP/browser setup.
+
+## Procedures and team
+
+Eight named agents remain available: Analyst, Lead, Architect, Security, UX, Tester, Developer, Reviewer. Twelve skills contain the methods:
+
+| Activity | Skill |
+| --- | --- |
+| Conventions / direction / decomposition / refinement / optional technical plan | project-setup / wayfinder / slice / refine / plan |
+| Execution coordination | autonomous-implement |
+| Structural decision / trust-boundary assessment / interaction contract | architecture-assess / security-assess / interface-assess |
+| Independent cases / implementation / independent review | test-design / implement-task / review-change |
+
+No procedure depends on external Matt Pocock skills being installed. Existing TDD/debugging skills can be used when relevant; do not invoke two procedures for the same work automatically. Agents load only assigned procedures and absent role/core instructions. Standalone consultation needs no Ticket, Lead or pipeline.
+
+Wayfinder/Refine support unlimited resumable sessions, at most three consequential questions per turn, and a small Current state section in the owning artifact. Long exploration is valid. Slice creates real tasks ready-for-refinement; Refine updates the same IDs until ready-to-implement. Plan remains optional. Existing analysis skills also select questions by decision prerequisites, recommend options, actively challenge domain terms/relationships against code and concrete scenarios, and persist settled vocabulary inline. ADRs require meaningful reversal cost, a future need for rationale and a genuine tradeoff unless explicitly requested. Refine checks remaining Developer guesses and behavioral verification seams before accepted readiness. These are integrated disciplines, not additional skills, sessions or mandatory reports.
+
+## Execution choices
+
+Setup optionally stores chosen execution preferences in docs/agents/execution.md or the existing equivalent. They are separate from team.config.json model settings. Precedence: current invocation, explicit session choices, project preferences, lean recommendations. Defaults are not permission to publish/deploy.
+
+Lead classifies scope/uncertainty/risk and recommends lean Developer+Reviewer. Extra specialists need concrete value. Tester is test-design/read-only by default when enabled; explicit test-author assigns test ownership separately. Developer owns tests otherwise. Optional independent candidates use distinct lenses, evidence and a bounded evaluation; consensus is not proof.
+
+Group bounded related tasks into an agreed execution packet when context, permissions, checks and delivery align. One Developer and independent Reviewer can cover the packet, with separate task IDs/criteria/statuses and interaction checks. Do not group away separate PR diffs. Split unrelated/large/risky work or conflicting ownership. Required intermediate dependency gates still apply; same-checkout sequential tasks may use verified local state, while cross-worktree dependencies require verified usable commits and integration permission.
+
+One local packet uses current checkout. Concurrent writable packets use isolated worktrees; concurrency counts workers, not tasks. One Lead manages the frontier without wave-wide waits or Lead-per-task by default.
+
+Before execution Lead asks for local/separate/stacked/consolidated delivery unless already explicitly chosen. Stack/consolidate remain available later on demand; no automatic PR closure, deletion, force push, merge or deployment. Effective contract is recorded once. Detailed run-contract/proposal/worktree references load only when relevant.
+
+Default review budget: two total passes per agreed review unit, stopping on approval. Delta rereview reuses reliable unchanged evidence. Remaining findings or missing gates at the limit are reported with the next option; unreviewed fixes are not approved. Integration invalidates relevant evidence and requires assembled checks/review.
+
+Optional usage reporting accepts sanitized actual aggregates, tracks coverage/unknowns and compares cost per correctly delivered result. The local summarize-usage script does not fetch billing or export conversations. Cached/reasoning fields may overlap provider totals. Hard monetary limits require runtime enforcement.
+
+## OpenCode provider-balanced model defaults
 
 The default allocation puts OpenAI capacity into planning, architecture, and UX; OpenCode Go handles implementation/tests, and OpenCode Go/Zen handles review/security. Effort is selected per role rather than raised uniformly. It is a routing policy, not a benchmark or a guarantee about a model's capabilities, usage limits, or billing.
 
 | Agent | Preferred model | Effort | Workload rationale |
 | --- | --- | --- | --- |
-| Lead | `openai/gpt-6.1-sol` | medium | Requirements grilling, specs, overall planning, and coordination |
+| Analyst | `openai/gpt-6.1-sol` | medium | Direction, bounded refinement, specs, Tickets and tracker conventions |
+| Lead | `openai/gpt-6.1-sol` | medium | Execution scheduling, run configuration and coordination |
 | Architect | `openai/gpt-6-luna` | xhigh | Architecture, invariants, and consequential tradeoffs |
 | Security | `opencode-go/deepseek-v4-pro` | high | Scoped trust-boundary assessment when enabled |
 | UX | `openai/gpt-6.1-sol` | medium | Product-specific visual/interaction decisions and rendered contract review |
@@ -42,52 +88,20 @@ Only enabled roles consume work for a given run; the allocation changes naturall
 
 **Explicit upgrades:** for difficult bugs, disputed review findings, or a sensitive threat model that exceeds the current model's demonstrated capability, Lead can recommend a stronger model for that role and bounded task. Sol, Terra, or `openai/gpt-6-luna` are available choices in the checked catalog. Raising effort above the role's confirmed setting is also a separate, explicit user choice, not an automatic response to every failure. Record approved reconfiguration in the run contract and return to the normal defaults when the exception is finished.
 
-## Your command restrictions
+## Optional Toady
 
-The shared policy distinguishes **forbidden** actions (stop and find an allowed alternative) from **approval-required** actions (wait for scoped authorization). Confirming the pipeline does not waive prohibitions or automatically authorize publication. Approval covers the specified action and target for that pipeline.
+One opt-in TUI switch or `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona affects user-facing tone, not source/docs, internal handoffs or honest review.
 
-Add your preferences to the target repo's `AGENTS.md`. For example:
+| Harness | Startup instruction |
+| --- | --- |
+| OpenCode | .opencode/personas/toady.md in root instructions array |
+| Claude Code | Managed block in CLAUDE.md |
+| Codex | AGENTS.override.md if present, otherwise AGENTS.md |
+| Copilot | Managed block in .github/copilot-instructions.md |
+| Antigravity | .agents/rules/toady.md, always_on |
 
-```markdown
-## Team command policy
+Preserve unrelated rules/provider settings; disabling removes only the managed block/entry. State is stored per selected harness; shared native rules may be discovered by other tools. Use a fresh session after changes.
 
-- Forbidden: `git reset --hard`, `git clean`, force pushes, and hook bypasses.
-- Preserve existing user changes and worktrees.
-- Ask before deleting existing files or running database migrations.
-- Commits, pushes, PR creation/updates, and deployments require my explicit authorization for the current run.
-```
+## Validation status
 
-Use your actual forbidden commands and allowed alternatives. All seven agents read the shared policy and applicable project instructions; Lead also passes restrictions to subagents. Commands executed through scripts or other agents have the same restrictions.
-
-Prompt instructions guide model behavior. Configure runtime tool permissions or hooks as well when you need commands mechanically blocked.
-
-## Workflow and evidence contracts
-
-### Plan elsewhere, implement in your terminal
-
-Use your chosen grilling/planning skills and save the agreed specs, criteria, decisions, and dependencies as GitHub issues or local files. Then invoke the single `/autonomous-implement` skill with those existing artifacts:
-
-```text
-/autonomous-implement https://github.com/<owner>/<repo>/issues/<number>
-/autonomous-implement .scratch/<feature>/spec.md
-```
-
-No handover skill, preparation command, or extra dispatch document is required. The implementation session reads the supplied artifacts and linked decisions directly; it does not need planning-chat history or tracker setup for a directly supplied local spec. It asks focused questions only if consequential requirements are missing or contradictory.
-
-A single Ticket uses the current worktree; Lead asks whether you want to use it instead of proposing a new one. Parallel Tickets each use a new branch and independent worktree. Lead dispatches specialist subagents directly for one Ticket. For parallel Tickets, Lead dispatches one Lead-role subagent per Ticket in the current session. Open another terminal yourself when you want an independent session. Dependent tasks wait for an agreed usable prerequisite commit.
-
-Worktrees isolate Git branches and checkouts only. Publication, integration, and cleanup require scoped permission. See the installed `references/worktrees.md` for setup rules.
-
-The installer ships only `/autonomous-implement` and its references. Reset Architect to its new Luna/xhigh default when applying the revised allocation; ordinary reconfiguration preserves saved model choices.
-
-### GLM 5.2 option
-
-The local catalog includes `opencode-go/glm-5.2` with `high` and `max` variants, and the effort picker supports them. “Max” is an effort setting, not a separately named model. Pricing/quota research and replacement recommendations are in [research/glm-opencode-go.md](research/glm-opencode-go.md). It is available as an explicit experiment; the current role defaults use the agreed matrix above.
-
-Every role has an ordered workflow with completion criteria. Results use a common task-fit, outcome, scope, findings, verification, remaining-work, and next-owner format. Findings have consistent severity; Reviewer must explicitly conclude approved, changes required, or blocked.
-
-Lead records the confirmed configuration separately from `team.config.json`, which remains the installer's per-agent model settings. The configuration covers all six toggles, scope, workspace/base, required/manual checks, fix-round limit, command restrictions, and publication permissions. See the installed skill's `references/run-contract.md` for the exact startup question and dispatch packet.
-
-Framework/engine guidance lives in the skill's conditional `references/stack-guidance.md`. Agents consult the relevant section rather than applying web-specific advice to every game task.
-
-For behavior-regression scenarios and evidence requirements, see [prompt-evaluation.md](prompt-evaluation.md).
+Package tests check all five layouts and local links, collision handling, path safety and metadata preservation. These are not proof of discovery/spawning/model adherence in each CLI/GUI. Codex-target installation and fresh-context workflow tests run in disposable repos. Corporate OpenCode/Gemini/Vertex latency, tokens and native permission behavior require measurement on that runtime. Follow docs/prompt-evaluation.md before claiming a harness/model behavior pass.
