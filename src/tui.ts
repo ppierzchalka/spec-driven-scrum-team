@@ -1,4 +1,6 @@
 import { autocomplete, select, text, intro, outro, cancel, note } from '@clack/prompts';
+import { loadToadyRulesFile } from './toady.js';
+import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { availableModels, deriveEffortLevels, detectEnvProviders, detectConfigProviders } from './model-catalog.js';
 import { migratePlannerConfig, seedDefaults, resolveDefault, resetAgent, resetAllToDefaults } from './defaults.js';
@@ -16,6 +18,7 @@ export async function selectHarness(): Promise<Harness> {
 
 export interface TuiResult {
   toadyMode?: boolean;
+  toadyRules?: string;
   config: TeamConfig;
   overwrite: Record<string, boolean>;
 }
@@ -183,7 +186,7 @@ async function configureAgent(
   }
 }
 
-export async function runTui(options: { existing: TeamConfig; harness?: Harness; toadyMode?: boolean }): Promise<TuiResult> {
+export async function runTui(options: { existing: TeamConfig; harness?: Harness; toadyMode?: boolean; toadyRules?: string }): Promise<TuiResult> {
   intro('Spec-Driven Scrum Team');
 
   const harness = options.harness ?? 'opencode';
@@ -197,6 +200,7 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
   for (const name of AGENT_NAMES) overwrite[name] = true;
 
   let toadyMode = options.toadyMode ?? false;
+  let toadyRules = options.toadyRules ?? '';
   let done = false;
   while (!done) {
     const agent = guard(
@@ -209,12 +213,30 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
             hint: currentHint(config[name]),
           })),
           { value: '__reset_all__', label: harness === 'opencode' ? 'Reset all to defaults' : 'Reset all to inherited models', hint: 'discard manual model picks' },
-          { value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — cartoon henchman persona' : 'off' },
+          { value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — persona + TypeScript/quality rules' : 'off' },
+          ...(toadyMode ? [{ value: '__toady_rules__', label: 'Toady project rules', hint: toadyRules ? 'custom rules saved' : 'add commit conventions or tool restrictions' }] : []),
           { value: '__install__', label: 'Install & exit', hint: 'write files into the target repo' },
         ],
       }),
     );
     if (agent === '__toady__') { toadyMode = !toadyMode; continue; }
+    if (agent === '__toady_rules__') {
+      const action = guard(await select<string>({ message: 'Additional rules embedded in the startup persona', options: [
+        { value: 'load', label: 'Import Markdown/text file', hint: 'content is copied into the persona; no separate policy installed' },
+        { value: 'clear', label: 'Clear additional rules', hint: 'keep built-in quality rules and existing repo conventions' },
+        { value: 'back', label: 'Back', hint: 'keep current rules' },
+      ] }));
+      if (action === 'clear') toadyRules = '';
+      if (action === 'load') {
+        const path = guard(await text({ message: 'Path to rules file (no credentials/secrets)', validate: value => {
+          try { loadToadyRulesFile(resolve(value?.trim() ?? '')); return undefined; }
+          catch (error) { return error instanceof Error ? error.message : 'Cannot read rules'; }
+        } }));
+        toadyRules = loadToadyRulesFile(resolve(path.trim()));
+        note('Rules will be embedded in the selected harness startup persona and retained on reinstall.');
+      }
+      continue;
+    }
     if (agent === '__install__') {
       done = true;
       break;
@@ -230,5 +252,5 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
   }
 
   outro('Install complete.');
-  return { config, overwrite, toadyMode };
+  return { config, overwrite, toadyMode, toadyRules };
 }

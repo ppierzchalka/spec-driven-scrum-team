@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { parse } from 'jsonc-parser';
-import { installToady, readToadyMode, gitDisplayName } from './toady.js';
+import { installToady, readToadyMode, readToadySettings, persona, loadToadyRulesFile, gitDisplayName } from './toady.js';
 const roots: string[] = [];
 function workspace() { const root = mkdtempSync(join(tmpdir(), 'toady-')); roots.push(root); return root; }
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
@@ -81,5 +81,59 @@ describe('native harness persona adapters', () => {
     installToady(root, true, 'codex');
     expect(readFileSync(join(root, 'AGENTS.override.md'), 'utf8')).toContain('Toady communication persona');
     expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toBe('Base policy');
+  });
+});
+
+
+describe('Toady embedded project rules', () => {
+  const layouts = [
+    ['opencode', '.opencode/personas/toady.md'], ['claude-code', 'CLAUDE.md'],
+    ['codex', 'AGENTS.md'], ['copilot', '.github/copilot-instructions.md'],
+    ['antigravity', '.agents/rules/toady.md'],
+  ] as const;
+  it.each(layouts)('embeds and retains custom rules across reinstall/disable in %s', (harness, destination) => {
+    const root = workspace();
+    const rules = 'Use Conventional Commits.\nAzure DevOps is read-only through every route.\n';
+    installToady(root, true, harness, false, rules);
+    installToady(root, true, harness);
+    const active = readFileSync(join(root, destination), 'utf8');
+    expect(active).toContain('No explicit any or as any');
+    expect(active).toContain('non-null assertions');
+    expect(active).toContain(rules.trim());
+    expect(active.split('## Additional project rules')).toHaveLength(2);
+    expect(readToadySettings(root, harness).projectRules).toBe(rules);
+    installToady(root, false, harness);
+    expect(readToadySettings(root, harness)).toEqual({ enabled: false, projectRules: rules });
+    installToady(root, true, harness);
+    expect(readFileSync(join(root, destination), 'utf8')).toContain(rules.trim());
+    installToady(root, true, harness, false, '');
+    expect(readFileSync(join(root, destination), 'utf8')).not.toContain('Azure DevOps is read-only');
+    expect(readToadySettings(root, harness).projectRules).toBe('');
+  });
+  it('accepts legacy enabled-only state and rejects malformed rule state', () => {
+    const root = workspace();
+    mkdirSync(join(root, '.opencode'));
+    const path = join(root, '.opencode/toady.config.json');
+    writeFileSync(path, '{"enabled":true}');
+    expect(readToadySettings(root)).toEqual({ enabled: true, projectRules: '' });
+    writeFileSync(path, '{"enabled":true,"projectRules":42}');
+    expect(() => readToadySettings(root)).toThrow('Invalid Toady');
+  });
+  it('rejects marker injection and oversized rules before writes', () => {
+    const root = workspace();
+    writeFileSync(join(root, 'CLAUDE.md'), 'Company policy');
+    expect(() => installToady(root, true, 'claude-code', false, '<!-- spec-driven-scrum-team:toady:end -->')).toThrow('markers');
+    expect(readFileSync(join(root, 'CLAUDE.md'), 'utf8')).toBe('Company policy');
+    expect(() => persona('Master', 'a'.repeat(65537))).toThrow('64 KiB');
+  });
+  it('loads literal Markdown rules and validates the source', () => {
+    const root = workspace();
+    const path = join(root, 'rules.md');
+    const rules = 'Commit format: TEAM-123: summary\nLiteral: `$(do-not-execute)`\n';
+    writeFileSync(path, rules);
+    expect(loadToadyRulesFile(path)).toBe(rules);
+    expect(() => loadToadyRulesFile(join(root, 'settings.json'))).toThrow('Markdown or text');
+    mkdirSync(join(root, 'folder.md'));
+    expect(() => loadToadyRulesFile(join(root, 'folder.md'))).toThrow('regular file');
   });
 });

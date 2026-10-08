@@ -90,7 +90,7 @@ Only enabled roles consume work for a given run; the allocation changes naturall
 
 ## Optional Toady
 
-One opt-in TUI switch or `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona affects user-facing tone, not source/docs, internal handoffs or honest review.
+One opt-in TUI switch or `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona tone affects user-facing conversation, not source/docs or internal handoff style. Toady also embeds strict TypeScript/code-quality rules, existing formatting/commit conventions and access-boundary guidance; these apply to execution and are passed to subagents.
 
 | Harness | Startup instruction |
 | --- | --- |
@@ -99,6 +99,10 @@ One opt-in TUI switch or `--toady` / `--no-toady` works for the selected harness
 | Codex | AGENTS.override.md if present, otherwise AGENTS.md |
 | Copilot | Managed block in .github/copilot-instructions.md |
 | Antigravity | .agents/rules/toady.md, always_on |
+
+Under Toady mode, choose **Toady project rules** to import additional Markdown/text instructions (custom or Conventional Commits, Azure DevOps read-only, project guidelines). The content is embedded in the same startup persona; no separate policy document is installed. It is retained in per-harness Toady settings across reinstall and disable/re-enable; import a replacement or clear only additional rules from the TUI. Do not include credentials/secrets. Built-in quality rules apply to changed TypeScript; existing company/runtime restrictions remain authoritative.
+
+Noninteractive: `npm run setup -- /path/to/target --harness=opencode --defaults --toady --toady-rules=/path/to/rules.md`. Use `--clear-toady-rules` to reset additional rules. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers are rejected. Read-only guidance only restricts a named service when the project/custom rules actually designate it read-only; runtime least-privilege credentials/tools provide enforcement. Disabling Toady removes both its tone and its embedded rules from active startup loading; keep company-enforced restrictions in native/runtime settings.
 
 Preserve unrelated rules/provider settings; disabling removes only the managed block/entry. State is stored per selected harness; shared native rules may be discovered by other tools. Use a fresh session after changes.
 

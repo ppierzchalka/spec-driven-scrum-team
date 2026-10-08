@@ -7,7 +7,7 @@ import { runTui, selectHarness, enumerateAvailableModels, AGENT_NAMES } from './
 import { installTeam, preflightTeam, conflictingSkills } from './installTeam.js';
 import { resolveDefault } from './defaults.js';
 import { HARNESS_LAYOUTS, isHarness } from './harness.js';
-import { installToady, readToadyMode, toadyStatePath } from './toady.js';
+import { installToady, readToadySettings, loadToadyRulesFile, toadyStatePath } from './toady.js';
 import { checkInstallPath } from './installPaths.js';
 import type { TeamConfig } from './types.js';
 
@@ -59,7 +59,13 @@ async function main(): Promise<void> {
   }
 
   if (args.includes('--toady') && args.includes('--no-toady')) throw new Error('Choose --toady or --no-toady');
-  let toadyMode = readToadyMode(target, harness);
+  const toadySettings = readToadySettings(target, harness);
+  let toadyMode = toadySettings.enabled;
+  let toadyRules = toadySettings.projectRules;
+  const rulesFlag = args.find(arg => arg.startsWith('--toady-rules='));
+  if (rulesFlag) toadyRules = loadToadyRulesFile(resolve(rulesFlag.slice('--toady-rules='.length)));
+  if (args.includes('--clear-toady-rules')) toadyRules = '';
+  if (rulesFlag && args.includes('--clear-toady-rules')) throw new Error('Choose --toady-rules or --clear-toady-rules');
   if (args.includes('--toady')) toadyMode = true;
   if (args.includes('--no-toady')) toadyMode = false;
   let config: TeamConfig;
@@ -83,10 +89,11 @@ async function main(): Promise<void> {
       console.log('No recommended Sol model is available for UX. An unset UX model inherits opencode’s current model; select a suitable model explicitly before running design work.');
     }
   } else {
-    const tui = await runTui({ existing, harness, toadyMode });
+    const tui = await runTui({ existing, harness, toadyMode, toadyRules });
     config = tui.config;
     overwrite = tui.overwrite;
     toadyMode = tui.toadyMode ?? false;
+    toadyRules = tui.toadyRules ?? toadyRules;
   }
 
   const options = { definitionsDir, skillDir, config, targetDir: target, overwrite, harness, replaceSkills: args.includes('--replace-skills') };
@@ -97,10 +104,11 @@ async function main(): Promise<void> {
     options.replaceSkills = true;
   }
   preflightTeam(options);
+  if (rulesFlag && !toadyMode) throw new Error('Enable Toady mode to install project rules');
   const configurePersona = toadyMode || existsSync(join(target, toadyStatePath(harness))) || args.includes('--no-toady');
-  if (configurePersona) installToady(target, toadyMode, harness, true);
+  if (configurePersona) installToady(target, toadyMode, harness, true, toadyRules);
   const result = installTeam(options);
-  const personaPaths = configurePersona ? installToady(target, toadyMode, harness) : [];
+  const personaPaths = configurePersona ? installToady(target, toadyMode, harness, false, toadyRules) : [];
 
   console.log(`\nInstalled ${harness} into ${target}`);
   for (const path of personaPaths) console.log(`  wrote  ${path}`);

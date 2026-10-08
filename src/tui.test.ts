@@ -1,3 +1,6 @@
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@clack/prompts', () => ({
@@ -60,4 +63,26 @@ it.each(['claude-code', 'codex', 'copilot', 'antigravity'] as const)('offers Toa
   const result = await runTui({ existing: {}, harness });
   expect(result.toadyMode).toBe(true);
   expect(vi.mocked(select).mock.calls[0][0].options.some((option) => option.value === '__toady__')).toBe(true);
+});
+
+
+it('imports project rules under Toady and keeps model settings untouched', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'toady-tui-'));
+  try {
+    const path = join(root, 'rules.md');
+    writeFileSync(path, 'Azure DevOps is read-only. Use custom commit format.');
+    vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('load').mockResolvedValueOnce('__install__');
+    vi.mocked(text).mockResolvedValueOnce(path);
+    const result = await runTui({ existing: { lead: { model: 'vertex/gemini' } }, harness: 'codex', toadyMode: true, toadyRules: 'old' });
+    expect(result.toadyRules).toBe('Azure DevOps is read-only. Use custom commit format.');
+    expect(result.config.lead?.model).toBe('vertex/gemini');
+    expect(result.toadyMode).toBe(true);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+it('clears only extra Toady rules', async () => {
+  vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('clear').mockResolvedValueOnce('__install__');
+  const result = await runTui({ existing: {}, harness: 'copilot', toadyMode: true, toadyRules: 'custom' });
+  expect(result.toadyRules).toBe('');
+  expect(result.toadyMode).toBe(true);
 });
