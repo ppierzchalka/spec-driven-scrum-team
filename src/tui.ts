@@ -228,7 +228,7 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
       ] }));
       if (action === 'clear') toadyRules = '';
       if (action === 'load') {
-        const path = guard(await text({ message: 'Path to rules file (no credentials/secrets)', validate: value => {
+        const path = guard(await text({ message: `Path to rules file (relative to ${process.cwd()}, or absolute; no credentials/secrets)`, validate: value => {
           try { loadToadyRulesFile(resolve(value?.trim() ?? '')); return undefined; }
           catch (error) { return error instanceof Error ? error.message : 'Cannot read rules'; }
         } }));
