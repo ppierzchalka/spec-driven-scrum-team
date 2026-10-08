@@ -18,6 +18,8 @@ export interface InstallOptions {
 }
 
 export interface InstallResult {
+  removed: string[];
+  legacyPreserved: string[];
   written: string[];
   preserved: string[];
   configPath: string;

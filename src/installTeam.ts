@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { parse as parseToml, stringify as stringifyToml } from 'smol-toml';
 import { checkInstallPath, checkInstallTree, checkInstallFile, checkInstallDirectory } from './installPaths.js';
+import { planLegacyCleanup, removeLegacyDefinitions } from './legacyAgents.js';
 import type { InstallOptions, InstallResult, TeamConfig } from './types.js';
 import { HARNESS_LAYOUTS, renderAgent, updateTomlChoice, applyHarnessChoice, reconcileAntigravityTools, type Harness } from './harness.js';
 
@@ -70,6 +71,7 @@ function copySkillFiles(source: string, dest: string, root: string): void {
 /** Read-only validation of the entire team install before persona or team writes. */
 export function preflightTeam(options: InstallOptions): void {
   const harness = options.harness ?? 'opencode';
+  planLegacyCleanup(options);
   if (!existsSync(join(options.skillDir, 'SKILL.md'))) throw new Error('Missing autonomous-implement skill source');
   for (const choice of Object.values(options.config)) applyHarnessChoice({}, choice, harness);
   for (const path of [HARNESS_LAYOUTS[harness].agents, HARNESS_LAYOUTS[harness].skills, HARNESS_LAYOUTS[harness].config]) {
@@ -215,5 +217,5 @@ export function installTeam(options: InstallOptions): InstallResult {
   writeFileSync(join(rolesDir, 'runtime.json'), JSON.stringify({ harness, agents: runtimeAgents }, null, 2) + '\n');
   const configPath = writeConfig(targetDir, config, harness);
 
-  return { written, preserved, configPath, skillPath, skillPaths };
+  return { written, preserved, configPath, skillPath, skillPaths, ...removeLegacyDefinitions(options) };
 }
