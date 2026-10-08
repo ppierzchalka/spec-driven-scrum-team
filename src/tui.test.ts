@@ -4,16 +4,19 @@ import { join } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('./prompts.js', () => ({
-  select: vi.fn(), text: vi.fn(), autocomplete: vi.fn(),
+  select: vi.fn(), checkbox: vi.fn(), text: vi.fn(), autocomplete: vi.fn(),
   intro: vi.fn(), outro: vi.fn(), cancel: vi.fn(), note: vi.fn(),
 }));
 
 vi.mock('./file-picker.js', () => ({ browseRulesFile: vi.fn() }));
 import { browseRulesFile } from './file-picker.js';
-import { select, text, autocomplete } from './prompts.js';
+import { select, checkbox, text, autocomplete } from './prompts.js';
 import { selectHarness, runTui } from './tui.js';
 
-beforeEach(() => { vi.clearAllMocks(); });
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(checkbox).mockImplementation(async ({ options }) => options.filter(option => option.checked).map(option => option.value));
+});
 
 describe('selected harness TUI', () => {
   it('offers exactly the five supported harnesses', async () => {
@@ -54,6 +57,7 @@ describe('selected harness TUI', () => {
 });
 
 it('toggles and retains the OpenCode persona setting independently of model choices', async () => {
+  vi.mocked(checkbox).mockResolvedValueOnce([]).mockResolvedValueOnce(['toady']);
   vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
   const result = await runTui({ existing: { lead: { model: 'vertex/gemini' } }, harness: 'opencode', toadyMode: false });
   expect(result.toadyMode).toBe(true);
@@ -61,6 +65,7 @@ it('toggles and retains the OpenCode persona setting independently of model choi
 });
 
 it.each(['claude-code', 'codex', 'copilot', 'antigravity'] as const)('offers Toady for %s', async (harness) => {
+  vi.mocked(checkbox).mockResolvedValueOnce([]).mockResolvedValueOnce(['toady']);
   vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__toady__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
   const result = await runTui({ existing: {}, harness });
   expect(result.toadyMode).toBe(true);
@@ -116,6 +121,7 @@ it('keeps existing rules when leaving the browser without a selection', async ()
 
 
 it('separates configuration stages and retains edits when navigating back', async () => {
+  vi.mocked(checkbox).mockResolvedValueOnce([]).mockResolvedValueOnce(['toady']);
   vi.mocked(select)
     .mockResolvedValueOnce('developer')
     .mockResolvedValueOnce('model')
@@ -152,4 +158,23 @@ it('separates configuration stages and retains edits when navigating back', asyn
     expect(menu.options.some(option => option.value === '__toady__')).toBe(true);
     expect(menu.options.some(option => ['developer', '__install__'].includes(String(option.value)))).toBe(false);
   }
+});
+
+
+it('starts personal instructions with a native checkbox and preserves an enabled setting', async () => {
+  vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
+  const result = await runTui({ existing: {}, harness: 'codex', toadyMode: true });
+  expect(result.toadyMode).toBe(true);
+  expect(checkbox).toHaveBeenCalledWith({
+    message: 'Toady mode — Space toggles, Enter confirms',
+    options: [expect.objectContaining({ value: 'toady', checked: true })],
+  });
+});
+
+it('allows unchecking Toady while keeping additional rules', async () => {
+  vi.mocked(checkbox).mockResolvedValueOnce([]);
+  vi.mocked(select).mockResolvedValueOnce('__next__').mockResolvedValueOnce('__next__').mockResolvedValueOnce('__install__');
+  const result = await runTui({ existing: {}, harness: 'codex', toadyMode: true, toadyRules: 'Keep strict types.' });
+  expect(result.toadyMode).toBe(false);
+  expect(result.toadyRules).toBe('Keep strict types.');
 });

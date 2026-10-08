@@ -1,4 +1,4 @@
-import { autocomplete, select, text, outro, cancel, note } from './prompts.js';
+import { autocomplete, select, checkbox, text, outro, cancel, note } from './prompts.js';
 import { browseRulesFile } from './file-picker.js';
 import { loadToadyRulesFile } from './toady.js';
 import { resolve } from 'node:path';
@@ -187,6 +187,14 @@ async function configureAgent(
   }
 }
 
+async function pickToady(enabled: boolean): Promise<boolean> {
+  const selected = guard(await checkbox<string>({
+    message: 'Toady mode — Space toggles, Enter confirms',
+    options: [{ value: 'toady', label: 'Toady mode', hint: 'Cartoon henchman persona; additional rules work independently', checked: enabled }],
+  }));
+  return selected.includes('toady');
+}
+
 export async function runTui(options: { existing: TeamConfig; harness?: Harness; toadyMode?: boolean; toadyRules?: string; targets?: string[] }): Promise<TuiResult> {
   const harness = options.harness ?? 'opencode';
   const models = harness === 'opencode' ? enumerateAvailableModels() : [];
@@ -201,6 +209,7 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
   let toadyMode = options.toadyMode ?? false;
   let toadyRules = options.toadyRules ?? '';
   let personalInstructionsExplained = false;
+  let enterPersonalInstructions = true;
   let step: 'agents' | 'persona' | 'install' = 'agents';
   while (true) {
     if (step === 'install') {
@@ -221,12 +230,17 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
       }));
       if (action === '__install__') break;
       step = 'persona';
+      enterPersonalInstructions = true;
       continue;
     }
     if (step === 'persona' && !personalInstructionsExplained) {
       personalInstructionsExplained = true;
       note('Toady and additional rules are personal: stored outside the repo in your user configuration and applied across projects for this harness.', 'Step 3 of 4 — Personal instructions');
       if (harness === 'copilot') note('The personal instruction file is supported by Copilot CLI; IDE personal settings are separate.', 'Copilot scope');
+    }
+    if (step === 'persona' && enterPersonalInstructions) {
+      toadyMode = await pickToady(toadyMode);
+      enterPersonalInstructions = false;
     }
     const agent = guard(
       await select<string>({
@@ -247,9 +261,9 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
         ],
       }),
     );
-    if (agent === '__next__') { step = step === 'agents' ? 'persona' : 'install'; continue; }
+    if (agent === '__next__') { step = step === 'agents' ? 'persona' : 'install'; enterPersonalInstructions = true; continue; }
     if (agent === '__back__') { step = 'agents'; continue; }
-    if (agent === '__toady__') { toadyMode = !toadyMode; continue; }
+    if (agent === '__toady__') { toadyMode = await pickToady(toadyMode); continue; }
     if (agent === '__toady_rules__') {
       const action = guard(await select<string>({ message: 'Additional rules embedded in the startup persona', options: [
         { value: 'browse', label: 'Browse for a rules file', hint: 'navigate folders; Markdown/text files' },

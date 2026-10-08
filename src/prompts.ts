@@ -1,4 +1,4 @@
-import { select as choose, input, search, confirm as askConfirm } from '@inquirer/prompts';
+import { select as choose, input, search, confirm as askConfirm, checkbox as check } from '@inquirer/prompts';
 
 interface Option<Value> { value: Value; label?: string; hint?: string }
 export class SetupCancelledError extends Error {
@@ -14,6 +14,9 @@ export async function promptResult<T>(run: () => Promise<T>): Promise<T | symbol
 /** Adapt option data only; rendering, navigation, filtering and terminal cleanup belong to Inquirer. */
 export function select<Value>(options: { message: string; options: Option<Value>[] }): Promise<Value | symbol> {
   return promptResult(() => choose({ message: options.message, choices: options.options.map(option => ({ value: option.value, name: option.label, description: option.hint })) }));
+}
+export function checkbox<Value>(options: { message: string; options: (Option<Value> & { checked?: boolean })[] }): Promise<Value[] | symbol> {
+  return promptResult(() => check({ message: options.message, choices: options.options.map(option => ({ value: option.value, name: option.label, description: option.hint, checked: option.checked })) }));
 }
 export function autocomplete<Value>(options: { message: string; options: Option<Value>[]; placeholder?: string }): Promise<Value | symbol> {
   return promptResult(() => search({ message: options.message, source: term => options.options
