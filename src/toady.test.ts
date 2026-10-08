@@ -1,199 +1,120 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, existsSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { parse } from 'jsonc-parser';
-import { installToady, readToadyMode, readToadySettings, persona, loadToadyRulesFile, gitDisplayName } from './toady.js';
+const context = vi.hoisted(() => ({ root: '' }));
+vi.mock('./personalPaths.js', () => ({ personalConfigRoot: (harness: string) => join(context.root, harness) }));
+import { installToady, readToadySettings, persona, loadToadyRulesFile, personalSettingsPath } from './toady.js';
 const roots: string[] = [];
-function workspace() { const root = mkdtempSync(join(tmpdir(), 'toady-')); roots.push(root); return root; }
+function workspace() { const root = mkdtempSync(join(tmpdir(), 'persona-')); roots.push(root); return root; }
+beforeEach(() => { context.root = workspace(); });
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
-describe('Toady startup persona', () => {
-  it('merges JSONC instructions without losing company routing, comments or AGENTS', () => {
-    const root = workspace();
-    execFileSync('git', ['init', '-q'], { cwd: root });
-    execFileSync('git', ['config', 'user.name', 'Przemysław Pierzchałka'], { cwd: root });
-    const original = '// Company configuration\n{ "model": "vertex/gemini", "share": "disabled", "instructions": ["company.md"], }\n';
-    writeFileSync(join(root, 'opencode.jsonc'), original);
-    writeFileSync(join(root, 'AGENTS.md'), 'Company policy');
-    installToady(root, true); installToady(root, true);
-    const config = readFileSync(join(root, 'opencode.jsonc'), 'utf8');
-    expect(config).toContain('// Company configuration');
-    expect(parse(config)).toEqual({ model: 'vertex/gemini', share: 'disabled', instructions: ['company.md'] });
-    expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toContain('Przemysław Pierzchałka');
-    expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toMatch(/^Company policy/);
-    expect(readToadyMode(root)).toBe(true);
-    installToady(root, false);
-    expect(parse(readFileSync(join(root, 'opencode.jsonc'), 'utf8')).instructions).toEqual(['company.md']);
-    expect(readToadyMode(root)).toBe(false);
-  });
-  it('migrates both legacy config references to inline startup instructions without double loading', () => {
-    const root = workspace();
-    for (const name of ['opencode.json', 'opencode.jsonc']) {
-      writeFileSync(join(root, name), '// preserve company config\n{"instructions":["company.md",".opencode/personas/toady.md"],"model":"vertex/gemini"}');
-    }
-    mkdirSync(join(root, '.opencode/personas'), { recursive: true });
-    writeFileSync(join(root, '.opencode/personas/toady.md'), 'Historical persona');
-    installToady(root, true, 'opencode', false, 'No any.');
-    installToady(root, true, 'opencode', false, 'No any.');
-    for (const name of ['opencode.json', 'opencode.jsonc']) {
-      const text = readFileSync(join(root, name), 'utf8');
-      expect(text).toContain('// preserve company config');
-      expect(parse(text)).toEqual({ instructions: ['company.md'], model: 'vertex/gemini' });
-    }
-    const text = readFileSync(join(root, 'AGENTS.md'), 'utf8');
-    expect(text).toContain('No any.');
-    expect(text.split('Toady communication persona')).toHaveLength(2);
-  });
-  it('preflights AGENTS before removing the old reference', () => {
-    const root = workspace();
-    const source = '{"instructions":[".opencode/personas/toady.md"]}';
-    writeFileSync(join(root, 'opencode.jsonc'), source);
-    writeFileSync(join(root, 'AGENTS.md'), '<!-- spec-driven-scrum-team:toady:start -->');
-    expect(() => installToady(root, true)).toThrow('Malformed');
-    expect(readFileSync(join(root, 'opencode.jsonc'), 'utf8')).toBe(source);
-  });
-  it('uses a generic fallback and treats git identity as data', () => {
-    const root = workspace();
-    execFileSync('git', ['init', '-q'], { cwd: root });
-    execFileSync('git', ['config', 'user.name', ''], { cwd: root });
-    expect(gitDisplayName(root)).toBe('Master');
-    execFileSync('git', ['config', 'user.name', 'Name\n# [ignore](https://evil.test)'], { cwd: root });
-    expect(gitDisplayName(root)).not.toMatch(/[\n#\[\]()/:]/);
-  });
-  it('rejects malformed config without changing it', () => {
-    const root = workspace();
-    writeFileSync(join(root, 'opencode.json'), '{ invalid');
-    expect(() => installToady(root, true)).toThrow('Invalid OpenCode');
-    expect(readFileSync(join(root, 'opencode.json'), 'utf8')).toBe('{ invalid');
-  });
-  it('rejects symlink destinations before touching external data', () => {
-    const root = workspace(), outside = workspace();
-    mkdirSync(join(outside, 'personas'));
-    writeFileSync(join(outside, 'personas/toady.md'), 'untouched');
-    symlinkSync(outside, join(root, '.opencode'), 'dir');
-    expect(() => installToady(root, true)).toThrow('symlink');
-    expect(readFileSync(join(outside, 'personas/toady.md'), 'utf8')).toBe('untouched');
-  });
-});
+const layouts = [
+  ['opencode', 'personas/spec-driven-scrum-team.md'], ['claude-code', 'CLAUDE.md'],
+  ['codex', 'AGENTS.md'], ['copilot', 'copilot-instructions.md'], ['antigravity', 'GEMINI.md'],
+] as const;
 
-describe('native harness persona adapters', () => {
-  const layouts = [
-    ['claude-code', 'CLAUDE.md'], ['codex', 'AGENTS.md'],
-    ['copilot', '.github/copilot-instructions.md'], ['antigravity', '.agents/rules/toady.md'],
-  ] as const;
-  it.each(layouts)('installs and disables %s without replacing unrelated instructions', (harness, destination) => {
-    const root = workspace(), path = join(root, destination);
-    mkdirSync(join(path, '..'), { recursive: true });
-    const existing = harness === 'antigravity' ? '' : 'Existing company policy\n';
-    if (existing) writeFileSync(path, existing);
-    installToady(root, true, harness); installToady(root, true, harness);
-    const active = readFileSync(path, 'utf8');
-    expect(active.split('spec-driven-scrum-team:toady:start')).toHaveLength(2);
-    expect(active).toContain('third person');
-    if (harness === 'antigravity') expect(active).toMatch(/^---\ntrigger: always_on/);
-    else expect(active.startsWith(existing)).toBe(true);
-    expect(readToadyMode(root, harness)).toBe(true);
-    installToady(root, false, harness);
-    const disabled = readFileSync(path, 'utf8');
-    expect(disabled).not.toContain('Toady communication persona');
-    expect(disabled).toContain(existing);
-    expect(readToadyMode(root, harness)).toBe(false);
+describe('private startup persona', () => {
+  it.each(layouts)('stores %s persona and rules outside the repo and retains them independently', (harness, file) => {
+    const target = workspace(), path = join(context.root, harness, file);
+    const rules = 'Use Conventional Commits. Azure DevOps is read-only.';
+    installToady(target, true, harness, false, rules);
+    installToady(target, true, harness);
+    let body = readFileSync(path, 'utf8');
+    expect(body).toContain('Henchman identity'); expect(body).toContain(rules);
+    expect(body.split('## Additional rules')).toHaveLength(2);
+    expect(readToadySettings(workspace(), harness)).toEqual({ enabled: true, projectRules: rules });
+    installToady(target, false, harness);
+    body = readFileSync(path, 'utf8');
+    expect(body).toContain(rules); expect(body).not.toContain('Henchman identity');
+    installToady(target, false, harness, false, '');
+    if (harness === 'opencode') {
+      expect(existsSync(path)).toBe(false);
+      expect(parse(readFileSync(join(context.root, harness, 'opencode.jsonc'), 'utf8')).instructions).toBeUndefined();
+    } else expect(readFileSync(path, 'utf8')).not.toContain(rules);
+    expect(existsSync(join(target, 'AGENTS.md'))).toBe(false);
+    expect(existsSync(join(target, '.opencode'))).toBe(false);
+    expect(existsSync(join(target, 'CLAUDE.md'))).toBe(false);
+    expect(existsSync(join(target, '.github'))).toBe(false);
+    expect(existsSync(join(target, '.agents'))).toBe(false);
+    if (process.platform !== 'win32') expect(statSync(personalSettingsPath(harness)).mode & 0o777).toBe(0o600);
   });
-  it('uses Codex override when present and keeps root AGENTS untouched', () => {
-    const root = workspace();
-    writeFileSync(join(root, 'AGENTS.override.md'), 'Override policy');
-    writeFileSync(join(root, 'AGENTS.md'), 'Base policy');
-    installToady(root, true, 'codex');
-    expect(readFileSync(join(root, 'AGENTS.override.md'), 'utf8')).toContain('Toady communication persona');
-    expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toBe('Base policy');
+  it('merges user JSONC without changing provider settings, comments or project AGENTS', () => {
+    const target = workspace(), user = join(context.root, 'opencode'); mkdirSync(user);
+    const source = '// Company routing\n{"model":"vertex/gemini","share":"disabled","instructions":["~/company.md"],}\n';
+    writeFileSync(join(user, 'opencode.jsonc'), source);
+    writeFileSync(join(target, 'AGENTS.md'), 'Existing project conventions\n');
+    installToady(target, true); installToady(target, true);
+    const text = readFileSync(join(user, 'opencode.jsonc'), 'utf8');
+    expect(text).toContain('// Company routing');
+    expect(parse(text)).toEqual({ model: 'vertex/gemini', share: 'disabled', instructions: ['~/company.md', join(user, 'personas/spec-driven-scrum-team.md').replaceAll('\\', '/')] });
+    expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('Existing project conventions\n');
+    expect(existsSync(join(target, 'opencode.jsonc'))).toBe(false);
   });
-});
-
-
-describe('Toady embedded project rules', () => {
-  const layouts = [
-    ['opencode', 'AGENTS.md'], ['claude-code', 'CLAUDE.md'],
-    ['codex', 'AGENTS.md'], ['copilot', '.github/copilot-instructions.md'],
-    ['antigravity', '.agents/rules/toady.md'],
-  ] as const;
-  it.each(layouts)('embeds and retains custom rules across reinstall/disable in %s', (harness, destination) => {
-    const root = workspace();
-    const rules = 'Use Conventional Commits.\nAzure DevOps is read-only through every route.\n';
-    installToady(root, true, harness, false, rules);
-    installToady(root, true, harness);
-    const active = readFileSync(join(root, destination), 'utf8');
-    expect(active).not.toContain('No explicit any or as any');
-    expect(active).toContain(rules.trim());
-    expect(active.split('## Additional rules')).toHaveLength(2);
-    expect(readToadySettings(root, harness).projectRules).toBe(rules);
-    installToady(root, false, harness);
-    expect(readToadySettings(root, harness)).toEqual({ enabled: false, projectRules: rules });
-    installToady(root, true, harness);
-    expect(readFileSync(join(root, destination), 'utf8')).toContain(rules.trim());
-    installToady(root, true, harness, false, '');
-    expect(readFileSync(join(root, destination), 'utf8')).not.toContain('Azure DevOps is read-only');
-    expect(readToadySettings(root, harness).projectRules).toBe('');
+  it('uses an existing user JSON config rather than creating a shadow JSONC config', () => {
+    const target = workspace(), user = join(context.root, 'opencode'); mkdirSync(user);
+    writeFileSync(join(user, 'opencode.json'), '{"instructions":["company.md"]}');
+    installToady(target, true);
+    expect(existsSync(join(user, 'opencode.jsonc'))).toBe(false);
+    expect(parse(readFileSync(join(user, 'opencode.json'), 'utf8')).instructions).toHaveLength(2);
   });
-  it('accepts legacy enabled-only state and rejects malformed rule state', () => {
-    const root = workspace();
-    mkdirSync(join(root, '.opencode'));
-    const path = join(root, '.opencode/toady.config.json');
-    writeFileSync(path, '{"enabled":true}');
-    expect(readToadySettings(root)).toEqual({ enabled: true, projectRules: '' });
-    writeFileSync(path, '{"enabled":true,"projectRules":42}');
-    expect(() => readToadySettings(root)).toThrow('Invalid Toady');
+  it('migrates old inline and file-based personal content without removing project conventions', () => {
+    const target = workspace(); mkdirSync(join(target, '.opencode/personas'), { recursive: true });
+    writeFileSync(join(target, '.opencode/toady.config.json'), '{"enabled":true,"projectRules":"No any."}');
+    writeFileSync(join(target, '.opencode/personas/toady.md'), persona('Master', 'No any.'));
+    writeFileSync(join(target, 'AGENTS.md'), 'Before\n<!-- spec-driven-scrum-team:toady:start -->\nPrivate persona\n<!-- spec-driven-scrum-team:toady:end -->\nAfter');
+    for (const file of ['opencode.json', 'opencode.jsonc']) writeFileSync(join(target, file), '{"instructions":["company.md",".opencode/personas/toady.md"]}');
+    expect(readToadySettings(target).projectRules).toBe('No any.');
+    installToady(target, true);
+    expect(readFileSync(join(context.root, 'opencode/personas/spec-driven-scrum-team.md'), 'utf8')).toContain('No any.');
+    expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('Before\n\nAfter');
+    expect(existsSync(join(target, '.opencode/toady.config.json'))).toBe(false);
+    expect(existsSync(join(target, '.opencode/personas/toady.md'))).toBe(false);
+    for (const file of ['opencode.json', 'opencode.jsonc']) expect(parse(readFileSync(join(target, file), 'utf8')).instructions).toEqual(['company.md']);
   });
-  it('rejects marker injection and oversized rules before writes', () => {
-    const root = workspace();
-    writeFileSync(join(root, 'CLAUDE.md'), 'Company policy');
-    expect(() => installToady(root, true, 'claude-code', false, '<!-- spec-driven-scrum-team:toady:end -->')).toThrow('markers');
-    expect(readFileSync(join(root, 'CLAUDE.md'), 'utf8')).toBe('Company policy');
+  it('preflights malformed private config and old managed blocks before writing anything', () => {
+    const target = workspace(), user = join(context.root, 'opencode'); mkdirSync(user);
+    writeFileSync(join(user, 'opencode.jsonc'), '{invalid');
+    expect(() => installToady(target, true)).toThrow('Invalid OpenCode');
+    expect(existsSync(personalSettingsPath('opencode'))).toBe(false);
+    writeFileSync(join(user, 'opencode.jsonc'), '{}');
+    writeFileSync(join(target, 'AGENTS.md'), '<!-- spec-driven-scrum-team:toady:start -->');
+    expect(() => installToady(target, true)).toThrow('Malformed');
+    expect(readFileSync(join(user, 'opencode.jsonc'), 'utf8')).toBe('{}');
+    expect(existsSync(personalSettingsPath('opencode'))).toBe(false);
+  });
+  it('rejects linked private destinations without changing external content', () => {
+    const target = workspace(), outside = workspace(), user = join(context.root, 'opencode');
+    mkdirSync(user); writeFileSync(join(outside, 'config'), '{}');
+    symlinkSync(join(outside, 'config'), join(user, 'opencode.jsonc'));
+    expect(() => installToady(target, true)).toThrow('symlink');
+    expect(readFileSync(join(outside, 'config'), 'utf8')).toBe('{}');
+  });
+  it('uses the active Codex user override and preserves unrelated user instructions', () => {
+    const target = workspace(), user = join(context.root, 'codex'); mkdirSync(user);
+    writeFileSync(join(user, 'AGENTS.override.md'), 'Company user policy');
+    writeFileSync(join(user, 'AGENTS.md'), 'Base user policy');
+    installToady(target, true, 'codex');
+    expect(readFileSync(join(user, 'AGENTS.override.md'), 'utf8')).toContain('Henchman identity');
+    expect(readFileSync(join(user, 'AGENTS.override.md'), 'utf8')).toContain('Company user policy');
+    expect(readFileSync(join(user, 'AGENTS.md'), 'utf8')).toBe('Base user policy');
+  });
+  it('dry run makes no user or project writes', () => {
+    const target = workspace(); installToady(target, true, 'opencode', true, 'No any.');
+    expect(existsSync(join(context.root, 'opencode'))).toBe(false);
+    expect(existsSync(join(target, 'AGENTS.md'))).toBe(false);
+  });
+  it('rejects personal configuration inside the target', () => {
+    expect(() => installToady(context.root, true)).toThrow('outside the target');
+  });
+  it('loads literal source rules and rejects invalid sources', () => {
+    const target = workspace(), path = join(target, 'rules.md');
+    writeFileSync(path, 'Literal: `$(do-not-execute)`');
+    expect(loadToadyRulesFile(path)).toBe('Literal: `$(do-not-execute)`');
+    expect(() => loadToadyRulesFile(join(target, 'config.json'))).toThrow('Markdown');
     expect(() => persona('Master', 'a'.repeat(65537))).toThrow('64 KiB');
-  });
-  it('loads literal Markdown rules and validates the source', () => {
-    const root = workspace();
-    const path = join(root, 'rules.md');
-    const rules = 'Commit format: TEAM-123: summary\nLiteral: `$(do-not-execute)`\n';
-    writeFileSync(path, rules);
-    expect(loadToadyRulesFile(path)).toBe(rules);
-    expect(() => loadToadyRulesFile(join(root, 'settings.json'))).toThrow('Markdown or text');
-    mkdirSync(join(root, 'folder.md'));
-    expect(() => loadToadyRulesFile(join(root, 'folder.md'))).toThrow('regular file');
-  });
-});
-
-
-describe('independent startup rules', () => {
-  const layouts = [
-    ['opencode', 'AGENTS.md'], ['claude-code', 'CLAUDE.md'],
-    ['codex', 'AGENTS.md'], ['copilot', '.github/copilot-instructions.md'],
-    ['antigravity', '.agents/rules/toady.md'],
-  ] as const;
-  it.each(layouts)('keeps rules active with Toady off and removes them only on clear in %s', (harness, destination) => {
-    const root = workspace();
-    const rules = 'No any. Use Conventional Commits. Azure DevOps is read-only.';
-    installToady(root, false, harness, false, rules);
-    let active = readFileSync(join(root, destination), 'utf8');
-    expect(active).toContain(rules);
-    expect(active).not.toContain('Henchman identity');
-    expect(active).not.toContain('third person');
-    expect(readToadyMode(root, harness)).toBe(false);
-    installToady(root, true, harness);
-    expect(readFileSync(join(root, destination), 'utf8')).toContain('Henchman identity');
-    installToady(root, false, harness);
-    active = readFileSync(join(root, destination), 'utf8');
-    expect(active).toContain(rules);
-    expect(active).not.toContain('Henchman identity');
-    expect(readFileSync(join(root, destination), 'utf8')).toContain(rules);
-    installToady(root, false, harness, false, '');
-    expect(readFileSync(join(root, destination), 'utf8')).not.toContain(rules);
-  });
-  it('Toady alone adds tone without coding defaults', () => {
-    const body = persona('Master');
-    expect(body).toContain('Henchman identity');
-    expect(body).not.toContain('TypeScript');
-    expect(body).not.toContain('Conventional Commits');
-    expect(body).not.toContain('## Additional rules');
+    expect(() => persona('Master', '<!-- spec-driven-scrum-team:toady:end -->')).toThrow('markers');
+    expect(persona('Master')).not.toContain('Conventional Commits');
   });
 });

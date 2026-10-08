@@ -1,4 +1,4 @@
-import { autocomplete, select, text, intro, outro, cancel, note } from '@clack/prompts';
+import { autocomplete, select, text, intro, outro, cancel, note } from './prompts.js';
 import { browseRulesFile } from './file-picker.js';
 import { loadToadyRulesFile } from './toady.js';
 import { resolve } from 'node:path';
@@ -191,6 +191,8 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
   intro('Spec-Driven Scrum Team');
 
   const harness = options.harness ?? 'opencode';
+  note('Toady and additional rules are personal: stored outside the repo in your user configuration and applied across projects for this harness. Team agents and skills stay per repo.', 'Personal setup');
+  if (harness === 'copilot') note('The personal instruction file is supported by Copilot CLI; IDE personal settings are separate.', 'Copilot scope');
   const models = harness === 'opencode' ? enumerateAvailableModels() : [];
   const existing = migratePlannerConfig(options.existing);
   const config = harness === 'opencode' ? seedDefaults(existing, models) : existing;
@@ -216,7 +218,7 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
           { value: '__reset_all__', label: harness === 'opencode' ? 'Reset all to defaults' : 'Reset all to inherited models', hint: 'discard manual model picks' },
           { value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — cartoon henchman persona' : 'off' },
           { value: '__toady_rules__', label: 'Additional rules (loaded to persona)', hint: toadyRules ? 'custom rules saved' : 'none — independent of Toady mode' },
-          { value: '__install__', label: 'Install & exit', hint: 'write files into the target repo' },
+          { value: '__install__', label: 'Install & exit', hint: 'install team in repo; save persona privately' },
         ],
       }),
     );

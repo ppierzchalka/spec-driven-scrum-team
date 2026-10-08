@@ -3,12 +3,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@clack/prompts', () => ({
+vi.mock('./prompts.js', () => ({
   select: vi.fn(), text: vi.fn(), autocomplete: vi.fn(),
   intro: vi.fn(), outro: vi.fn(), cancel: vi.fn(), note: vi.fn(),
 }));
 
-import { select, text, autocomplete } from '@clack/prompts';
+vi.mock('./file-picker.js', () => ({ browseRulesFile: vi.fn() }));
+import { browseRulesFile } from './file-picker.js';
+import { select, text, autocomplete } from './prompts.js';
 import { selectHarness, runTui } from './tui.js';
 
 beforeEach(() => { vi.clearAllMocks(); });
@@ -97,7 +99,7 @@ it('imports a browsed file without enabling Toady', async () => {
     const path = join(root, 'rules.md');
     writeFileSync(path, 'Use Conventional Commits.');
     vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__install__');
-    vi.mocked(autocomplete).mockResolvedValueOnce('file:' + path);
+    vi.mocked(browseRulesFile).mockResolvedValueOnce(path);
     const result = await runTui({ existing: {}, harness: 'codex', toadyMode: false });
     expect(result.toadyRules).toBe('Use Conventional Commits.');
     expect(result.toadyMode).toBe(false);
@@ -107,7 +109,7 @@ it('imports a browsed file without enabling Toady', async () => {
 
 it('keeps existing rules when leaving the browser without a selection', async () => {
   vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__install__');
-  vi.mocked(autocomplete).mockResolvedValueOnce('__back__');
+  vi.mocked(browseRulesFile).mockResolvedValueOnce(undefined);
   const result = await runTui({ existing: {}, harness: 'codex', toadyRules: 'Keep this rule.' });
   expect(result.toadyRules).toBe('Keep this rule.');
 });

@@ -1,12 +1,14 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { installBatch } from './installBatch.js';
+const privateContext = vi.hoisted(() => ({ root: '' }));
+vi.mock('./personalPaths.js', () => ({ personalConfigRoot: (harness: string) => join(privateContext.root, 'user', harness) }));
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 function fixture() {
-  const root = mkdtempSync(join(tmpdir(), 'batch-install-')); roots.push(root);
+  const root = mkdtempSync(join(tmpdir(), 'batch-install-')); roots.push(root); privateContext.root = root;
   const definitionsDir = join(root, 'defs');
   const skillDir = join(root, 'source/autonomous-implement');
   mkdirSync(definitionsDir); mkdirSync(skillDir, { recursive: true });
@@ -27,7 +29,7 @@ describe('multi-target installation', () => {
     expect(results).toHaveLength(2);
     for (const target of targets) {
       expect(readFileSync(join(target, '.codex/agents/analyst.toml'), 'utf8')).toContain('model = "inherit"');
-      expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toContain('No any.');
+      expect(readFileSync(join(privateContext.root, 'user/codex/AGENTS.md'), 'utf8')).toContain('No any.');
       expect(existsSync(join(target, '.gitignore'))).toBe(false);
     }
     expect(readFileSync(join(targets[1], 'AGENTS.md'), 'utf8')).toContain('Company rules');

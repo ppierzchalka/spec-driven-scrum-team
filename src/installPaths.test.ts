@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -10,10 +10,12 @@ import { installToady } from './toady.js';
 import { HARNESS_LAYOUTS, HARNESS_NAMES } from './harness.js';
 
 const source = fileURLToPath(new URL('../', import.meta.url));
+const privateContext = vi.hoisted(() => ({ root: '' }));
+vi.mock('./personalPaths.js', () => ({ personalConfigRoot: (harness: string) => join(privateContext.root, 'user', harness) }));
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 function fixture() {
-  const root = mkdtempSync(join(tmpdir(), 'team-paths-')); roots.push(root);
+  const root = mkdtempSync(join(tmpdir(), 'team-paths-')); roots.push(root); privateContext.root = root;
   const targetDir = join(root, 'target'); const outside = join(root, 'outside');
   mkdirSync(targetDir); mkdirSync(outside);
   return { targetDir, outside, options: { targetDir, config: {}, definitionsDir: join(source, 'agents'), skillDir: join(source, 'skills/autonomous-implement') } };

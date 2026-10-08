@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { confirm } from '@clack/prompts';
+import { confirm, cancel } from './prompts.js';
 import { dirname, join, resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +9,7 @@ import { browseTargets, normalizeTargets } from './target-picker.js';
 import { conflictingSkills } from './installTeam.js';
 import { resolveDefault } from './defaults.js';
 import { HARNESS_LAYOUTS, isHarness } from './harness.js';
-import { readToadySettings, loadToadyRulesFile, toadyStatePath } from './toady.js';
+import { readToadySettings, loadToadyRulesFile, toadyStatePath, personalSettingsPath } from './toady.js';
 import { checkInstallPath } from './installPaths.js';
 import type { TeamConfig } from './types.js';
 
@@ -39,8 +39,9 @@ async function main(): Promise<void> {
   const targets = positional.length ? normalizeTargets(positional) : await browseTargets();
   const target = targets[0];
   console.log(`Selected ${targets.length} target(s):\n${targets.map(path => '  ' + path).join('\n')}`);
-  if (targets.length > 1 && !useDefaults) console.log(`One shared profile will be applied to all targets. Initial settings come from ${target}; Install & exit applies your selected models, prompt overwrite and persona/rules to every target. Native provider settings and operator controls remain per repo.`);
+  if (targets.length > 1 && !useDefaults) console.log(`One shared profile will be applied to all targets. Agent settings come from ${target}; Install & exit applies your selected models, prompt overwrite and one personal persona/rules profile. Native provider settings and operator controls remain per repo.`);
   const harness = harnessName && isHarness(harnessName) ? harnessName : useDefaults ? 'opencode' : await selectHarness();
+  console.log('Persona and additional rules use private user configuration and apply across projects in this harness. Agent definitions and skills remain per repository.');
   const savedPersonas = targets.map(path => readToadySettings(path, harness));
 
   const configPath = join(target, HARNESS_LAYOUTS[harness].config);
@@ -91,11 +92,11 @@ async function main(): Promise<void> {
     toadyRules = tui.toadyRules ?? toadyRules;
   }
 
-  const plans: TargetPlan[] = targets.map((path, index) => {
-    // Noninteractive defaults retain each repo's independent persona unless explicitly overridden.
-    const enabled = useDefaults ? args.includes('--toady') ? true : args.includes('--no-toady') ? false : savedPersonas[index].enabled : toadyMode;
-    const rules = useDefaults ? rulesFlag ? toadyRules : clearRules ? '' : savedPersonas[index].projectRules : toadyRules;
-    const configurePersona = enabled || rules.trim().length > 0 || clearRules || existsSync(join(path, toadyStatePath(harness))) || args.includes('--no-toady');
+  const plans: TargetPlan[] = targets.map(path => {
+    // Personal settings are one user profile; the first target seeds legacy migration.
+    const enabled = useDefaults ? args.includes('--toady') ? true : args.includes('--no-toady') ? false : savedPersonas[0].enabled : toadyMode;
+    const rules = useDefaults ? rulesFlag ? toadyRules : clearRules ? '' : savedPersonas[0].projectRules : toadyRules;
+    const configurePersona = enabled || rules.trim().length > 0 || clearRules || existsSync(join(path, toadyStatePath(harness))) || existsSync(personalSettingsPath(harness)) || args.includes('--no-toady');
     return {
       options: { definitionsDir, skillDir, config, targetDir: path, overwrite, harness, replaceSkills: args.includes('--replace-skills') },
       persona: configurePersona ? { enabled, rules } : undefined,
@@ -113,6 +114,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
+  if (error instanceof Error && error.name === 'SetupCancelledError') { cancel('Cancelled.'); process.exit(0); }
   console.error(error);
   process.exit(1);
 });

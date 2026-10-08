@@ -6,7 +6,7 @@ Eight agent roles and twelve skills, installed per repository for **OpenCode, Cl
 
 ## Install
 
-Requires Node.js 22+.
+Requires Node.js 22.19+.
 
 ```sh
 git clone https://github.com/ppierzchalka/spec-driven-scrum-team.git
@@ -15,7 +15,7 @@ npm install
 npm run setup
 ```
 
-Select target folders with **Space**, navigate with **←/→**, and confirm with **Enter**, then choose a harness, configure agent models and enable **Toady**, an optional cartoon-minion communication style. Directly below it, **Additional rules (loaded to persona)** imports your own coding, commit, formatting or service instructions into the same startup persona, independently of Toady. Rules are retained on update. Run setup again for another harness or to update an installation.
+Select target folders with **Space**, navigate with **←/→**, and confirm with **Enter**, then choose a harness, configure agent models and enable **Toady**, an optional cartoon-minion communication style. Directly below it, **Additional rules (loaded to persona)** imports your own coding, commit, formatting or service instructions into the same startup persona, independently of Toady. Persona and imported rules are saved privately in your user configuration, apply across projects for that harness, and are retained on update. Agent definitions and skills stay per repo. Run setup again for another harness or to update an installation.
 
 One configuration is applied to all selected folders. For a direct install, paths still work: `npm run setup -- ../project-a ../project-b`. All targets are validated before writes. Only the selected harness's files are installed. `.gitignore` stays yours. Existing unmarked skill folders require explicit adoption; recognized unchanged legacy Planner definitions are removed on update. [Installation and model settings →](docs/team-configuration.md)
 
