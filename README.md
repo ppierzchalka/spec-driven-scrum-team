@@ -1,33 +1,66 @@
 # Spec-Driven Scrum Team
 
-A configurable multi-agent toolkit for product discovery and autonomous implementation. Install per repo for OpenCode, Claude Code, Codex, Antigravity or Copilot; native multi-agent support is required.
+Explore an idea with **Analyst**. Hand ready tasks to **Lead** for implementation and independent review.
+
+Eight agent roles and twelve skills, installed per repository for **OpenCode, Claude Code, Codex, Antigravity or GitHub Copilot**. Autonomous execution requires native multi-agent support in your harness.
+
+## Install
+
+Requires Node.js 22+.
 
 ```sh
+git clone https://github.com/ppierzchalka/spec-driven-scrum-team.git
+cd spec-driven-scrum-team
 npm install
-npm run setup -- ../path/to/target
+npm run setup -- ../your-project
 ```
 
-Choose a harness, models/effort and optional Toady in the TUI. Other harnesses inherit models by default; OpenCode retains the configured routing matrix. The installer does not change .gitignore. Existing unmarked skill names require explicit adoption; noninteractive users can choose `--replace-skills` after checking collisions. See [configuration](docs/team-configuration.md).
+The TUI lets you choose a harness, configure agent models and enable **Toady**, an optional cartoon-minion persona. Run setup again for another harness or to update an installation.
 
-## Work with Analyst
+Only the selected harness's files are installed. `.gitignore` stays yours. Existing unmarked skill folders require explicit adoption; recognized unchanged legacy Planner definitions are removed on update. [Installation and model settings →](docs/team-configuration.md)
 
-- project-setup once: documentation paths, tracker/status mappings, done gates, optional execution preferences.
-- wayfinder: explore/resume direction across as many sessions as useful; keep current decisions/questions in existing artifacts.
-- slice: create manageable vertical tasks ready-for-refinement, with dependencies and source links.
-- refine: enrich the same task until behavior, criteria and checks are ready-to-implement.
-- plan: optional technical detail, never a mandatory phase.
+## From idea to ready task
 
-Enter where your context is already sufficient. A small idea can go directly to Refine; ready tasks go directly to Lead. Every specialist supports separate consultation without a Ticket or pipeline.
+Work with **Analyst**. Start at the point that fits what you already know.
 
-## Hand over to Lead
+| Skill | Result |
+| --- | --- |
+| `project-setup` | Documentation paths, task tracker, statuses and definition of done. Run once; revisit when conventions change. |
+| `wayfinder` | Product or feature direction: brief, shared vocabulary and significant decisions. Resume across sessions. |
+| `slice` | Manageable tasks with dependencies, marked **ready-for-refinement**. |
+| `refine` | One task with accepted behavior, scope, criteria and verification, marked **ready-to-implement**. |
+| `plan` | Optional technical execution detail on the existing task. |
 
-Run autonomous-implement with one or more ready task references. Lead proposes a proportionate team, bounded task packets, dependency scheduling and checks. Choose local/separate/stacked/consolidated delivery before execution unless already specified. Stack/consolidate remain available on demand; merge/deployment/cleanup are separate actions.
+Domain modeling happens during the conversation: Analyst clarifies ambiguous terms, checks relationships against scenarios and code, and records accepted definitions and rules in the configured documents. ADRs capture decisions worth preserving.
 
-Lean execution uses Developer and independent Reviewer. Related bounded tasks can share contexts with individual task criteria/results; independent writable packets use worktrees. Architect, Security, UX and Tester join for concrete value. Tester normally designs cases read-only; explicit test-author mode splits test ownership.
+A small change can start at `refine`. A ready task can go straight to Lead. You decide how long discovery lasts.
 
-Methods live in skills; thin agents select ownership/model/tools. Required checks and independent review remain. Use current evidence instead of repeated commands; integration/fixes invalidate affected evidence. One concise task/batch result supports resumption.
+## From ready task to working change
 
-## Verify and measure
+Use **Lead** with `autonomous-implement` and one or more task references. For example:
+
+> Implement tasks 12 and 15 locally. Use Developer and Reviewer. Keep the work in this checkout.
+
+Lead proposes the team, task grouping, dependency order and checks. **Developer + independent Reviewer** is the default; specialists join when their input has value. Related tasks can share a bounded execution context while retaining separate criteria and outcomes. Concurrent writable work uses isolated worktrees.
+
+Choose **local changes, separate PRs, stacked PRs or one consolidated PR** before execution. Stacking and consolidation are also available later on request. Merge and deployment require explicit authorization.
+
+## Consult a specialist
+
+Agents define responsibility and runtime settings; skills describe how to do the work. You can consult any specialist directly, without Lead or a pipeline.
+
+| Agent | Skill | Focus |
+| --- | --- | --- |
+| Architect | `architecture-assess` | Boundaries, interfaces and design tradeoffs |
+| Security | `security-assess` | Threats and trust boundaries |
+| UX | `interface-assess` | Interface behavior and interactions |
+| Tester | `test-design` | Cases and verification; read-only by default |
+| Developer | `implement-task` | Code, tests and checks |
+| Reviewer | `review-change` | Requirements, code quality and evidence |
+
+## Details and validation
+
+[Configuration](docs/team-configuration.md) · [Workflow scenarios](docs/prompt-evaluation.md) · [Design decisions](docs/adr/0004-skills-and-execution-packets.md)
 
 ```sh
 npm test
@@ -35,6 +68,4 @@ npm run typecheck
 npm run build
 ```
 
-See [behavior scenarios](docs/prompt-evaluation.md). Package tests validate installation, not every harness's native behavior. Token/cost data remain unknown when unavailable; optional local usage summaries consume sanitized aggregates. Evaluate cost per correctly delivered result, including repairs and user interventions.
-
-Current concepts: [CONTEXT.md](CONTEXT.md). Design decisions: [ADR 0004](docs/adr/0004-skills-and-execution-packets.md). The original [brief](brief.md) is historical, not execution instructions.
+Installer tests and local workflow trials are documented. Native behavior varies by harness and version; token savings need measurement on your actual setup. The prompts coordinate agents; runtime permissions enforce their access.
