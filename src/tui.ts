@@ -260,6 +260,6 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
     await configureAgent(agent, config, overwrite, models, harness);
   }
 
-  outro('Install complete.');
+  outro('Configuration ready.');
   return { config, overwrite, toadyMode, toadyRules };
 }

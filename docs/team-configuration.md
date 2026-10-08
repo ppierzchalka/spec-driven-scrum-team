@@ -1,6 +1,14 @@
 # Installation and team configuration
 
-Run `npm run setup -- /path/to/target-repo`. Select one harness in the TUI, configure agent models/effort, canonical prompt overwrite and optional Toady. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
+Run `npm run setup` to browse target folders: open a folder, add it, select more folders if needed, then continue. The current absolute path and selection count are visible; you can remove selections. Existing CLI paths remain a shortcut: `npm run setup -- ../repo-a ../repo-b`. Select one harness in the TUI, configure agent models/effort, canonical prompt overwrite and optional Toady. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
+
+## Multiple targets
+
+One interactive profile applies selected models/effort, overwrite choices, Toady and additional rules to all selected folders. Initial settings come from the first selected target, clearly shown before configuration. Other targets' corresponding model/persona selections are replaced by that profile; native provider settings, unrelated instructions and operator controls are preserved. Use separate setup runs for different profiles. An exact folder is a target; adding a parent does not recursively install into its children.
+
+Every target's team and persona destinations are preflighted before the first write. Unowned skill collisions are listed by target for one adoption decision. Writes then run sequentially and report each completed target. This is not a cross-repo filesystem transaction: disk errors/concurrent changes may leave the current target partially written, earlier completed targets installed and remaining targets untouched.
+
+For noninteractive multi-target use `npm run setup -- ../repo-a ../repo-b --harness=codex --defaults`. Target paths are required with `--defaults`; it never opens a browser. Model defaults apply to all targets, while each target retains its saved persona/rules unless corresponding flags explicitly override them. Duplicate paths are installed once; nonexistent, file or symlink roots are rejected before writes.
 
 ## Installation ownership and paths
 
