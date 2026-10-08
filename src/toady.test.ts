@@ -19,13 +19,39 @@ describe('Toady startup persona', () => {
     installToady(root, true); installToady(root, true);
     const config = readFileSync(join(root, 'opencode.jsonc'), 'utf8');
     expect(config).toContain('// Company configuration');
-    expect(parse(config)).toEqual({ model: 'vertex/gemini', share: 'disabled', instructions: ['company.md', '.opencode/personas/toady.md'] });
-    expect(readFileSync(join(root, '.opencode/personas/toady.md'), 'utf8')).toContain('Przemysław Pierzchałka');
-    expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toBe('Company policy');
+    expect(parse(config)).toEqual({ model: 'vertex/gemini', share: 'disabled', instructions: ['company.md'] });
+    expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toContain('Przemysław Pierzchałka');
+    expect(readFileSync(join(root, 'AGENTS.md'), 'utf8')).toMatch(/^Company policy/);
     expect(readToadyMode(root)).toBe(true);
     installToady(root, false);
     expect(parse(readFileSync(join(root, 'opencode.jsonc'), 'utf8')).instructions).toEqual(['company.md']);
     expect(readToadyMode(root)).toBe(false);
+  });
+  it('migrates both legacy config references to inline startup instructions without double loading', () => {
+    const root = workspace();
+    for (const name of ['opencode.json', 'opencode.jsonc']) {
+      writeFileSync(join(root, name), '// preserve company config\n{"instructions":["company.md",".opencode/personas/toady.md"],"model":"vertex/gemini"}');
+    }
+    mkdirSync(join(root, '.opencode/personas'), { recursive: true });
+    writeFileSync(join(root, '.opencode/personas/toady.md'), 'Historical persona');
+    installToady(root, true, 'opencode', false, 'No any.');
+    installToady(root, true, 'opencode', false, 'No any.');
+    for (const name of ['opencode.json', 'opencode.jsonc']) {
+      const text = readFileSync(join(root, name), 'utf8');
+      expect(text).toContain('// preserve company config');
+      expect(parse(text)).toEqual({ instructions: ['company.md'], model: 'vertex/gemini' });
+    }
+    const text = readFileSync(join(root, 'AGENTS.md'), 'utf8');
+    expect(text).toContain('No any.');
+    expect(text.split('Toady communication persona')).toHaveLength(2);
+  });
+  it('preflights AGENTS before removing the old reference', () => {
+    const root = workspace();
+    const source = '{"instructions":[".opencode/personas/toady.md"]}';
+    writeFileSync(join(root, 'opencode.jsonc'), source);
+    writeFileSync(join(root, 'AGENTS.md'), '<!-- spec-driven-scrum-team:toady:start -->');
+    expect(() => installToady(root, true)).toThrow('Malformed');
+    expect(readFileSync(join(root, 'opencode.jsonc'), 'utf8')).toBe(source);
   });
   it('uses a generic fallback and treats git identity as data', () => {
     const root = workspace();
@@ -87,7 +113,7 @@ describe('native harness persona adapters', () => {
 
 describe('Toady embedded project rules', () => {
   const layouts = [
-    ['opencode', '.opencode/personas/toady.md'], ['claude-code', 'CLAUDE.md'],
+    ['opencode', 'AGENTS.md'], ['claude-code', 'CLAUDE.md'],
     ['codex', 'AGENTS.md'], ['copilot', '.github/copilot-instructions.md'],
     ['antigravity', '.agents/rules/toady.md'],
   ] as const;
@@ -140,7 +166,7 @@ describe('Toady embedded project rules', () => {
 
 describe('independent startup rules', () => {
   const layouts = [
-    ['opencode', '.opencode/personas/toady.md'], ['claude-code', 'CLAUDE.md'],
+    ['opencode', 'AGENTS.md'], ['claude-code', 'CLAUDE.md'],
     ['codex', 'AGENTS.md'], ['copilot', '.github/copilot-instructions.md'],
     ['antigravity', '.agents/rules/toady.md'],
   ] as const;
@@ -159,10 +185,9 @@ describe('independent startup rules', () => {
     active = readFileSync(join(root, destination), 'utf8');
     expect(active).toContain(rules);
     expect(active).not.toContain('Henchman identity');
-    if (harness === 'opencode') expect(parse(readFileSync(join(root, 'opencode.json'), 'utf8')).instructions).toContain('.opencode/personas/toady.md');
+    expect(readFileSync(join(root, destination), 'utf8')).toContain(rules);
     installToady(root, false, harness, false, '');
-    if (harness === 'opencode') expect(parse(readFileSync(join(root, 'opencode.json'), 'utf8')).instructions).toBeUndefined();
-    else expect(readFileSync(join(root, destination), 'utf8')).not.toContain(rules);
+    expect(readFileSync(join(root, destination), 'utf8')).not.toContain(rules);
   });
   it('Toady alone adds tone without coding defaults', () => {
     const body = persona('Master');

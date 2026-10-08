@@ -60,50 +60,45 @@ export function persona(name: string, projectRules = '', enabled = true): string
 
 export function installToady(targetDir: string, enabled: boolean, harness: Harness = 'opencode', dryRun = false, projectRules?: string): string[] {
   const rules = validateToadyRules(projectRules ?? readToadySettings(targetDir, harness).projectRules);
-  const active = enabled || rules.trim().length > 0;
   if (harness !== 'opencode') return installNativeToady(targetDir, enabled, harness, dryRun, rules);
-  // Follow OpenCode's JSONC-over-JSON preference when both exist.
-  const jsonc = join(targetDir, 'opencode.jsonc');
-  const json = join(targetDir, 'opencode.json');
-  for (const path of [jsonc, json, join(targetDir, instruction), join(targetDir, toadyStatePath(harness))]) checkPath(targetDir, path);
-  const configPath = existsSync(jsonc) ? jsonc : json;
-  const source = existsSync(configPath) ? readFileSync(configPath, 'utf8') : '{}\n';
-  const errors: ParseError[] = [];
-  const config = parse(source, errors, { allowTrailingComma: true });
-  if (errors.length || !config || typeof config !== 'object' || Array.isArray(config)) throw new Error('Invalid OpenCode configuration; persona was not installed');
-  if (config.instructions !== undefined && (!Array.isArray(config.instructions) || !config.instructions.every((x: unknown) => typeof x === 'string'))) throw new Error('OpenCode instructions must be a string array');
-  const instructions = (config.instructions ?? []).filter((x: string) => x !== instruction);
-  if (active) instructions.push(instruction);
-  const output = applyEdits(source, modify(source, ['instructions'], instructions.length ? instructions : undefined, {
-    formattingOptions: { insertSpaces: true, tabSize: 2, eol: '\n' },
-  }));
-  // Validate first; do not create a runtime config when disabling an absent persona.
+  // V2 accepts `instructions` but does not load it. AGENTS.md works in V1 and V2.
+  // Remove only our old reference from both configs; keep company instructions intact.
+  const configs: { path: string; output: string }[] = [];
+  for (const path of [join(targetDir, 'opencode.json'), join(targetDir, 'opencode.jsonc')]) {
+    checkPath(targetDir, path);
+    if (!existsSync(path)) continue;
+    const source = readFileSync(path, 'utf8');
+    const errors: ParseError[] = [];
+    const config = parse(source, errors, { allowTrailingComma: true });
+    if (errors.length || !config || typeof config !== 'object' || Array.isArray(config)) throw new Error('Invalid OpenCode configuration; persona was not installed');
+    if (config.instructions !== undefined && (!Array.isArray(config.instructions) || !config.instructions.every((x: unknown) => typeof x === 'string'))) throw new Error('OpenCode instructions must be a string array');
+    if (!config.instructions?.includes(instruction)) continue;
+    const instructions = config.instructions.filter((x: string) => x !== instruction);
+    configs.push({ path, output: applyEdits(source, modify(source, ['instructions'], instructions.length ? instructions : undefined, {
+      formattingOptions: { insertSpaces: true, tabSize: 2, eol: '\n' },
+    })) });
+  }
+  checkPath(targetDir, join(targetDir, instruction));
+  installNativeToady(targetDir, enabled, harness, true, rules);
   if (dryRun) return [];
-  const written: string[] = [];
-  if (active || existsSync(configPath)) {
-    writeFileSync(configPath, output); written.push(configPath);
+  const written = installNativeToady(targetDir, enabled, harness, false, rules);
+  for (const { path, output } of configs) {
+    writeFileSync(path, output); written.push(path);
   }
-  if (active) {
-    const path = join(targetDir, instruction);
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, persona(gitDisplayName(targetDir), rules, enabled)); written.push(path);
-  }
-  const state = join(targetDir, toadyStatePath(harness));
-  mkdirSync(dirname(state), { recursive: true });
-  writeFileSync(state, JSON.stringify({ enabled, projectRules: rules }, null, 2) + '\n'); written.push(state);
   return written;
 }
 
 const start = '<!-- spec-driven-scrum-team:toady:start -->';
 const end = '<!-- spec-driven-scrum-team:toady:end -->';
-const nativePaths: Record<Exclude<Harness, 'opencode'>, string> = {
+const nativePaths: Record<Harness, string> = {
+  opencode: 'AGENTS.md',
   'claude-code': 'CLAUDE.md',
   codex: 'AGENTS.md',
   copilot: '.github/copilot-instructions.md',
   antigravity: '.agents/rules/toady.md',
 };
 
-function installNativeToady(targetDir: string, enabled: boolean, harness: Exclude<Harness, 'opencode'>, dryRun = false, rules = ''): string[] {
+function installNativeToady(targetDir: string, enabled: boolean, harness: Harness, dryRun = false, rules = ''): string[] {
   const active = enabled || rules.trim().length > 0;
   const override = join(targetDir, 'AGENTS.override.md');
   if (harness === 'codex') checkPath(targetDir, override);

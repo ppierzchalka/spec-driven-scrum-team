@@ -1,6 +1,6 @@
 # Installation and team configuration
 
-Run `npm run setup` to browse target folders: open a folder, add it, select more folders if needed, then continue. Enter on a folder opens it; inside the desired folder choose **Add this folder** and press Enter to select it. Repeat, then choose **Continue with N targets**. Space is search input, not a checkbox shortcut. The picker displays these controls, the current absolute path, selection count and selected-folder markers; you can remove selections. Existing CLI paths remain a shortcut: `npm run setup -- ../repo-a ../repo-b`. Select one harness in the TUI, configure agent models/effort, canonical prompt overwrite and optional Toady. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
+Run `npm run setup` to select one or more exact target folders with checkboxes. **Space** toggles the highlighted folder without opening it; **↑/↓** move, **→** opens it, **←/Backspace** goes to its parent, and **Enter** confirms all selected targets. **Esc** cancels. Selections persist as you browse; selecting a parent does not select its children. The picker always shows its controls, current absolute path and selection count. Existing CLI paths remain a shortcut: `npm run setup -- ../repo-a ../repo-b`. Select one harness in the TUI, configure agent models/effort, canonical prompt overwrite and optional Toady. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
 
 ## Multiple targets
 
@@ -102,11 +102,13 @@ One opt-in TUI switch or `--toady` / `--no-toady` works for the selected harness
 
 | Harness | Startup instruction |
 | --- | --- |
-| OpenCode | .opencode/personas/toady.md in root instructions array |
+| OpenCode V1 / V2 | Managed block with inline persona and rules in root AGENTS.md |
 | Claude Code | Managed block in CLAUDE.md |
 | Codex | AGENTS.override.md if present, otherwise AGENTS.md |
 | Copilot | Managed block in .github/copilot-instructions.md |
 | Antigravity | .agents/rules/toady.md, always_on |
+
+OpenCode V2 currently accepts the config `instructions` array without loading its entries. The installer embeds the complete persona and imported rules in root `AGENTS.md`, which both V1 and V2 discover automatically. Reinstalling migrates old `.opencode/personas/toady.md` references out of `opencode.json` and `opencode.jsonc`, preserving company settings and unrelated instruction entries. The old Markdown file is left alone but is no longer referenced. Existing `AGENTS.md` content outside the managed block is retained. Start OpenCode inside the installed target; `OPENCODE_DISABLE_PROJECT_CONFIG=1` disables project instructions. See [OpenCode V2 instructions](https://opencode.ai/v2/docs/instructions).
 
 Directly below **Toady mode**, **Additional rules (loaded to persona)** is always available. Choose **Browse for a rules file** to navigate folders (including parent folders), filter names and select a Markdown/text file. The browser shows its current absolute directory, validates the selected file and leaves existing rules unchanged when you go back. **Enter a rules file path** remains available. Import instructions for TypeScript, custom or Conventional Commits, formatting, Azure DevOps read-only or other guidelines. The content is embedded in the same startup persona; no separate policy document is installed. Rules load even when Toady is off. Toggling Toady changes only the voice; clearing additional rules removes only imported instructions. Both settings are retained independently across reinstall. Do not include credentials/secrets. Existing company/runtime restrictions remain authoritative; applicable rules propagate to subagents without the persona voice.
 
