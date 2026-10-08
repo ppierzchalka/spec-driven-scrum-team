@@ -66,17 +66,20 @@ it.each(['claude-code', 'codex', 'copilot', 'antigravity'] as const)('offers Toa
 });
 
 
-it('imports project rules under Toady and keeps model settings untouched', async () => {
+it('imports additional rules independently of Toady and keeps model settings untouched', async () => {
   const root = mkdtempSync(join(tmpdir(), 'toady-tui-'));
   try {
     const path = join(root, 'rules.md');
     writeFileSync(path, 'Azure DevOps is read-only. Use custom commit format.');
     vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('load').mockResolvedValueOnce('__install__');
     vi.mocked(text).mockResolvedValueOnce(path);
-    const result = await runTui({ existing: { lead: { model: 'vertex/gemini' } }, harness: 'codex', toadyMode: true, toadyRules: 'old' });
+    const result = await runTui({ existing: { lead: { model: 'vertex/gemini' } }, harness: 'codex', toadyMode: false, toadyRules: 'old' });
     expect(result.toadyRules).toBe('Azure DevOps is read-only. Use custom commit format.');
     expect(result.config.lead?.model).toBe('vertex/gemini');
-    expect(result.toadyMode).toBe(true);
+    expect(result.toadyMode).toBe(false);
+    const options = vi.mocked(select).mock.calls[0][0].options;
+    const toadyIndex = options.findIndex(option => option.value === '__toady__');
+    expect(options[toadyIndex + 1]).toMatchObject({ value: '__toady_rules__', label: 'Additional rules (loaded to persona)' });
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 

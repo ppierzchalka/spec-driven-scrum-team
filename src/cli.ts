@@ -62,10 +62,13 @@ async function main(): Promise<void> {
   const toadySettings = readToadySettings(target, harness);
   let toadyMode = toadySettings.enabled;
   let toadyRules = toadySettings.projectRules;
-  const rulesFlag = args.find(arg => arg.startsWith('--toady-rules='));
-  if (rulesFlag) toadyRules = loadToadyRulesFile(resolve(rulesFlag.slice('--toady-rules='.length)));
-  if (args.includes('--clear-toady-rules')) toadyRules = '';
-  if (rulesFlag && args.includes('--clear-toady-rules')) throw new Error('Choose --toady-rules or --clear-toady-rules');
+  const rulesFlags = args.filter(arg => arg.startsWith('--additional-rules=') || arg.startsWith('--toady-rules='));
+  if (rulesFlags.length > 1) throw new Error('Choose one additional rules file');
+  const rulesFlag = rulesFlags[0];
+  const clearRules = args.includes('--clear-additional-rules') || args.includes('--clear-toady-rules');
+  if (rulesFlag && clearRules) throw new Error('Choose an additional rules file or clear rules');
+  if (rulesFlag) toadyRules = loadToadyRulesFile(resolve(rulesFlag.slice(rulesFlag.indexOf('=') + 1)));
+  if (clearRules) toadyRules = '';
   if (args.includes('--toady')) toadyMode = true;
   if (args.includes('--no-toady')) toadyMode = false;
   let config: TeamConfig;
@@ -104,8 +107,7 @@ async function main(): Promise<void> {
     options.replaceSkills = true;
   }
   preflightTeam(options);
-  if (rulesFlag && !toadyMode) throw new Error('Enable Toady mode to install project rules');
-  const configurePersona = toadyMode || existsSync(join(target, toadyStatePath(harness))) || args.includes('--no-toady');
+  const configurePersona = toadyMode || toadyRules.trim().length > 0 || clearRules || existsSync(join(target, toadyStatePath(harness))) || args.includes('--no-toady');
   if (configurePersona) installToady(target, toadyMode, harness, true, toadyRules);
   const result = installTeam(options);
   const personaPaths = configurePersona ? installToady(target, toadyMode, harness, false, toadyRules) : [];

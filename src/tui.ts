@@ -213,8 +213,8 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
             hint: currentHint(config[name]),
           })),
           { value: '__reset_all__', label: harness === 'opencode' ? 'Reset all to defaults' : 'Reset all to inherited models', hint: 'discard manual model picks' },
-          { value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — persona + TypeScript/quality rules' : 'off' },
-          ...(toadyMode ? [{ value: '__toady_rules__', label: 'Toady project rules', hint: toadyRules ? 'custom rules saved' : 'add commit conventions or tool restrictions' }] : []),
+          { value: '__toady__', label: 'Toady mode', hint: toadyMode ? 'on — cartoon henchman persona' : 'off' },
+          { value: '__toady_rules__', label: 'Additional rules (loaded to persona)', hint: toadyRules ? 'custom rules saved' : 'none — independent of Toady mode' },
           { value: '__install__', label: 'Install & exit', hint: 'write files into the target repo' },
         ],
       }),
@@ -223,7 +223,7 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
     if (agent === '__toady_rules__') {
       const action = guard(await select<string>({ message: 'Additional rules embedded in the startup persona', options: [
         { value: 'load', label: 'Import Markdown/text file', hint: 'content is copied into the persona; no separate policy installed' },
-        { value: 'clear', label: 'Clear additional rules', hint: 'keep built-in quality rules and existing repo conventions' },
+        { value: 'clear', label: 'Clear additional rules', hint: 'leave Toady mode and existing repo conventions unchanged' },
         { value: 'back', label: 'Back', hint: 'keep current rules' },
       ] }));
       if (action === 'clear') toadyRules = '';

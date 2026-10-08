@@ -15,7 +15,7 @@ npm install
 npm run setup -- ../your-project
 ```
 
-The TUI lets you choose a harness, configure agent models and enable **Toady**, an optional cartoon-minion persona with strict TypeScript/code-quality rules. Under **Toady project rules**, import your own commit conventions, formatting or service restrictions; they are embedded in the same startup instructions and retained on update. Run setup again for another harness or to update an installation.
+The TUI lets you choose a harness, configure agent models and enable **Toady**, an optional cartoon-minion communication style. Directly below it, **Additional rules (loaded to persona)** imports your own coding, commit, formatting or service instructions into the same startup persona, independently of Toady. Rules are retained on update. Run setup again for another harness or to update an installation.
 
 Only the selected harness's files are installed. `.gitignore` stays yours. Existing unmarked skill folders require explicit adoption; recognized unchanged legacy Planner definitions are removed on update. [Installation and model settings →](docs/team-configuration.md)
 

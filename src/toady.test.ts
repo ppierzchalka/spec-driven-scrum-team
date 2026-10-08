@@ -97,10 +97,9 @@ describe('Toady embedded project rules', () => {
     installToady(root, true, harness, false, rules);
     installToady(root, true, harness);
     const active = readFileSync(join(root, destination), 'utf8');
-    expect(active).toContain('No explicit any or as any');
-    expect(active).toContain('non-null assertions');
+    expect(active).not.toContain('No explicit any or as any');
     expect(active).toContain(rules.trim());
-    expect(active.split('## Additional project rules')).toHaveLength(2);
+    expect(active.split('## Additional rules')).toHaveLength(2);
     expect(readToadySettings(root, harness).projectRules).toBe(rules);
     installToady(root, false, harness);
     expect(readToadySettings(root, harness)).toEqual({ enabled: false, projectRules: rules });
@@ -135,5 +134,41 @@ describe('Toady embedded project rules', () => {
     expect(() => loadToadyRulesFile(join(root, 'settings.json'))).toThrow('Markdown or text');
     mkdirSync(join(root, 'folder.md'));
     expect(() => loadToadyRulesFile(join(root, 'folder.md'))).toThrow('regular file');
+  });
+});
+
+
+describe('independent startup rules', () => {
+  const layouts = [
+    ['opencode', '.opencode/personas/toady.md'], ['claude-code', 'CLAUDE.md'],
+    ['codex', 'AGENTS.md'], ['copilot', '.github/copilot-instructions.md'],
+    ['antigravity', '.agents/rules/toady.md'],
+  ] as const;
+  it.each(layouts)('keeps rules active with Toady off and removes them only on clear in %s', (harness, destination) => {
+    const root = workspace();
+    const rules = 'No any. Use Conventional Commits. Azure DevOps is read-only.';
+    installToady(root, false, harness, false, rules);
+    let active = readFileSync(join(root, destination), 'utf8');
+    expect(active).toContain(rules);
+    expect(active).not.toContain('Henchman identity');
+    expect(active).not.toContain('third person');
+    expect(readToadyMode(root, harness)).toBe(false);
+    installToady(root, true, harness);
+    expect(readFileSync(join(root, destination), 'utf8')).toContain('Henchman identity');
+    installToady(root, false, harness);
+    active = readFileSync(join(root, destination), 'utf8');
+    expect(active).toContain(rules);
+    expect(active).not.toContain('Henchman identity');
+    if (harness === 'opencode') expect(parse(readFileSync(join(root, 'opencode.json'), 'utf8')).instructions).toContain('.opencode/personas/toady.md');
+    installToady(root, false, harness, false, '');
+    if (harness === 'opencode') expect(parse(readFileSync(join(root, 'opencode.json'), 'utf8')).instructions).toBeUndefined();
+    else expect(readFileSync(join(root, destination), 'utf8')).not.toContain(rules);
+  });
+  it('Toady alone adds tone without coding defaults', () => {
+    const body = persona('Master');
+    expect(body).toContain('Henchman identity');
+    expect(body).not.toContain('TypeScript');
+    expect(body).not.toContain('Conventional Commits');
+    expect(body).not.toContain('## Additional rules');
   });
 });
