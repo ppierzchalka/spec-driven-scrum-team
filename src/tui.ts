@@ -1,4 +1,5 @@
 import { autocomplete, select, text, intro, outro, cancel, note } from '@clack/prompts';
+import { browseRulesFile } from './file-picker.js';
 import { loadToadyRulesFile } from './toady.js';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -222,11 +223,19 @@ export async function runTui(options: { existing: TeamConfig; harness?: Harness;
     if (agent === '__toady__') { toadyMode = !toadyMode; continue; }
     if (agent === '__toady_rules__') {
       const action = guard(await select<string>({ message: 'Additional rules embedded in the startup persona', options: [
-        { value: 'load', label: 'Import Markdown/text file', hint: 'content is copied into the persona; no separate policy installed' },
+        { value: 'browse', label: 'Browse for a rules file', hint: 'navigate folders; Markdown/text files' },
+        { value: 'load', label: 'Enter a rules file path', hint: 'relative to installer working directory, or absolute' },
         { value: 'clear', label: 'Clear additional rules', hint: 'leave Toady mode and existing repo conventions unchanged' },
         { value: 'back', label: 'Back', hint: 'keep current rules' },
       ] }));
       if (action === 'clear') toadyRules = '';
+      if (action === 'browse') {
+        const path = await browseRulesFile();
+        if (path) {
+          toadyRules = loadToadyRulesFile(path);
+          note(`Loaded rules from ${path}. They will be embedded in the startup persona.`);
+        }
+      }
       if (action === 'load') {
         const path = guard(await text({ message: `Path to rules file (relative to ${process.cwd()}, or absolute; no credentials/secrets)`, validate: value => {
           try { loadToadyRulesFile(resolve(value?.trim() ?? '')); return undefined; }

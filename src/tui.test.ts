@@ -89,3 +89,25 @@ it('clears only extra Toady rules', async () => {
   expect(result.toadyRules).toBe('');
   expect(result.toadyMode).toBe(true);
 });
+
+
+it('imports a browsed file without enabling Toady', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'browse-tui-'));
+  try {
+    const path = join(root, 'rules.md');
+    writeFileSync(path, 'Use Conventional Commits.');
+    vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__install__');
+    vi.mocked(autocomplete).mockResolvedValueOnce('file:' + path);
+    const result = await runTui({ existing: {}, harness: 'codex', toadyMode: false });
+    expect(result.toadyRules).toBe('Use Conventional Commits.');
+    expect(result.toadyMode).toBe(false);
+    expect(text).not.toHaveBeenCalled();
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+it('keeps existing rules when leaving the browser without a selection', async () => {
+  vi.mocked(select).mockResolvedValueOnce('__toady_rules__').mockResolvedValueOnce('browse').mockResolvedValueOnce('__install__');
+  vi.mocked(autocomplete).mockResolvedValueOnce('__back__');
+  const result = await runTui({ existing: {}, harness: 'codex', toadyRules: 'Keep this rule.' });
+  expect(result.toadyRules).toBe('Keep this rule.');
+});
