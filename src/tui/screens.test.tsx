@@ -18,7 +18,7 @@ import {
 } from './screens/agents.js';
 import { activatePersona, browserEntries, commitBrowserFile, commitRulesPath } from './screens/persona.js';
 import { activateReview } from './screens/review.js';
-import { editText, itemRows, moveFocus, windowByLines } from './components/controls.js';
+import { editText, itemRows, menuGeometry, moveFocus, windowByLines } from './components/controls.js';
 import { headerTitle, palette, FOCUS_MARKER, COMMITTED_MARKER } from './theme.js';
 import { interactiveBlockers } from './run.js';
 
@@ -38,6 +38,21 @@ function stateFor(patch: Record<string, unknown> = {}): SessionState {
 }
 
 describe('agent editor options', () => {
+  it.each([1, 2, 3])('keeps a middle focused action and its details within a %i-row menu', (budget) => {
+    const items = [
+      { id: 'before', label: 'Before' },
+      { id: 'focus', label: `Install into /${'long-path/'.repeat(20)}` },
+      { id: 'after', label: 'After' },
+    ];
+    const geometry = menuGeometry(items, 'focus', 40, true, 'none', budget);
+    expect(geometry.top).toBe(1);
+    expect(geometry.bottom).toBe(2);
+    expect(geometry.focusCap + Number(geometry.showAbove) + Number(geometry.showBelow)).toBeLessThanOrEqual(budget);
+    expect(geometry.focusCap).toBeGreaterThanOrEqual(1);
+    expect(geometry.capped).toBe(true);
+    expect(moveFocus(items.map((item) => item.id), 'focus', { upArrow: true })).toBe('before');
+    expect(moveFocus(items.map((item) => item.id), 'focus', { downArrow: true })).toBe('after');
+  });
   it('offers Antigravity tiers instead of provider IDs', () => {
     const options = modelOptions(stateFor({ harness: 'antigravity' }));
     expect(options.map((option) => option.id)).toEqual(['inherit', 'flash', 'pro']);

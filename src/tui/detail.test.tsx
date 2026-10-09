@@ -76,6 +76,17 @@ function expectFit(name: string, frame: string, columns: number, rows: number): 
   }
 }
 
+async function reachErrorSentinel(rendered: Rendered): Promise<void> {
+  const observed = () => stripAnsi(rendered.frame()).replace(/\n\s*/g, '');
+  // Single-line scrolling cannot skip a wrapped middle piece. A repeated
+  // frame is not the end: focus can move inside the same menu window.
+  for (let i = 0; i < 256 && !observed().includes('MIDDLE-ERROR-SENTINEL'); i += 1) {
+    await rendered.send(KEYS.down);
+    expectFit('error-scan', rendered.frame(), 40, 8);
+  }
+  expect(observed()).toContain('MIDDLE-ERROR-SENTINEL');
+}
+
 describe('full-detail pager (sentinel recovery)', () => {
   it('pages a capped long cwd to its middle sentinel without mutating anything', async () => {
     const target = workspace();
@@ -358,11 +369,15 @@ describe('full-detail pager (sentinel recovery)', () => {
     await rendered.send(KEYS.down); // Cancel row
     await rendered.send(KEYS.down); // Error details row
     await rendered.send(KEYS.enter); // open full diagnostic, draft kept
-    await rendered.send(KEYS.pageDown); // page into the middle of the error
-    await rendered.send(KEYS.pageDown);
+    await reachErrorSentinel(rendered);
     const flat = stripAnsi(rendered.frame()).replace(/\n\s*/g, '');
     expect(flat).toContain('MIDDLE-ERROR-SENTINEL');
     expectFit('draft-error-detail-40x8', rendered.frame(), 40, 8);
+    await rendered.send(KEYS.end);
+    // Recover the diagnostic tail across legitimate cell wrapping (the dot
+    // and extension can straddle two rows); still require the closing quote.
+    expect(stripAnsi(rendered.frame()).replace(/\n\s*/g, '')).toContain(".md'");
+    expectFit('draft-error-end-40x8', rendered.frame(), 40, 8);
     await rendered.send(KEYS.enter); // explicit close back to actions
     expect(stripAnsi(rendered.frame())).toContain('Cancel');
   });
@@ -420,15 +435,16 @@ describe('full-detail pager (sentinel recovery)', () => {
     await rendered.send(KEYS.down);
     await rendered.send(KEYS.down); // Error details row
     await rendered.send(KEYS.enter); // open full diagnostic, draft kept
-    await rendered.send(KEYS.pageDown);
-    await rendered.send(KEYS.pageDown);
+    await reachErrorSentinel(rendered);
     expect(stripAnsi(rendered.frame()).replace(/\n\s*/g, '')).toContain('MIDDLE-ERROR-SENTINEL');
     check('detail-open', rendered.frame());
+    const detailFrame = stripAnsi(rendered.frame());
     await rendered.send(KEYS.esc); // U5: global quit confirmation
     expect(stripAnsi(rendered.frame())).toContain('Quit setup?');
     check('quit-over-detail', rendered.frame());
     await rendered.send(KEYS.enter); // continue: error + overlay restored
     const resumed = stripAnsi(rendered.frame());
+    expect(resumed).toBe(detailFrame);
     // Exact restore: same scrolled overlay view (sentinel still visible).
     expect(resumed.replace(/\n\s*/g, '')).toContain('MIDDLE-ERROR-SENTINEL');
     check('resumed-detail', rendered.frame());

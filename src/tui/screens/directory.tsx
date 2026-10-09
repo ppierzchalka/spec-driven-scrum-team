@@ -5,7 +5,7 @@ import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import type { Action, SessionState } from '../state.js';
 import type { MenuItem } from '../components/controls.js';
 import { MenuList } from '../components/controls.js';
-import { wrapLines } from '../layout.js';
+import { fitCapped, wrapLines } from '../layout.js';
 import { palette } from '../theme.js';
 import { HARNESS_LAYOUTS, type Harness } from '../../installer/harness.js';
 import { migratePlannerConfig } from '../../installer/defaults.js';
@@ -125,7 +125,9 @@ export function directoryFocusIds(state: SessionState, entries: TargetEntry[] = 
 export function directoryItems(state: SessionState, entries: TargetEntry[] = [], minimal = false): MenuItem[] {
   if (state.targetPending) {
     return [
-      { id: 'target-confirm', label: minimal ? 'Discard agent edits and switch' : `Switch to ${state.targetPending.dir}`, hint: `${state.targetPending.dir}\nDiscard session agent edits; load this folder's saved config/defaults. ${TARGET_SWITCH_NOTE}` },
+      // Put the consequence before the unbounded path: at 40x8 the safety
+      // explanation must not be buried behind dozens of wrapped path rows.
+      { id: 'target-confirm', label: minimal ? 'Discard agent edits and switch' : `Switch to ${state.targetPending.dir}`, hint: `Discard session agent edits; load this folder's saved config/defaults. ${TARGET_SWITCH_NOTE}\n${state.targetPending.dir}` },
       { id: 'target-cancel', label: 'Keep the current target' },
     ];
   }
@@ -163,7 +165,7 @@ export function absoluteTarget(targetDir: string): string {
 }
 
 /** Non-scrollable rows (everything except the menu list). */
-export function directoryFixedRows(state: SessionState, width: number, compact: boolean, minimal = false): number {
+export function directoryFixedRows(state: SessionState, width: number, compact: boolean, minimal = false, pathRows = Infinity): number {
   if (state.targetPending) {
     if (minimal) return 0;
     const note = wrapLines(TARGET_SWITCH_NOTE, width).length;
@@ -179,7 +181,7 @@ export function directoryFixedRows(state: SessionState, width: number, compact: 
     return 1 + dir + empty + 1;
   }
   if (minimal) return 0;
-  const targetLines = wrapLines(absoluteTarget(state.targetDir), width).length;
+  const targetLines = Math.min(pathRows, wrapLines(absoluteTarget(state.targetDir), width).length);
   if (compact) return targetLines;
   // Title + one margined block (label, path, note) + menu margin.
   return 1 + 1 + 1 + targetLines + wrapLines(DIRECTORY_NOTE, width).length + 1;
@@ -220,7 +222,7 @@ export function activateDirectory(state: SessionState, id: string, entries: Targ
   return null;
 }
 
-export function DirectoryScreen(options: { state: SessionState; width: number; listHeight: number; compact: boolean; hintMode?: 'all' | 'focused' | 'none'; minimal?: boolean }): React.JSX.Element {
+export function DirectoryScreen(options: { state: SessionState; width: number; listHeight: number; compact: boolean; hintMode?: 'all' | 'focused' | 'none'; minimal?: boolean; pathRows?: number }): React.JSX.Element {
   const { state, width, listHeight, compact, hintMode, minimal = false } = options;
   if (state.targetPending) {
     return (
@@ -258,7 +260,8 @@ export function DirectoryScreen(options: { state: SessionState; width: number; l
       {!minimal && (
         <Box marginTop={compact ? 0 : 1} flexDirection="column">
           {!compact && <Text color={palette.parchment}>Target (defaults to the invocation directory):</Text>}
-          <Text color={palette.cream} wrap="wrap">{absolute}</Text>
+           {/* Full path remains on the focusable confirmation's Space details. */}
+           <Text color={palette.cream}>{fitCapped(wrapLines(absolute, width), options.pathRows ?? Infinity, width).join('\n')}</Text>
           {!compact && <Text color={palette.parchment} wrap="wrap">{DIRECTORY_NOTE}</Text>}
         </Box>
       )}

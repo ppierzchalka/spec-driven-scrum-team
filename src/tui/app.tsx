@@ -418,13 +418,17 @@ export function InstallerApp(options: {
       : 0;
   // Full-detail overlay budget: title plus a windowed slice of the lines.
   const detailFixed = 1 + (compact ? 0 : 1);
+  // Static path wrapping must yield to the actionable menu. The confirmation
+  // retains the exact path and the same visible Space/details inspection route.
+  const directoryPathRows = Math.max(1, rows - headerRows(compact) - footerTotalForBudget - marginRows(compact)
+    - directoryFixedRows(state, menuWidth, compact, minimal, 0) - 3);
   const screenFixed = (withDetails: boolean) =>
     state.installRequested
       ? 2
       : state.detail
         ? detailFixed
         : state.step === 'directory'
-          ? directoryFixedRows(state, menuWidth, compact, minimal)
+           ? directoryFixedRows(state, menuWidth, compact, minimal, directoryPathRows)
           : state.step === 'agents'
             ? agentsFixedRows(state, menuWidth, compact, roomy, minimal, hintMode, withDetails) + discoveryRows
             : state.step === 'persona'
@@ -730,7 +734,7 @@ export function InstallerApp(options: {
       </Box>
     </Box>
   ) : state.step === 'directory' ? (
-    <DirectoryScreen state={state} width={menuWidth} listHeight={listHeight} compact={compact} hintMode={hintMode} minimal={minimal} />
+    <DirectoryScreen state={state} width={menuWidth} listHeight={listHeight} compact={compact} hintMode={hintMode} minimal={minimal} pathRows={directoryPathRows} />
   ) : state.step === 'agents' ? (
     <AgentsScreen state={state} width={menuWidth} listHeight={listHeight} compact={compact} roomy={roomy} hintMode={hintMode} minimal={minimal} editDetails={editDetailsAvailable} />
   ) : state.step === 'persona' ? (

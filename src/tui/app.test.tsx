@@ -100,23 +100,35 @@ describe('native installer app', () => {
 
   it('shows the cwd confirmation first with directory-only shortcuts', async () => {
     const target = workspace();
-    const { rendered, ready } = mount(target);
+    const { rendered, ready, result, installed } = mount(target);
     await ready();
     const text = stripAnsi(rendered.frame());
     expect(text).toContain('Step 1 of 4');
-    // Read only the path's content column: the avatar occupies the same
-    // physical rows, and long absolute paths wrap rather than truncate.
-    const lines = text.split('\n');
-    const label = lines.findIndex((line) => line.includes('Target (defaults to the invocation directory):'));
-    expect(label).toBeGreaterThanOrEqual(0);
-    const column = lines[label]!.indexOf('Target (defaults');
-    let displayedTarget = '';
-    for (let row = label + 1; row < lines.length && displayedTarget.length < target.length; row += 1) {
-      displayedTarget += lines[row]!.slice(column).trimEnd();
-    }
-    expect(displayedTarget).toBe(target);
+    expect(text).toContain('Target (defaults to the invocation directory):');
     expect(text).toContain('Enter activate');
     expect(text).not.toContain('inquirer');
+    // The bounded static summary is not the full-path oracle. Inspect the
+    // focused confirmation through its existing Space route, including every
+    // middle path component, then restore without activating installation.
+    const label = `Install into ${target}`;
+    let frame = stripAnsi(await rendered.send(KEYS.space));
+    const opened = frame !== text;
+    let read = '';
+    for (let page = 0; page < 128; page++) {
+      for (const line of frame.split('\n').map(row => [...row].slice(44).join('').trim().replace(/^>\s*/, ''))) {
+        const remaining = label.slice(read.length);
+        const continuation = remaining.trimStart();
+        if (line && continuation.startsWith(line)) read += remaining.slice(0, remaining.length - continuation.length) + line;
+      }
+      if (read === label || !opened) break;
+      frame = stripAnsi(await rendered.send(KEYS.down));
+    }
+    expect(read, 'full confirmation path through visible details').toBe(label);
+    if (opened) await rendered.send(KEYS.enter);
+    expect(stripAnsi(rendered.frame())).toBe(text);
+    expect(result()).toBeNull();
+    expect(installed()).toBeNull();
+    expect(readdirSync(target)).toEqual([]);
   });
 
   it('walks directory confirmation to agents with Enter and Home/End navigation', async () => {

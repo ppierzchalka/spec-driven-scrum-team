@@ -1,9 +1,10 @@
 # GitHub-only distribution: build, verify, pack and publish the installer.
 #
-# Authored locally; no remote run is authorized by the task handoff. On master
-# pushes this tests/typechecks/builds/packages the installer, smoke-checks the
-# exact tarball from a clean cache, then advances the immutable `current`
-# pointer only for successful builds. Nothing is published to npm.
+# Runs on every push to master: tests/typechecks/builds/packages the installer,
+# smoke-checks the exact tarball from a clean cache, then advances the immutable
+# `current` pointer only for successful builds that are still master's tip.
+# Nothing is published to npm. A push does not confirm a successful release;
+# publication status is only observable on GitHub.
 #
 # Race safety: jobs serialize on `release-current` (no cancellation) and each
 # job aborts before publishing unless the built commit is still master's tip,
