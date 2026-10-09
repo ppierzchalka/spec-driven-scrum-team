@@ -1,6 +1,6 @@
-# Spec-Driven Scrum Team
+# Toady
 
-A reusable multi-agent toolkit: eight thin agent definitions, twelve procedures as skills, selected-harness adapters and a target-repo installer. Current usage starts in README.md; historical proposals are marked as such.
+A reusable personal multi-agent toolkit: eight thin agent definitions, twelve procedures as skills, selected-harness adapters and a target-repo installer. Current usage starts in README.md; historical proposals are marked as such.
 
 ## Vocabulary
 

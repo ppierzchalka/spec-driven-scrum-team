@@ -28,8 +28,9 @@ describe('harness installations', () => {
     for (const entry of [layout.agents + '/', layout.skills + '/', layout.config]) {
       expect(ignore).toContain(entry);
     }
-    expect(ignore).toContain('# spec-driven-scrum-team:gitignore:start');
-    expect(ignore).toContain('# spec-driven-scrum-team:gitignore:end');
+    expect(ignore).toContain('# toady:gitignore:start');
+    expect(ignore).toContain('# toady:gitignore:end');
+    expect(ignore).not.toContain('spec-driven-scrum-team');
     for (const other of HARNESS_NAMES) {
       if (other !== harness) expect(existsSync(join(targetDir, HARNESS_LAYOUTS[other].agents))).toBe(false);
     }

@@ -61,6 +61,7 @@ jobs:
           test -f dist/build-info.json
           test -d agents
           test -f skills/autonomous-implement/SKILL.md
+          node -e "const b=require('./package.json').bin; if (b.toady!=='./dist/cli/launch.js'||b['install-team']!=='./dist/cli/launch.js') throw new Error('both bins must map to dist/cli/launch.js')"
 
       - name: Clean-cache smoke check from a throwaway directory
         # The just-built tarball has no published current pointer yet, so the
@@ -75,6 +76,7 @@ jobs:
           test -f "$SMOKE/package/dist/cli/launch.js"
           cd "$SMOKE/package" && npm install --omit=dev --no-audit --no-fund
           node dist/cli.js --help | grep -q 'current directory'
+          node dist/cli.js --help | grep -q 'configure Toady'
           mkdir -p "$SMOKE/proj" && cd "$SMOKE/proj"
           HOME="$SMOKE/home" XDG_CONFIG_HOME="$SMOKE/home/.config" \
             node "$SMOKE/package/dist/cli.js" --defaults --harness=codex --toady < /dev/null
@@ -103,7 +105,7 @@ jobs:
       - name: Pack the exact tarball
         run: |
           npm pack --silent
-          mv spec-driven-scrum-team-*.tgz "${{ steps.build.outputs.tgz }}"
+          mv toady-*.tgz "${{ steps.build.outputs.tgz }}"
           sha256sum "${{ steps.build.outputs.tgz }}" | cut -d' ' -f1 > "${{ steps.build.outputs.tgz }}.sha256"
 
       - name: Publish the immutable build release
@@ -132,7 +134,7 @@ jobs:
           cp "$TGZ" installer-current.tgz
           if gh release view current >/dev/null 2>&1; then
             gh release upload current "$TGZ" installer-current.tgz current.json --clobber
-            gh release edit current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz install-team\`."
+            gh release edit current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz toady\`."
           else
-            gh release create current --title current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz install-team\`." "$TGZ" installer-current.tgz current.json
+            gh release create current --title current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz toady\`." "$TGZ" installer-current.tgz current.json
           fi

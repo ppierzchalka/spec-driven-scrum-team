@@ -7,8 +7,8 @@ coverage/
 .DS_Store
 *.tsbuildinfo
 
-# spec-driven-scrum-team:gitignore:start
+# toady:gitignore:start
 .opencode/agents/
 .opencode/skills/
 .opencode/team.config.json
-# spec-driven-scrum-team:gitignore:end
+# toady:gitignore:end

@@ -33,6 +33,9 @@ function writeConfig(targetDir: string, config: TeamConfig, harness: Harness): s
 }
 
 export const SHIPPED_SKILLS = ['autonomous-implement', 'wayfinder', 'slice', 'refine', 'plan', 'project-setup', 'architecture-assess', 'security-assess', 'interface-assess', 'test-design', 'implement-task', 'review-change'] as const;
+/** Current product owner marker; the prior namespace is recognized as owned for safe upgrades. */
+export const SKILL_OWNER = 'toady';
+const LEGACY_SKILL_OWNER = 'spec-driven-scrum-team';
 const ownerFile = '.team-owner.json';
 
 function skillSources(skillDir: string): string[] {
@@ -50,7 +53,7 @@ export function conflictingSkills(options: InstallOptions): string[] {
     const marker = join(dest, ownerFile);
     if (existsSync(marker)) {
       const owner = JSON.parse(readFileSync(marker, 'utf8'));
-      if (owner.owner === 'spec-driven-scrum-team') return false;
+      if (owner.owner === SKILL_OWNER || owner.owner === LEGACY_SKILL_OWNER) return false;
     }
     // Unmarked installs (including legacy versions) need explicit adoption.
     return true;
@@ -201,7 +204,7 @@ export function installTeam(options: InstallOptions): InstallResult {
   const skillPaths = skillSources(skillDir).map(source => {
     const dest = join(targetDir, HARNESS_LAYOUTS[harness].skills, source.split(/[\\/]/).pop()!);
     copySkillFiles(source, dest, targetDir);
-    writeFileSync(join(dest, ownerFile), JSON.stringify({ owner: 'spec-driven-scrum-team' }) + '\n');
+    writeFileSync(join(dest, ownerFile), JSON.stringify({ owner: SKILL_OWNER }) + '\n');
     return join(dest, 'SKILL.md');
   });
   const skillPath = skillPaths[0];

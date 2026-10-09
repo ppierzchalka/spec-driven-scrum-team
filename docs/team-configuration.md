@@ -26,8 +26,9 @@ appends a managed `.gitignore` block that ignores the installed agent, skills
 and config paths, and configures `.vscode/settings.json` so Ctrl+P reaches
 applications in the VS Code integrated terminal; all other rules and unrelated
 harness folders stay untouched. Noninteractive single-directory install:
-`install-team --harness=codex --defaults` (or `npm run setup --
---harness=codex --defaults` from a checkout).
+`toady --harness=codex --defaults` (or `npm run setup --
+--harness=codex --defaults` from a checkout). `install-team` is an
+equivalent supported alias with identical arguments and results.
 
 ## Single installation directory
 
@@ -62,7 +63,7 @@ exits with usage and no writes; it never silently selects defaults.
 
 Validate all team destinations and persona changes before the first installation write. Reject symlink roots/children, dangling links, escaping paths, incompatible file types and malformed known configuration. Recheck skill paths during copying. Source skills must use regular files/directories. These checks prevent ordinary linked-destination writes; this is not an OS sandbox or a defense against a hostile process changing paths concurrently.
 
-Each installed skill has a .team-owner.json marker. Existing unmarked folders (including previous versions and external packages with the same name) require explicit adoption. Interactive setup asks once for listed collisions; noninteractive setup stops unless you supply `--replace-skills`. Review the listed folders first: adoption authorizes overwriting their shipped paths. Other skills are untouched. Custom contents within owned shipped paths can be replaced during refresh; back up intentional skill edits first. No folder deletion is automatic.
+Each installed skill has a .team-owner.json marker. New installs write `{"owner":"toady"}`; markers reading `spec-driven-scrum-team` are recognized as owned without an adoption prompt and refreshed to the current marker on reinstall. Existing unmarked folders (including previous versions and external packages with the same name) require explicit adoption. Interactive setup asks once for listed collisions; noninteractive setup stops unless you supply `--replace-skills`. Review the listed folders first: adoption authorizes overwriting their shipped paths. Other skills are untouched. Custom contents within owned shipped paths can be replaced during refresh; back up intentional skill edits first. No folder deletion is automatic.
 
 Refresh canonical agent instructions with overwrite=yes; overwrite=no retains edited prompts while updating model choices. Operator-defined native permissions, tools, hooks and MCP integrations survive instruction refresh. Shared procedures always refresh. Legacy planner settings migrate to Analyst during interactive configuration; after successful installation, known unchanged retired `planner` definitions and their portable role copy are removed for the selected harness. Model/effort preferences do not prevent cleanup; edited instructions, permissions, tools, integrations, unknown metadata or malformed files are preserved and reported for manual migration. Cleanup never scans unrelated names or other harness folders.
 
@@ -78,7 +79,7 @@ Preflight is read-only validation, not a filesystem transaction. Disk errors or 
 | Antigravity | .agents/agents/*.md | .agents/skills/ | Inherit; optional flash/pro tiers |
 | Copilot | .github/agents/*.agent.md | .github/skills/ | Inherit |
 
-For every harness the installer adds a managed `.gitignore` block (delimited by `# spec-driven-scrum-team:gitignore:start`/`end`) with the agents directory, skills directory and config file from the selected layout — for OpenCode `.opencode/agents/`, `.opencode/skills/`, `.opencode/team.config.json`; for Codex `.codex/agents/`, `.agents/skills/`, `.codex/team.config.json`. The block is created when `<target>/.gitignore` is missing, replaced on reinstall, and never rewrites or duplicates other user rules.
+For every harness the installer adds a managed `.gitignore` block (delimited by `# toady:gitignore:start`/`end`) with the agents directory, skills directory and config file from the selected layout — for OpenCode `.opencode/agents/`, `.opencode/skills/`, `.opencode/team.config.json`; for Codex `.codex/agents/`, `.agents/skills/`, `.codex/team.config.json`. The block is created when `<target>/.gitignore` is missing, replaced on reinstall, and never rewrites or duplicates other user rules. Blocks written under the prior `# spec-driven-scrum-team:gitignore:` namespace are recognized without an adoption prompt and consolidated into the single current block, preserving surrounding content; repeated reinstalls are idempotent. Malformed or duplicated markers from either namespace fail preflight without mutation.
 
 CLI/GUI discovery depends on version, project trust and native multi-agent access. The installer writes formats; it does not enable runtime features. Portable role bodies and references/roles/runtime.json preserve the selected model/effort and native-definition path for general-subagent dispatch. Model text in a prompt is not a runtime override: unavailable explicit selections require a capability decision rather than silent inheritance.
 
@@ -138,7 +139,7 @@ Only models found in the installer's available list can be selected automaticall
 - Reviewer prefers plain DeepSeek V4 Flash through Go or Zen, then V4 Pro/medium if Flash is unavailable. Security prefers V4 Pro/high. Neither role nor Developer/Tester automatically falls back to OpenAI.
 - Astra and unlisted fast/premium variants are manual choices, never automatic matches. Exact matching avoids accidentally selecting a different variant merely because its name contains a preferred ID.
 
-**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. `install-team --defaults` (from the target directory) applies current defaults noninteractively and writes canonical prompts.
+**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. `toady --defaults` (from the target directory) applies current defaults noninteractively and writes canonical prompts.
 
 If a role has no available listed candidate, first-time/defaults installation leaves it unset (inheriting the current opencode model); an interactive reset keeps its existing choice. Check the resulting selections before running a quality-sensitive stage.
 
@@ -146,9 +147,9 @@ Only enabled roles consume work for a given run; the allocation changes naturall
 
 **Explicit upgrades:** for difficult bugs, disputed review findings, or a sensitive threat model that exceeds the current model's demonstrated capability, Lead can recommend a stronger model for that role and bounded task. Sol, Terra, or `openai/gpt-6-luna` are available choices in the checked catalog. Raising effort above the role's confirmed setting is also a separate, explicit user choice, not an automatic response to every failure. Record approved reconfiguration in the run contract and return to the normal defaults when the exception is finished.
 
-## Optional Toady
+## Optional Toady voice
 
-The personal instructions step starts with a native Toady checkbox: **Enter** toggles it (Space toggles checkboxes too). Its saved state is preselected; the following menu lets you reopen this setting. Alternatively, `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona tone affects user-facing conversation, not source/docs or internal handoff style. Toady controls the cartoon-minion style only; it adds no coding or commit defaults.
+The personal instructions step starts with a native Toady voice checkbox: **Enter** toggles it (Space toggles checkboxes too). Its saved state is preselected; the following menu lets you reopen this setting. Alternatively, `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona tone affects user-facing conversation, not source/docs or internal handoff style. Toady voice controls the cartoon-minion style only; it adds no coding or commit defaults.
 
 Persona and imported rules are **personal, user-wide settings** for the selected harness. They apply across projects on this computer. Team agents and skills are still installed per repository. No new persona, rule content or persona-state file is written into a repo.
 
@@ -168,9 +169,22 @@ During an update, the installer migrates old settings, removes its recognized ma
 
 After confirming the Toady checkbox, **Additional rules (loaded to persona)** is always available in the personal instructions menu. Choose **Browse for a rules file** to navigate folders (including parent folders) and select a Markdown/text file. The browser shows its current absolute directory, validates the selected file and leaves existing rules unchanged when you go back. **Enter a rules file path** remains available. Import instructions for TypeScript, custom or Conventional Commits, formatting, Azure DevOps read-only or other guidelines. The content is embedded in the same private startup persona; no repo policy document is installed. Rules load even when Toady is off. Toggling Toady changes only the voice; clearing additional rules removes only imported instructions. Both settings are retained independently across reinstall. Do not include credentials/secrets. Existing company/runtime restrictions remain authoritative; applicable rules propagate to subagents without the persona voice.
 
-Noninteractive: from the target directory run `install-team --harness=opencode --defaults --additional-rules=/path/to/rules.md`; add `--toady` only for the minion tone. Use `--clear-additional-rules` to clear imported rules. The previous `--toady-rules` / `--clear-toady-rules` flags remain aliases. Relative rules paths resolve against the installation (invocation) directory; absolute paths are also accepted. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers are rejected. Named read-only service restrictions require native least-privilege credentials/tools for enforcement.
+Noninteractive: from the target directory run `toady --harness=opencode --defaults --additional-rules=/path/to/rules.md`; add `--toady` only for the minion voice. Use `--clear-additional-rules` to clear imported rules. The previous `--toady-rules` / `--clear-toady-rules` flags remain aliases. Relative rules paths resolve against the installation (invocation) directory; absolute paths are also accepted. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers from either product namespace are rejected. Named read-only service restrictions require native least-privilege credentials/tools for enforcement.
 
-Preserve unrelated rules/provider settings. Disabling Toady removes its style; the startup entry remains while additional rules are present. Clearing both removes the managed block/entry. State is stored privately under each harness user directory in `spec-driven-scrum-team/persona.json`; shared native rules may be discovered by other tools. Use a fresh session after changes.
+Preserve unrelated rules/provider settings. Disabling Toady voice removes its style; the startup entry remains while additional rules are present. Clearing both removes the managed block/entry. State is stored privately under each harness user directory in `toady/persona.json` (a prior `spec-driven-scrum-team/persona.json` is recognized as fallback and migrated on reinstall; when both exist the new settings take precedence); shared native rules may be discovered by other tools. Use a fresh session after changes. Installing with voice off still installs the toolkit; additional rules continue to load independently of the voice setting.
+
+## Repository cutover
+
+The toolkit's canonical home is `ppierzchalka/toady` (package `toady`, command `toady`, with `install-team` as the supported alias). The GitHub repository rename itself is an owner-operated manual step, as are git remote configuration updates — this task performs no remote mutation and renames no local checkout directory.
+
+Coordinated cutover checklist:
+
+1. Rename the GitHub repository to `ppierzchalka/toady` (owner action; requires the name to be available).
+2. Confirm the new clone URL (`https://github.com/ppierzchalka/toady.git`) and the new release launcher route (`npx --yes --package=https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz toady`).
+3. After a successful verified master build publishes `current.json` and its checksum-pinned immutable build, run the documented new canonical npx route against a throwaway project with a private HOME and confirm the install.
+4. Do not rely on GitHub redirect behavior as evidence that the canonical route works; verify the new route directly.
+
+Existing downloaded `install-team` callers remain supported through the bin alias, but survival of every old GitHub URL is not guaranteed. Public asset names are unchanged (`installer-current.tgz`, `current.json`); there is no npm publication step. Until cutover and a successful master release complete, hosted identity/release checks remain unverified.
 
 ## Validation status
 

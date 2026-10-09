@@ -1,8 +1,8 @@
-# Spec-Driven Scrum Team
+# Toady
 
 Explore an idea with **Analyst**. Hand ready tasks to **Lead** for implementation and independent review.
 
-Eight agent roles and twelve skills, installed per repository for **OpenCode, Claude Code, Codex, Antigravity or GitHub Copilot**. Autonomous execution requires native multi-agent support in your harness.
+**Toady** is a reusable personal toolkit: eight agent roles and twelve skills, installed per repository for **OpenCode, Claude Code, Codex, Antigravity or GitHub Copilot**. Autonomous execution requires native multi-agent support in your harness.
 
 ## Install
 
@@ -17,13 +17,16 @@ installs into the current directory.
 
 ```sh
 cd your-project
-npx --yes --package=https://github.com/ppierzchalka/spec-driven-scrum-team/releases/download/current/installer-current.tgz install-team --harness=opencode
+npx --yes --package=https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz toady --harness=opencode
 ```
+
+`install-team` remains an equivalent supported alias: replace `toady` with
+`install-team` in the command above for identical arguments and results.
 
 Requires Node.js 22.19+ and npm. Every launch resolves the newest
 successfully verified master build, verifies its exact tarball checksum, and
 executes that exact build — even when an older npx install is cached. Pass
-installer flags after the bin name, e.g. `install-team --defaults --toady`.
+installer flags after the bin name, e.g. `toady --defaults --toady`.
 Network, lookup or verification failures abort before anything is written, so
 a stale cache is never silently run. Each run prints its build identity
 (`version+commit`) for diagnosability. Even `--help` verifies freshness first,
@@ -31,17 +34,28 @@ so the text you read always belongs to the current build.
 
 > Until the first successful master build publishes its `current` release, the
 > command above fails closed. Publication status is not verified here: track
-> [releases](https://github.com/ppierzchalka/spec-driven-scrum-team/releases)
+> [releases](https://github.com/ppierzchalka/toady/releases)
 > or install from a checkout below in the meantime.
 
 **Local development:**
 
 ```sh
-git clone https://github.com/ppierzchalka/spec-driven-scrum-team.git
-cd spec-driven-scrum-team
+git clone https://github.com/ppierzchalka/toady.git
+cd toady
 npm install
 npm run setup
 ```
+
+**Repository cutover:** the toolkit moved from
+`ppierzchalka/spec-driven-scrum-team` to `ppierzchalka/toady`. Use the new
+clone and release URLs above; the launcher resolves the new repository and
+the new canonical `toady` route must be validated against a throwaway project
+after a successful verified build (see [Installation and model
+settings →](docs/team-configuration.md#repository-cutover)). The rename is an
+owner-operated step — do not rely on GitHub redirect behavior as evidence the
+canonical route works, and do not rename the local checkout directory. Old
+downloaded `install-team` callers remain supported through the alias, but
+survival of every old GitHub URL is not guaranteed.
 
 A keyboard-first native full-screen setup walks four steps:
 **installation directory (invocation-folder default plus a folder picker for
@@ -56,10 +70,10 @@ target or writes files: only an explicit **Use this folder** action confirms
 a new single target (loading that folder's saved configuration, with explicit
 consent when it would discard your session edits), while **Cancel** keeps the
 prior target. Choose a harness in the agents step.
-Personal instructions start with a **Toady** checkbox: **Enter** toggles the
+Personal instructions start with a **Toady voice** checkbox: **Enter** toggles the
 optional cartoon-minion style (Space still toggles checkboxes too). Then **Additional rules
 (loaded to persona)** imports your own coding, commit, formatting or service
-instructions into the same startup persona, independently of Toady. Persona and
+instructions into the same startup persona, independently of Toady voice. Persona and
 imported rules are saved privately in your user configuration, apply across
 projects for that harness, and are retained on update. Agent definitions and
 skills stay per repo. Run setup again for another harness or to update an

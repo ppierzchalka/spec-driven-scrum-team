@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { installTeam, parseAgentFile, serializeAgentFile } from './installTeam.js';
+import { installTeam, conflictingSkills, parseAgentFile, serializeAgentFile } from './installTeam.js';
 import { locateInstructions } from './harness.js';
 import type { TeamConfig } from '../types.js';
 
@@ -218,5 +218,18 @@ describe('installTeam', () => {
     expect(readFileSync(customSkill, 'utf8')).toBe('User-owned skill');
     expect(parseAgentFile(readFileSync(join(destination, '.opencode/agents/analyst.md'), 'utf8')).frontmatter.model).toBe('custom/planning');
     expect(parseAgentFile(readFileSync(join(destination, '.opencode/agents/lead.md'), 'utf8')).frontmatter.model).toBe('custom/execution');
+  });
+
+  it('writes the current skill owner and recognizes the prior namespace without adoption', () => {
+    const options = { definitionsDir: defsDir, skillDir, config: {}, targetDir };
+    const result = installTeam(options);
+    expect(JSON.parse(readFileSync(join(targetDir, '.opencode/skills/autonomous-implement/.team-owner.json'), 'utf8'))).toEqual({ owner: 'toady' });
+    // A prior-namespace marker counts as owned: no adoption prompt.
+    writeFileSync(join(targetDir, '.opencode/skills/autonomous-implement/.team-owner.json'), JSON.stringify({ owner: 'spec-driven-scrum-team' }) + '\n');
+    expect(conflictingSkills(options)).toEqual([]);
+    // Refresh consolidates the marker back to the current namespace.
+    installTeam(options);
+    expect(JSON.parse(readFileSync(join(targetDir, '.opencode/skills/autonomous-implement/.team-owner.json'), 'utf8'))).toEqual({ owner: 'toady' });
+    expect(result.skillPath).toBe(join(targetDir, '.opencode/skills/autonomous-implement/SKILL.md'));
   });
 });

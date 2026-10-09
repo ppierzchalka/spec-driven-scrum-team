@@ -20,7 +20,7 @@ export function scopeLines(state: SessionState): { project: string[]; personal: 
   ];
   const personal = [
     'Private persona profile (Toady voice plus additional rules) in your user configuration — never committed',
-    `Toady: ${state.toadyMode ? 'on' : 'off'}; additional rules: ${state.toadyRules.trim() ? 'loaded' : 'none'}`,
+    `Toady voice: ${state.toadyMode ? 'on' : 'off'}; additional rules: ${state.toadyRules.trim() ? 'loaded' : 'none'}`,
   ];
   return { project, personal };
 }

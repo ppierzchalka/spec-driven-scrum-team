@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { symlinkSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { symlinkSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -106,11 +106,23 @@ describe('exact-build pin (validated handoff)', () => {
   it('aborts when the pin does not match the local stamp', () => {
     const target = targetWithLoader();
     try {
-      const result = runCli(target, { ...process.env, TERM: 'xterm', INSTALL_TEAM_EXACT_BUILD: '0'.repeat(40) }, ['--help']);
+      const result = runCli(target, { ...process.env, TERM: 'xterm', TOADY_EXACT_BUILD: '0'.repeat(40) }, ['--help']);
       expect(result.status).toBe(1);
       expect(result.stderr).toMatch(/does not match pinned build/);
       expect(existsSync(join(target, '.opencode'))).toBe(false);
       expect(existsSync(join(target, '.vscode'))).toBe(false);
+    } finally {
+      rmSync(target, { recursive: true, force: true });
+    }
+  });
+
+  it('accepts the legacy pin name as a fallback', () => {
+    const target = targetWithLoader();
+    try {
+      const result = runCli(target, { ...process.env, TERM: 'xterm', INSTALL_TEAM_EXACT_BUILD: '0'.repeat(40) }, ['--help']);
+      expect(result.status).toBe(1);
+      expect(result.stderr).toMatch(/does not match pinned build/);
+      expect(existsSync(join(target, '.opencode'))).toBe(false);
     } finally {
       rmSync(target, { recursive: true, force: true });
     }
@@ -121,13 +133,26 @@ describe('exact-build pin (validated handoff)', () => {
     const target = targetWithLoader();
     try {
       const own = readBuildInfo(repoRoot);
-      const result = runCli(target, { ...process.env, TERM: 'xterm', INSTALL_TEAM_EXACT_BUILD: own.commit }, ['--help']);
+      const result = runCli(target, { ...process.env, TERM: 'xterm', TOADY_EXACT_BUILD: own.commit }, ['--help']);
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('current directory');
       expect(result.stdout).toContain(`build ${own.tag}`);
     } finally {
       rmSync(target, { recursive: true, force: true });
     }
+  });
+});
+
+describe('toady identity and bin alias', () => {
+  it('presents Toady with the supported install-team alias', async () => {
+    const { USAGE } = await import('./args.js');
+    expect(USAGE).toContain('toady — configure Toady');
+    expect(USAGE).toContain('install-team remains an equivalent supported alias');
+    expect(USAGE).not.toContain('Spec-Driven Scrum Team');
+    const pkg = JSON.parse(readFileSync(join(fileURLToPath(new URL('../../', import.meta.url)), 'package.json'), 'utf8')) as { name: string; bin: Record<string, string> };
+    expect(pkg.name).toBe('toady');
+    expect(pkg.bin.toady).toBe('./dist/cli/launch.js');
+    expect(pkg.bin['install-team']).toBe('./dist/cli/launch.js');
   });
 });
 

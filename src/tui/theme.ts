@@ -32,5 +32,5 @@ export const STEP_TITLES: Record<string, string> = {
 };
 
 export function headerTitle(step: string): string {
-  return `Spec-Driven Scrum Team — ${STEP_TITLES[step] ?? step}`;
+  return `Toady — ${STEP_TITLES[step] ?? step}`;
 }

@@ -25,7 +25,7 @@ function workspace(): string {
 async function stubTarball(dir: string, identity: string): Promise<string> {
   const pkg = join(dir, 'package');
   mkdirSync(pkg, { recursive: true });
-  writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'stub-install-team', version: '0.0.0', bin: { 'install-team': './cli.js' } }));
+  writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'stub-toady', version: '0.0.0', bin: { toady: './cli.js', 'install-team': './cli.js' } }));
   writeFileSync(join(pkg, 'cli.js'), `#!/usr/bin/env node\nconsole.log('${identity}');\n`, { mode: 0o755 });
   const tgz = join(dir, 'pkg.tgz');
   await checked('tar', ['-czf', tgz, '-C', dir, 'package'], { cwd: dir, env: privateEnv(join(dir, 'sandbox')), log: join(dir, 'tar.log'), timeoutMs: 10000 });

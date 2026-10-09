@@ -17,7 +17,7 @@
 // uses https.
 //
 // Defaults: --base points at this repository's `current` release;
-// --cache-dir defaults to ~/.cache/spec-driven-scrum-team/builds.
+// --cache-dir defaults to ~/.cache/toady/builds.
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const REPO = 'ppierzchalka/spec-driven-scrum-team';
+const REPO = 'ppierzchalka/toady';
 const DEFAULT_BASE = `https://github.com/${REPO}/releases/download/current`;
 
 function fail(message) {
@@ -35,7 +35,7 @@ function fail(message) {
 }
 
 function parseCli(argv) {
-  const options = { base: DEFAULT_BASE, cacheDir: join(homedir(), '.cache', 'spec-driven-scrum-team', 'builds'), passthrough: [] };
+  const options = { base: DEFAULT_BASE, cacheDir: join(homedir(), '.cache', 'toady', 'builds'), passthrough: [] };
   let i = 0;
   const rest = [];
   for (; i < argv.length; i += 1) {
@@ -152,7 +152,7 @@ if (sha256File(cached) !== metadata.sha256) fail('downloaded tarball failed sha2
 console.log(`fresh-launch: executing exact build ${metadata.tag} (${metadata.sha.slice(0, 12)}).`);
 
 // The installer's target is the invocation cwd: keep it, run from here.
-const child = spawnSync('npx', ['--yes', `--package=${cached}`, 'install-team', ...options.passthrough], {
+const child = spawnSync('npx', ['--yes', `--package=${cached}`, 'toady', ...options.passthrough], {
   stdio: 'inherit',
   cwd: process.cwd(),
   env: process.env,
