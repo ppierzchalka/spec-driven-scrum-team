@@ -111,6 +111,34 @@ describe('installer lifecycle', () => {
     const { renderTree } = await import('./testSupport.js');
     const { InstallerApp } = await import('./app.js');
     const React = await import('react');
+    // Ink installs process-lifetime signal handlers (signal-exit) on its first
+    // render and never removes them. Absorb that one-time installation with a
+    // warm-up mount/unmount so the assertions below measure only this app's
+    // per-mount handlers, independent of test order.
+    {
+      const warmStdout = new FakeStdout(100, 30);
+      const warmInitial = createInitialState({
+        targetDir: '/repo',
+        harness: 'opencode',
+        config: {},
+        overwrite: {},
+        toadyMode: false,
+        toadyRules: '',
+        skillConflicts: [],
+        vscodeKept: true,
+      });
+      warmInitial.discovery = { status: 'ready', models: [], detail: '' };
+      const warm = renderTree(
+        React.createElement(InstallerApp, { initial: warmInitial, onDone: () => {}, onInstall: async () => { throw new Error('no install'); } }),
+        { columns: 100, rows: 30 },
+      );
+      await warm.ready();
+      const warmMounted = process.listenerCount('SIGTERM');
+      warm.stop();
+      // Wait until the warm-up app's own handler is removed, leaving only
+      // Ink's process-lifetime handlers as the stable baseline.
+      await waitFor(() => process.listenerCount('SIGTERM') < warmMounted, 'warm-up teardown', warmStdout);
+    }
     const beforeInt = process.listenerCount('SIGINT');
     const beforeTerm = process.listenerCount('SIGTERM');
     for (let i = 0; i < 3; i += 1) {
