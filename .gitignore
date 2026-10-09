@@ -1,6 +1,13 @@
 node_modules/
 dist/
 coverage/
+.scratch/
 *.log
 .DS_Store
 *.tsbuildinfo
+
+# spec-driven-scrum-team:gitignore:start
+.opencode/agents/
+.opencode/skills/
+.opencode/team.config.json
+# spec-driven-scrum-team:gitignore:end

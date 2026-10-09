@@ -1,0 +1,137 @@
+# GitHub-only distribution: build, verify, pack and publish the installer.
+#
+# Authored locally; no remote run is authorized by the task handoff. On master
+# pushes this tests/typechecks/builds/packages the installer, smoke-checks the
+# exact tarball from a clean cache, then advances the immutable `current`
+# pointer only for successful builds. Nothing is published to npm.
+#
+# Race safety: jobs serialize on `release-current` (no cancellation) and each
+# job aborts before publishing unless the built commit is still master's tip,
+# so an older queued job can never overwrite a newer successful build.
+# Failed builds never touch releases.
+
+name: release-current
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: release-current
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-verify-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out master
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build and stamp
+        run: npm run build
+
+      - name: Inspect package contents
+        run: |
+          npm pack --dry-run
+          test -f dist/cli/launch.js
+          head -1 dist/cli/launch.js | grep -q '#!/usr/bin/env node'
+          test -f dist/cli.js
+          test -f dist/build-info.json
+          test -d agents
+          test -f skills/autonomous-implement/SKILL.md
+
+      - name: Clean-cache smoke check from a throwaway directory
+        # The just-built tarball has no published current pointer yet, so the
+        # freshness bootstrap would fail closed by design. Smoke the packed
+        # internal entry directly for packaging/assets/cwd targeting; the npx
+        # bootstrap route itself is covered by launch.test.ts against fixtures.
+        run: |
+          TARBALL="$PWD/$(npm pack --silent)"
+          echo "smoking $TARBALL"
+          SMOKE=$(mktemp -d)
+          tar -xzf "$TARBALL" -C "$SMOKE"
+          test -f "$SMOKE/package/dist/cli/launch.js"
+          cd "$SMOKE/package" && npm install --omit=dev --no-audit --no-fund
+          node dist/cli.js --help | grep -q 'current directory'
+          mkdir -p "$SMOKE/proj" && cd "$SMOKE/proj"
+          HOME="$SMOKE/home" XDG_CONFIG_HOME="$SMOKE/home/.config" \
+            node "$SMOKE/package/dist/cli.js" --defaults --harness=codex --toady < /dev/null
+          test -f .codex/team.config.json
+          grep -q 'quickOpen' .vscode/settings.json
+          echo "smoke ok"
+
+      - name: Resolve build identity
+        id: build
+        run: |
+          SHA=$(git rev-parse HEAD)
+          SHORT=${SHA:0:12}
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "short=$SHORT" >> "$GITHUB_OUTPUT"
+          echo "tag=build-$SHA" >> "$GITHUB_OUTPUT"
+          echo "tgz=installer-$SHORT.tgz" >> "$GITHUB_OUTPUT"
+
+      - name: Abort if master moved past this build
+        run: |
+          TIP=$(git ls-remote origin master | cut -f1)
+          if [ "$TIP" != "${{ steps.build.outputs.sha }}" ]; then
+            echo "master tip $TIP is newer than built ${{ steps.build.outputs.sha }}; yielding to the newer build."
+            exit 1
+          fi
+
+      - name: Pack the exact tarball
+        run: |
+          npm pack --silent
+          mv spec-driven-scrum-team-*.tgz "${{ steps.build.outputs.tgz }}"
+          sha256sum "${{ steps.build.outputs.tgz }}" | cut -d' ' -f1 > "${{ steps.build.outputs.tgz }}.sha256"
+
+      - name: Publish the immutable build release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.build.outputs.tag }}
+          name: ${{ steps.build.outputs.tag }}
+          body: |
+            Verified installer build for master ${{ steps.build.outputs.sha }}.
+            Install via the `current` release pointer, never by guessing this tag.
+          files: |
+            ${{ steps.build.outputs.tgz }}
+
+      - name: Advance the current pointer to this exact build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.build.outputs.tag }}
+          SHA: ${{ steps.build.outputs.sha }}
+          TGZ: ${{ steps.build.outputs.tgz }}
+        run: |
+          URL="https://github.com/${{ github.repository }}/releases/download/$TAG/$TGZ"
+          SUM=$(cat "$TGZ.sha256")
+          printf '{"version":1,"tag":"%s","sha":"%s","url":"%s","sha256":"%s"}\n' "$TAG" "$SHA" "$URL" "$SUM" > current.json
+          # Stable bootstrap address: the single documented npx route resolves
+          # this file, then verifies and executes the immutable build above.
+          cp "$TGZ" installer-current.tgz
+          if gh release view current >/dev/null 2>&1; then
+            gh release upload current "$TGZ" installer-current.tgz current.json --clobber
+            gh release edit current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz install-team\`."
+          else
+            gh release create current --title current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz install-team\`." "$TGZ" installer-current.tgz current.json
+          fi

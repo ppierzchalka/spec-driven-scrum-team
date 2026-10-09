@@ -9,7 +9,7 @@ Record once in the existing task execution section (or shared batch record when 
 - Scope: references, criterion IDs, dependencies/readiness.
 - Team: effective enabled/off roles with per-Ticket exceptions, Tester mode test-design (default) or explicitly test-author; Lead on, Analyst outside execution.
 - Proposals: read-only roles, candidates per role (default 1; usually 2 when selected), distinct lenses, evaluator (Lead or available explicitly selected read-only role), criteria and one evaluation round.
-- Scheduling: task-to-packet mapping, review units/bounds, writable-worker concurrency, independent analysis stages, shared-file ownership and separate proposal concurrency limit.
+- Scheduling: task-to-packet mapping, review units/bounds, writable-worker concurrency, independent analysis stages, shared-file and output-mutating check ownership (including build/pack) and separate proposal concurrency limit.
 - Workspace: one task/packet current checkout; concurrent packets isolated worktrees; bases, paths, branches.
 - Delivery: ask explicitly before execution: local, separate PRs, stacked PRs or one consolidated PR? Record target/base and integration order. Reuse a choice already given; never infer stacking/consolidation from multiple Tickets.
 - Gates: focused/assembled checks, manual owners, two total review passes by default.
@@ -25,6 +25,8 @@ Explicit instructions already authorize those exact choices/actions. Missing mat
 Give assigned criteria/behavior, role/output, Ticket/spec references, relevant paths and dependency contracts, workspace/base/version, constraints, checks/evidence, permission boundaries, remaining limits and next owner. Link shared policy/specs instead of pasting history. Include only relevant prior decisions; agents may inspect necessary source.
 
 Track pending/running/complete/not-applicable/blocked/skipped with evidence. Developer off means no production changes; Reviewer off means unreviewed. Mandatory checks failed/not run prevent verified delivery.
+
+On interruption, distinguish assertion failure, command timeout/abort and native session cancellation. Preserve partial work; reconcile the workspace, owned children/outputs, completed evidence and remaining gates. Inspect stale permission/session state through supported read-only diagnostics; sanitize evidence and report unavailable capabilities. Resume only the smallest unfinished operation after ownership and permissions are confirmed; stop on unresolved state rather than blindly retrying. Permission-reply 404s are a diagnostic lead, not a proven cancellation cause; keep runtime root cause unresolved without direct evidence. Prompts cannot fix runtime permission lifecycle; restart, permission bypass or model changes require separate authorization under existing restrictions.
 
 ## Dependency frontier
 

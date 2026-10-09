@@ -1,14 +1,62 @@
 # Installation and team configuration
 
-Run `npm run setup` to select one or more exact target folders with checkboxes. **Space** toggles the highlighted folder without opening it; **↑/↓** move, **→** opens it, **←** goes to its parent, and **Enter** confirms all selected targets. **Esc** cancels. Selections persist as you browse; selecting a parent does not select its children. Both path pickers use the same native Inquirer file selector, with its built-in navigation, paging, colors and selection hints. Existing CLI paths remain a shortcut: `npm run setup -- ../repo-a ../repo-b`. The wizard has four steps: **targets → agents and models → personal instructions → review and install**. Choose one harness in the agents step, then configure models/effort and canonical prompt overwrite. Toady and additional rules have their own step. Back navigation retains edits; files are written only after selecting **Install** in the final summary. No .gitignore changes or unrelated harness folders. CLI defaults: `npm run setup -- /path/to/target-repo --harness=codex --defaults`.
+Run `npm run setup` (or the [GitHub Release launcher](../README.md#install)) in
+the repository you want to configure. A native keyboard-first full-screen setup
+walks four steps: **installation directory → agents and models → personal
+instructions → review and install**. The first screen defaults to the absolute
+invocation directory and offers a native folder picker for another existing
+directory — exactly one folder is ever the install target. **↑/↓** navigate,
+**Enter** activates (and toggles the Toady checkbox), **Space** toggles checkboxes (and types inside inputs),
+**Tab** moves between search and list, **Home**/**End**/**PgUp**/**PgDn** jump
+in long lists, and **Esc** opens a safe Quit dialog from anywhere before
+anything is written. Editors offer explicit Cancel rows and Back navigation
+for local cancellation: cancelling a draft discards only the draft. There is
+no mouse. Browsing the folder picker never changes the target or writes
+files: only an explicit **Use this folder** action confirms another target,
+loading that folder's saved team configuration (with explicit consent when it
+would discard session agent edits); **Cancel** keeps the prior target, and
+**Esc** follows the global safe-quit contract with exact state restore on
+Continue. Passing a
+target path fails with usage instead of installing elsewhere. Choose one
+harness in the agents step, then configure models/effort and canonical prompt
+overwrite. Toady and additional rules have their own step. Back navigation
+retains committed choices; editor cancellation discards only its draft. Files
+are written only after selecting **Install** in the final summary. Setup also
+appends a managed `.gitignore` block that ignores the installed agent, skills
+and config paths, and configures `.vscode/settings.json` so Ctrl+P reaches
+applications in the VS Code integrated terminal; all other rules and unrelated
+harness folders stay untouched. Noninteractive single-directory install:
+`install-team --harness=codex --defaults` (or `npm run setup --
+--harness=codex --defaults` from a checkout).
 
-## Multiple targets
+## Single installation directory
 
-One interactive profile applies selected models/effort, overwrite choices, Toady and additional rules to all selected folders. Initial agent settings come from the first selected target; personal settings come from the user profile, falling back to an old repo installation during migration. Other targets' model selections are replaced by that profile; persona and additional rules are saved once as user-level settings for the selected harness; native provider settings, unrelated instructions and operator controls are preserved. Use separate setup runs for different profiles. An exact folder is a target; adding a parent does not recursively install into its children.
+One interactive run installs into exactly one target folder. The directory
+screen defaults to the invocation directory and offers a folder picker for
+another existing directory. Confirming another target loads that folder's
+saved team configuration, skill conflicts and editor status (with explicit
+consent when it would discard session agent edits); reselecting the same
+target keeps committed session choices. Initial agent
+settings come from the default target's saved team configuration; personal settings
+come from the user profile, falling back to an old repo installation during
+migration. Persona and additional rules are saved once as user-level settings
+for the selected harness; native provider settings, unrelated instructions and
+operator controls are preserved. Run setup once per repository for different
+profiles. The picked target must exist, be a real directory (no symlinks) and
+be readable; invalid targets are rejected recoverable in the picker, and no
+folder is ever created for you. `--defaults` stays cwd-only.
 
-Every target's team and persona destinations are preflighted before the first write. Unowned skill collisions are listed by target for one adoption decision. Writes then run sequentially and report each completed target. This is not a cross-repo filesystem transaction: disk errors/concurrent changes may leave the current target partially written, earlier completed targets installed and remaining targets untouched.
+Every write scope — team files, persona profile and editor settings — is
+preflighted before the first write. Unowned skill collisions are listed for one
+in-shell adoption decision. This is not a filesystem transaction: disk
+errors/concurrent changes may leave the target partially written, reported
+truthfully.
 
-For noninteractive multi-target use `npm run setup -- ../repo-a ../repo-b --harness=codex --defaults`. Target paths are required with `--defaults`; it never opens a browser. Model defaults apply to all targets, while the user profile retains its saved persona/rules unless corresponding flags explicitly override them. Duplicate paths are installed once; nonexistent, file or symlink roots are rejected before writes.
+For noninteractive use run in the target directory with `--defaults`; it never
+opens the setup. Model defaults apply, while the user profile retains its saved
+persona/rules unless corresponding flags explicitly override them. In
+non-TTY/raw-mode-unavailable/`TERM=dumb` environments interactive invocation
+exits with usage and no writes; it never silently selects defaults.
 
 ## Installation ownership and paths
 
@@ -29,6 +77,8 @@ Preflight is read-only validation, not a filesystem transaction. Disk errors or 
 | Codex | .codex/agents/*.toml | .agents/skills/ | Inherit |
 | Antigravity | .agents/agents/*.md | .agents/skills/ | Inherit; optional flash/pro tiers |
 | Copilot | .github/agents/*.agent.md | .github/skills/ | Inherit |
+
+For every harness the installer adds a managed `.gitignore` block (delimited by `# spec-driven-scrum-team:gitignore:start`/`end`) with the agents directory, skills directory and config file from the selected layout — for OpenCode `.opencode/agents/`, `.opencode/skills/`, `.opencode/team.config.json`; for Codex `.codex/agents/`, `.agents/skills/`, `.codex/team.config.json`. The block is created when `<target>/.gitignore` is missing, replaced on reinstall, and never rewrites or duplicates other user rules.
 
 CLI/GUI discovery depends on version, project trust and native multi-agent access. The installer writes formats; it does not enable runtime features. Portable role bodies and references/roles/runtime.json preserve the selected model/effort and native-definition path for general-subagent dispatch. Model text in a prompt is not a runtime override: unavailable explicit selections require a capability decision rather than silent inheritance.
 
@@ -88,7 +138,7 @@ Only models found in the installer's available list can be selected automaticall
 - Reviewer prefers plain DeepSeek V4 Flash through Go or Zen, then V4 Pro/medium if Flash is unavailable. Security prefers V4 Pro/high. Neither role nor Developer/Tester automatically falls back to OpenAI.
 - Astra and unlisted fast/premium variants are manual choices, never automatic matches. Exact matching avoids accidentally selecting a different variant merely because its name contains a preferred ID.
 
-**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. `npm run setup -- /path/to/target-repo --defaults` applies current defaults noninteractively and writes canonical prompts.
+**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. `install-team --defaults` (from the target directory) applies current defaults noninteractively and writes canonical prompts.
 
 If a role has no available listed candidate, first-time/defaults installation leaves it unset (inheriting the current opencode model); an interactive reset keeps its existing choice. Check the resulting selections before running a quality-sensitive stage.
 
@@ -98,7 +148,7 @@ Only enabled roles consume work for a given run; the allocation changes naturall
 
 ## Optional Toady
 
-The personal instructions step starts with a native Toady checkbox: **Space** toggles it and **Enter** confirms. Its saved state is preselected; the following menu lets you reopen this setting. Alternatively, `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona tone affects user-facing conversation, not source/docs or internal handoff style. Toady controls the cartoon-minion style only; it adds no coding or commit defaults.
+The personal instructions step starts with a native Toady checkbox: **Enter** toggles it (Space toggles checkboxes too). Its saved state is preselected; the following menu lets you reopen this setting. Alternatively, `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona tone affects user-facing conversation, not source/docs or internal handoff style. Toady controls the cartoon-minion style only; it adds no coding or commit defaults.
 
 Persona and imported rules are **personal, user-wide settings** for the selected harness. They apply across projects on this computer. Team agents and skills are still installed per repository. No new persona, rule content or persona-state file is written into a repo.
 
@@ -114,11 +164,11 @@ OpenCode respects `XDG_CONFIG_HOME`; Claude Code respects `CLAUDE_CONFIG_DIR`; C
 
 Copilot's file here is a **CLI** user profile; the installer does not configure VS Code/other IDE personal instruction settings. Those clients may need their own user settings. Other adapters use native user instruction files, which may also be discovered by compatible tools.
 
-During an update, the installer migrates old settings, removes its recognized managed blocks from project instruction files, removes old OpenCode persona references, and retires recognized generated persona files and repo state. Unrelated project conventions are preserved. It does not rewrite Git history: personal content committed earlier remains in that history. No `.gitignore` changes.
+During an update, the installer migrates old settings, removes its recognized managed blocks from project instruction files, removes old OpenCode persona references, and retires recognized generated persona files and repo state. Unrelated project conventions are preserved. It does not rewrite Git history: personal content committed earlier remains in that history. The target's `.gitignore` gains a managed block that ignores the installed agent, skills and config paths; all other lines are preserved. `.vscode/` is never ignore-listed: the managed editor settings stay visible to Git.
 
 After confirming the Toady checkbox, **Additional rules (loaded to persona)** is always available in the personal instructions menu. Choose **Browse for a rules file** to navigate folders (including parent folders) and select a Markdown/text file. The browser shows its current absolute directory, validates the selected file and leaves existing rules unchanged when you go back. **Enter a rules file path** remains available. Import instructions for TypeScript, custom or Conventional Commits, formatting, Azure DevOps read-only or other guidelines. The content is embedded in the same private startup persona; no repo policy document is installed. Rules load even when Toady is off. Toggling Toady changes only the voice; clearing additional rules removes only imported instructions. Both settings are retained independently across reinstall. Do not include credentials/secrets. Existing company/runtime restrictions remain authoritative; applicable rules propagate to subagents without the persona voice.
 
-Noninteractive: `npm run setup -- /path/to/target --harness=opencode --defaults --additional-rules=/path/to/rules.md`; add `--toady` only for the minion tone. Use `--clear-additional-rules` to clear imported rules. The previous `--toady-rules` / `--clear-toady-rules` flags remain aliases. Relative rules paths are resolved against the installer process working directory shown in the TUI (normally the spec-driven-scrum-team checkout), not the target repo. Absolute paths are also accepted. For sibling folders, installing into `../my-proj/my-proj` can read rules from `../my-proj/rules.md`. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers are rejected. Named read-only service restrictions require native least-privilege credentials/tools for enforcement.
+Noninteractive: from the target directory run `install-team --harness=opencode --defaults --additional-rules=/path/to/rules.md`; add `--toady` only for the minion tone. Use `--clear-additional-rules` to clear imported rules. The previous `--toady-rules` / `--clear-toady-rules` flags remain aliases. Relative rules paths resolve against the installation (invocation) directory; absolute paths are also accepted. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers are rejected. Named read-only service restrictions require native least-privilege credentials/tools for enforcement.
 
 Preserve unrelated rules/provider settings. Disabling Toady removes its style; the startup entry remains while additional rules are present. Clearing both removes the managed block/entry. State is stored privately under each harness user directory in `spec-driven-scrum-team/persona.json`; shared native rules may be discovered by other tools. Use a fresh session after changes.
 

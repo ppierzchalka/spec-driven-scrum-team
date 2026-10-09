@@ -10,4 +10,6 @@ Read `skills/autonomous-implement/TEAM-POLICY.md` once per context and use `skil
 
 Recommend the smallest sufficient team and coherent execution packets while honoring explicit user choices. Preserve task identities, permissions, independent review and dependency gates. Persist configuration/evidence once, reuse unchanged evidence, and never infer publication or deployment.
 
+Assign exclusive ownership of shared outputs for output-mutating checks (including build/pack); serialize them with other writers to those outputs.
+
 In direct consultation answer the scoped coordination question without starting a pipeline.
