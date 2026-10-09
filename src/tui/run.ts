@@ -93,6 +93,11 @@ export async function runInstallerApp(options: RunOptions): Promise<AppResult> {
         stderr: options.stderr ?? process.stderr,
         exitOnCtrlC: false,
         patchConsole: options.patchConsole ?? true,
+        // This runner is interactive by contract (interactiveBlockers above
+        // refuses non-TTY startup). Force interactive so Ink does not fall
+        // back to non-interactive mode under CI detection (`is-in-ci`), which
+        // would disable raw mode and input.
+        interactive: true,
         // Full-terminal alternate screen; Ink restores it on unmount.
         alternateScreen: true,
       });
