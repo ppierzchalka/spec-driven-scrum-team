@@ -1,10 +1,11 @@
 {
-  "name": "spec-driven-scrum-team",
+  "name": "toady",
   "version": "0.1.0",
-  "description": "Installer + product planning and skill-based procedures and configurable eight-agent execution with selected harness adapters",
+  "description": "Toady installer + personal AI-assisted workflow toolkit with configurable eight-agent execution and selected harness adapters",
   "type": "module",
   "private": true,
   "bin": {
+    "toady": "./dist/cli/launch.js",
     "install-team": "./dist/cli/launch.js"
   },
   "scripts": {

@@ -16,12 +16,14 @@ const KNOWN_FLAGS = new Set([
   '--help', '-h',
 ]);
 
-export const USAGE = `install-team — configure the Spec-Driven Scrum Team in a single target directory
+export const USAGE = `toady — configure Toady in a single target directory
 
 Usage:
-  install-team [--harness=<name>] [--toady|--no-toady]
-               [--additional-rules=<file>|--clear-additional-rules]
-               [--replace-skills] [--defaults]
+  toady [--harness=<name>] [--toady|--no-toady]
+        [--additional-rules=<file>|--clear-additional-rules]
+        [--replace-skills] [--defaults]
+
+  install-team remains an equivalent supported alias with identical arguments.
 
   Runs an interactive full-screen setup. The first screen defaults to the
   invocation (current) directory and offers a folder picker for another
@@ -30,7 +32,7 @@ Usage:
 
 Options:
   --harness=<name>        opencode | claude-code | codex | antigravity | copilot
-  --toady / --no-toady    Enable or disable the Toady persona voice
+  --toady / --no-toady    Enable or disable the Toady voice
   --additional-rules=<f>  Load extra rules into the private persona (also --toady-rules=<f>)
   --clear-additional-rules Clear extra rules (also --clear-toady-rules)
   --replace-skills        Adopt/replace unowned shipped skill folders

@@ -63,10 +63,10 @@ export function personaBrowserItems(entries: BrowserEntry[], showHidden: boolean
 
 export function personaItems(state: SessionState): MenuItem[] {
   return [
-    { id: 'toady', label: 'Toady mode', hint: state.toadyMode ? 'on — cartoon henchman persona' : 'off', state: state.toadyMode ? 'checked' : 'unchecked' },
+    { id: 'toady', label: 'Toady voice', hint: state.toadyMode ? 'on — cartoon henchman voice' : 'off', state: state.toadyMode ? 'checked' : 'unchecked' },
     { id: 'rules-browse', label: 'Browse for a rules file', hint: 'navigate folders; Markdown/text files' },
     { id: 'rules-path', label: 'Enter a rules file path', hint: 'relative to the installation directory, or absolute' },
-    { id: 'rules-clear', label: 'Clear additional rules', hint: 'leave Toady mode and existing repo conventions unchanged' },
+    { id: 'rules-clear', label: 'Clear additional rules', hint: 'leave Toady voice and existing repo conventions unchanged' },
     { id: '__next__', label: 'Next: review and install' },
     { id: '__back__', label: 'Back to agents and models' },
   ];
@@ -124,7 +124,7 @@ export function personaShortcuts(state: SessionState): string[] {
     if (state.region === 1) return ['↑↓ choose action', 'Enter activate', 'Tab back to input', 'Esc quit dialog'];
     return ['Type or paste a path', 'Enter load', 'Tab actions (Load/Cancel)', 'Esc quit dialog (draft kept)'];
   }
-  return ['↑↓ navigate', 'Enter toggles Toady / activate', 'Esc quit'];
+  return ['↑↓ navigate', 'Enter toggles Toady voice / activate', 'Esc quit'];
 }
 
 export const PERSONA_NOTE = 'Toady and additional rules are personal: stored outside the repo in your user configuration and applied across projects for this harness.';
@@ -184,7 +184,7 @@ export function PersonaScreen(options: { state: SessionState; width: number; lis
       {!compact && (
         <Text color={palette.parchment} wrap="wrap">{PERSONA_NOTE}</Text>
       )}
-      {!minimal && <Text color={palette.parchment}>{`Current rules: ${state.toadyRules.trim() ? 'loaded' : 'none — independent of Toady mode'}`}</Text>}
+      {!minimal && <Text color={palette.parchment}>{`Current rules: ${state.toadyRules.trim() ? 'loaded' : 'none — independent of Toady voice'}`}</Text>}
       {editingPath && (
         <Box marginTop={compact ? 0 : 1} flexDirection="column">
           <Text color={palette.gold} wrap="wrap">{personaPathLabel(minimal, state.targetDir)}</Text>

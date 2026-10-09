@@ -43,12 +43,13 @@ function npxInstallTeam(opts: {
   env: NodeJS.ProcessEnv;
   work: string;
   pkg: string;
+  bin?: string;
   args: string[];
   timeout: number;
 }): Promise<{ status: number; output: string }> {
   return runToFile(
     'npx',
-    ['--yes', `--package=${opts.pkg}`, 'install-team', ...opts.args],
+    ['--yes', `--package=${opts.pkg}`, opts.bin ?? 'toady', ...opts.args],
     opts.work,
     { ...opts.env, npm_config_cache: opts.npmCache },
     opts.timeout,
@@ -83,7 +84,7 @@ describe('public npx route through the shipped bootstrap bin', () => {
     mkdirSync(work, { recursive: true });
     const npmCache = join(root, 'npm-cache');
     mkdirSync(npmCache, { recursive: true });
-    const env = sandboxEnv({ INSTALL_TEAM_RELEASE_BASE: pathToFileURL(srv).href });
+    const env = sandboxEnv({ TOADY_RELEASE_BASE: pathToFileURL(srv).href });
 
     // Build 1: the real working-tree build, stamped with HEAD.
     const stamp1 = readBuildInfo(repoRoot);
@@ -100,9 +101,9 @@ describe('public npx route through the shipped bootstrap bin', () => {
     copyFileSync(packed1, stable);
     writeCurrent(srv, `build-${sha1}`, sha1, pathToFileURL(imm1).href, imm1);
 
-    // Public invocation path, exactly as documented.
+    // Public invocation path, exactly as documented (canonical bin).
     const stableUrl = pathToFileURL(stable).href;
-    const first = await npxInstallTeam({ npmCache, env, work, pkg: stableUrl, args: ['--help'], timeout: 300000 });
+    const first = await npxInstallTeam({ npmCache, env, work, pkg: stableUrl, bin: 'toady', args: ['--help'], timeout: 300000 });
     expect(first.status).toBe(0);
     expect(first.output).toContain(`build ${tag1}`);
 
@@ -116,15 +117,16 @@ describe('public npx route through the shipped bootstrap bin', () => {
     writeCurrent(srv, `build-${sha2}`, sha2, pathToFileURL(imm2).href, imm2);
 
     // Same populated npm cache: whatever copy npm serves, the outcome must
-    // be exactly build 2 — never stale build 1.
-    const second = await npxInstallTeam({ npmCache, env, work, pkg: stableUrl, args: ['--help'], timeout: 300000 });
+    // be exactly build 2 — never stale build 1. The alias proves the same.
+    const second = await npxInstallTeam({ npmCache, env, work, pkg: stableUrl, bin: 'install-team', args: ['--help'], timeout: 300000 });
     expect(second.status).toBe(0);
     expect(second.output).toContain(`build ${tag2}`);
     expect(second.output).not.toContain(`build ${tag1}`);
 
     // Deterministic stale-bootstrap path with an isolated bootstrap cache:
-    // the previous build binary itself, pointed at the new metadata, must
-    // download the exact build and hand off (proving the cached case).
+    // the previous build binary itself, pointed at the new metadata through
+    // the legacy base variable, must download the exact build and hand off
+    // (proving the cached case and the fallback).
     const staleEnv = sandboxEnv({ INSTALL_TEAM_RELEASE_BASE: pathToFileURL(srv).href });
     const staleWork = join(root, 'stale-work');
     mkdirSync(staleWork, { recursive: true });
@@ -165,14 +167,14 @@ describe('public npx route through the shipped bootstrap bin', () => {
     mkdirSync(join(srv, sha), { recursive: true });
     copyFileSync(packed, served);
     // Populate the npm cache with a good run first.
-    const goodEnv = sandboxEnv({ INSTALL_TEAM_RELEASE_BASE: pathToFileURL(srv).href });
+    const goodEnv = sandboxEnv({ TOADY_RELEASE_BASE: pathToFileURL(srv).href });
     writeCurrent(srv, `build-${sha}`, sha, pathToFileURL(served).href, served);
     const good = await npxInstallTeam({ npmCache, env: goodEnv, work, pkg: pathToFileURL(packed).href, args: ['--help'], timeout: 300000 });
     expect(good.status).toBe(0);
     // Then kill the metadata source: the cached bootstrap must still refuse.
     const deadBase = pathToFileURL(join(root, 'empty-srv')).href;
     mkdirSync(join(root, 'empty-srv'), { recursive: true });
-    const deadEnv = sandboxEnv({ INSTALL_TEAM_RELEASE_BASE: deadBase });
+    const deadEnv = sandboxEnv({ TOADY_RELEASE_BASE: deadBase });
     const result = await npxInstallTeam({ npmCache, env: deadEnv, work, pkg: pathToFileURL(packed).href, args: ['--help'], timeout: 300000 });
     expect(result.status).not.toBe(0);
     expect(result.output).toMatch(/refusing to run a possibly stale cached build/);
@@ -186,7 +188,7 @@ describe('public npx route through the shipped bootstrap bin', () => {
     mkdirSync(srv, { recursive: true });
     const work = join(root, 'work');
     mkdirSync(work, { recursive: true });
-    const env = sandboxEnv({ INSTALL_TEAM_RELEASE_BASE: pathToFileURL(srv).href });
+    const env = sandboxEnv({ TOADY_RELEASE_BASE: pathToFileURL(srv).href });
     const packed = fixture.basePack;
     const sha = 'c'.repeat(40);
     const served = join(srv, sha, 'installer.tgz');
