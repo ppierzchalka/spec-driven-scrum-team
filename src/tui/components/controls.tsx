@@ -138,6 +138,8 @@ export function windowByLines(counts: readonly number[], focusedIndex: number, b
 }
 
 export interface MenuGeometry {
+  showAbove: boolean;
+  showBelow: boolean;
   top: number;
   bottom: number;
   /** Rows the focused item may render without pushing actions out. */
@@ -182,14 +184,18 @@ export function menuGeometry(
       top += 1;
     } else break;
   }
-  const indicators = (top > 0 ? 1 : 0) + (bottom < items.length ? 1 : 0);
+  // A one/two-row menu cannot afford both indicators and its focused action.
+  // Navigation still includes every item; prioritize the forward indicator.
+  const showBelow = bottom < items.length && room >= 2;
+  const showAbove = top > 0 && room >= (showBelow ? 3 : 2);
+  const indicators = Number(showAbove) + Number(showBelow);
   let others = indicators;
   for (let i = top; i < bottom; i += 1) {
     if (i !== focusedIndex) others += counts[i] ?? 1;
   }
   const focusCap = Math.max(1, room - others);
   const full = counts[focusedIndex] ?? 1;
-  return { top, bottom, focusCap, capped: full > focusCap, counts };
+  return { top, bottom, focusCap, capped: full > focusCap, counts, showAbove, showBelow };
 }
 
 export function MenuList(options: {
@@ -212,12 +218,12 @@ export function MenuList(options: {
   const hintMode = options.hintMode ?? (compact ? 'focused' : 'all');
   const budget = Math.max(1, options.viewportHeight);
   const bare = options.bare ?? false;
-  const { top, bottom, focusCap } = menuGeometry(options.items, options.focusedId, options.width, compact, hintMode, budget, bare);
+  const { top, bottom, focusCap, showAbove, showBelow } = menuGeometry(options.items, options.focusedId, options.width, compact, hintMode, budget, bare);
   const above = top;
   const below = options.items.length - bottom;
   return (
     <Box flexDirection="column">
-      {above > 0 && <Text color={palette.parchment}>↑ {above} more above</Text>}
+      {showAbove && <Text color={palette.parchment}>↑ {above} more above</Text>}
       {options.items.slice(top, bottom).map((item, offset) => {
         const index = top + offset;
         const focusedRow = index === focusedIndex;
@@ -237,7 +243,7 @@ export function MenuList(options: {
           </Box>
         );
       })}
-      {below > 0 && <Text color={palette.parchment}>↓ {below} more below</Text>}
+      {showBelow && <Text color={palette.parchment}>↓ {below} more below</Text>}
     </Box>
   );
 }

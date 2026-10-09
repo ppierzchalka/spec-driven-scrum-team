@@ -208,11 +208,20 @@ describe('single-target picker flow', () => {
     expect(text).toMatch(/discard|Discard|replaces/);
     const consentFrame = text;
     let explanation = stripAnsi(await rendered.send(KEYS.space));
-    for (let i = 0; i < 20; i++) explanation += stripAnsi(await rendered.send(KEYS.down));
-    const explanationContent = columns === 100
+    expectFit('consent details', explanation, columns, columns === 40 ? 8 : 39);
+    const explanationContent = () => (columns === 100
       ? explanation.split('\n').map((line) => [...line].slice(44).join('')).join('')
-      : explanation;
-    expect(explanationContent.replace(/\s/g, '')).toContain('savedconfig/defaults');
+      : explanation).replace(/\s/g, '');
+    // Stop only when the existing full-text oracle is visible; an unreachable
+    // explanation still exhausts the same bounded 20 inputs and fails below.
+    let explanationInputs = 0;
+    while (explanationInputs < 20 && !explanationContent().includes('savedconfig/defaults')) {
+      const next = stripAnsi(await rendered.send(KEYS.down));
+      expectFit('consent details scan', next, columns, columns === 40 ? 8 : 39);
+      explanation += next;
+      explanationInputs += 1;
+    }
+    expect(explanationContent()).toContain('savedconfig/defaults');
     await rendered.send(KEYS.enter); // nonmutating details close
     await rendered.send(KEYS.esc);
     text = stripAnsi(await rendered.send(KEYS.enter)); // exact consent restore
@@ -326,8 +335,10 @@ describe('single-target picker flow', () => {
     // The confirmed target owns the review: B's saved model, B's target line.
     await rendered.send(KEYS.home); // window to the top rows
     text = stripAnsi(rendered.frame());
-    expect(text).toContain('other/b-model');
     expect(text).toContain('Target:');
+    await rendered.send(KEYS.down); // analyst
+    text = stripAnsi(await rendered.send(KEYS.down)); // focus B's lead model
+    expect(text).toMatch(/>\s+lead: other\/b-model/);
     await rendered.send(KEYS.end); // last row is back; step up to install
     await rendered.send(KEYS.up);
     await rendered.send(KEYS.enter); // install
@@ -352,9 +363,9 @@ describe('single-target picker flow', () => {
     await rendered.send(KEYS.down); // .. (parent)
     await rendered.send(KEYS.down); // Show hidden (only .. entry)
     await rendered.send(KEYS.down); // Use this folder
-    const text = stripAnsi(await rendered.send(KEYS.enter)); // same dir: keep, no reload
-    expect(text).toContain('Install into');
-    await rendered.send(KEYS.down); // cancel-close lands on the change row
+    await rendered.send(KEYS.enter); // same dir: keep, no reload; focus on change
+    await rendered.send(KEYS.down); // focus confirmation
+    await expectInstallLabel(rendered, targetA);
     await rendered.send(KEYS.enter); // agents
     await toReview(rendered);
     // Committed session choice survived the same-target roundtrip.
@@ -381,7 +392,7 @@ describe('single-target picker flow', () => {
     await rendered.send(KEYS.end); // Cancel row
     let text = stripAnsi(await rendered.send(KEYS.enter)); // explicit cancel
     expect(text).not.toContain('Quit setup?');
-    expect(text).toContain('Install into');
+    expect(text).toContain('Choose another target folder');
     const closedFrame = text;
     await rendered.send(KEYS.esc); // global quit dialog
     text = stripAnsi(rendered.frame());
@@ -389,6 +400,11 @@ describe('single-target picker flow', () => {
     text = stripAnsi(await rendered.send(KEYS.enter)); // continue restores exactly
     expect(text).not.toContain('Quit setup?');
     expect(text).toBe(closedFrame);
+    const focused = stripAnsi(await rendered.send(KEYS.down));
+    await expectInstallLabel(rendered, targetA);
+    expect(stripAnsi(rendered.frame())).toBe(focused);
+    await rendered.send(KEYS.up);
+    expect(stripAnsi(rendered.frame())).toBe(closedFrame);
     await rendered.send(KEYS.esc);
     await rendered.send('Q');
     expect(result()?.type).toBe('quit');
@@ -446,10 +462,17 @@ describe('single-target picker flow', () => {
     expect(result()).toBeNull();
     await rendered.send(KEYS.end); // Cancel row
     const closed = stripAnsi(await rendered.send(KEYS.enter));
-    expect(closed).toContain('Install into');
+    expect(closed).toContain('Choose another target folder');
+    expect(result()).toBeNull();
+    const focused = stripAnsi(await rendered.send(KEYS.down));
+    await expectInstallLabel(rendered, targetA);
+    expect(stripAnsi(rendered.frame())).toBe(focused);
+    await rendered.send(KEYS.up);
+    expect(stripAnsi(rendered.frame())).toBe(closed);
     await rendered.send(KEYS.esc);
     await rendered.send('Q');
-    expect(result()).toMatchObject({ type: 'quit', state: { targetDir: targetA } });
+    expect(result()).toMatchObject({ type: 'quit', state: { targetDir: targetA, config: {}, targetBrowser: { open: false } } });
+    expect(readdirSync(targetA)).toEqual([]);
   });
 
   it('never lists symlinked directories as install targets', async () => {
@@ -461,8 +484,15 @@ describe('single-target picker flow', () => {
     await mounted.ready();
     await rendered.send(KEYS.up);
     await rendered.send(KEYS.enter);
-    const text = stripAnsi(rendered.frame());
+    await rendered.send(KEYS.home);
+    let text = stripAnsi(await rendered.send(KEYS.down)); // parent
+    expect(text).not.toContain('loop');
+    text = stripAnsi(await rendered.send(KEYS.down)); // first child, not a link
     expect(text).toContain('real/');
+    expect(text).not.toContain('loop');
+    expect(text).toMatch(/>\s+real\//);
+    text = stripAnsi(await rendered.send(KEYS.down));
+    expect(text).toMatch(/>\s+Show hidden entries/); // no second child/link
     expect(text).not.toContain('loop');
   });
 

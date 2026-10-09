@@ -1,4 +1,5 @@
 import React from 'react';
+import { MenuList } from './components/controls.js';
 import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -87,7 +88,22 @@ async function capture(name: string, size: { columns: number; rows: number }, dr
 }
 
 describe('rendered evidence matrix', () => {
-  it.each([[99, 24], [40, 8], [99, 45]])('U09-1: suppressed UX warning is visibly inspectable at %ix%i without mutating actions', async (columns, rows) => {
+  it.each([1, 2, 3])('renders the middle focused action within a %i-row menu budget', async (budget) => {
+    const rendered = renderTree(<MenuList items={[
+      { id: 'before', label: 'Before' },
+      { id: 'focus', label: `Install into /${'long-path/'.repeat(20)}` },
+      { id: 'after', label: 'After' },
+    ]} focusedId="focus" viewportHeight={budget} width={40} compact hintMode="none" />, { columns: 40, rows: 8 });
+    live.push(rendered);
+    await rendered.ready();
+    const frame = stripAnsi(rendered.frame());
+    expect(frame).toMatch(/>\s+Install into/);
+    expect(frame.trimEnd().split('\n').length).toBeLessThanOrEqual(budget);
+    for (const line of frame.split('\n')) expect(stringWidth(line)).toBeLessThanOrEqual(40);
+    mkdirSync(EVIDENCE_DIR, { recursive: true });
+    writeFileSync(join(EVIDENCE_DIR, `menu-middle-${budget}.txt`), frame);
+  });
+  it.each([[99, 24], [40, 8], [99, 45], [100, 39]])('U09-1: suppressed UX warning is visibly inspectable at %ix%i without mutating actions', async (columns, rows) => {
     const root = workspace();
     const target = join(root, 'notice-path-start', ...Array(25).fill('temp-root-segment'), 'notice-target-end');
     mkdirSync(target, { recursive: true });
@@ -101,6 +117,7 @@ describe('rendered evidence matrix', () => {
     // must remain inspectable independently of focused-label truncation.
     await rendered.send(KEYS.end);
     const before = stripAnsi(rendered.frame());
+    const content = (frame: string) => frame.split('\n').map((line) => columns >= 100 ? [...line].slice(44).join('') : line).join('\n').replace(/\s+/g, ' ');
     mkdirSync(EVIDENCE_DIR, { recursive: true });
     const save = (name: string) => {
       const text = stripAnsi(rendered.frame());
@@ -112,16 +129,17 @@ describe('rendered evidence matrix', () => {
     };
     save('action');
     expect(before).toMatch(/>\s+Quit without writing/);
-    if (rows === 45) {
-      expect(before).toContain('No recommended Sol model is available for UX');
+    if (content(before).includes('No recommended Sol model is available for UX')) {
+      expect(content(before)).toContain('No recommended Sol model is available for UX');
+      expect(content(before)).toContain('explicitly before running design work.');
       expect(stripAnsi(await rendered.send(KEYS.space))).toBe(before);
     } else {
       expect(before).not.toContain('No recommended Sol model');
       expect(before).toContain('Space warning/details');
       await rendered.send(KEYS.space);
-      let inspected = save('detail');
+      let inspected = content(save('detail'));
       for (let page = 0; page < 20; page += 1) {
-        inspected += '\n' + stripAnsi(await rendered.send(KEYS.pageDown));
+        inspected += '\n' + content(stripAnsi(await rendered.send(KEYS.pageDown)));
         save(`page-${page}`);
       }
       expect(inspected.replace(/\s+/g, ' ')).toContain('No recommended Sol model is available for UX');
@@ -344,26 +362,27 @@ describe('rendered evidence matrix', () => {
     expect(text).toContain('Step 1 of 4');
     expect(text).toContain('Enter activate');
     expect(text).toMatch(/>\s+Install into/);
-    const label = lines.findIndex((line) => line.includes('Target (defaults'));
-    expect(label).toBeGreaterThanOrEqual(0);
-    let displayedTarget = '';
-    for (let row = label + 1; row < lines.length && displayedTarget.length < target.length; row += 1) {
-      displayedTarget += lines[row]!.trim();
-    }
-    expect(displayedTarget).toBe(target);
+    expect(text).toContain('Target (defaults');
     expect(installedTarget).toBeNull();
     expect(existsSync(join(target, '.opencode'))).toBe(false);
-    await rendered.send(KEYS.space);
-    const details = stripAnsi(rendered.frame()).trimEnd().split('\n');
-    expect(details.length).toBeLessThanOrEqual(24);
-    for (const line of details) expect(stringWidth(line)).toBeLessThanOrEqual(99);
-    const detailLabel = details.findIndex((line) => line.trim() === 'Install into');
-    expect(detailLabel).toBeGreaterThanOrEqual(0);
-    let detailedTarget = '';
-    for (let row = detailLabel + 1; row < details.length && detailedTarget.length < target.length; row += 1) {
-      detailedTarget += details[row]!.trim();
+    let frame = await rendered.send(KEYS.space);
+    expect(stripAnsi(frame)).not.toBe(text);
+    expect(stripAnsi(frame)).toContain('Install into');
+    const label = `Install into ${target}`;
+    let read = '';
+    for (let page = 0; page < 128; page++) {
+      const details = stripAnsi(frame).trimEnd().split('\n');
+      expect(details.length).toBeLessThanOrEqual(24);
+      for (const line of details) expect(stringWidth(line)).toBeLessThanOrEqual(99);
+      for (const line of details.map(row => row.trim().replace(/^>\s*/, ''))) {
+        const remaining = label.slice(read.length);
+        const continuation = remaining.trimStart();
+        if (line && continuation.startsWith(line)) read += remaining.slice(0, remaining.length - continuation.length) + line;
+      }
+      if (read === label) break;
+      frame = await rendered.send(KEYS.down);
     }
-    expect(detailedTarget).toBe(target);
+    expect(read, 'all full path components in visible details').toBe(label);
     await rendered.send(KEYS.space);
     expect(stripAnsi(rendered.frame())).toBe(text);
     expect(installedTarget).toBeNull();

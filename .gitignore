@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 .scratch/
+.vscode/
 *.log
 .DS_Store
 *.tsbuildinfo

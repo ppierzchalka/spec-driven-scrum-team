@@ -29,8 +29,8 @@ a stale cache is never silently run. Each run prints its build identity
 (`version+commit`) for diagnosability. Even `--help` verifies freshness first,
 so the text you read always belongs to the current build.
 
-> No release is published yet: until the first successful master build ships
-> its `current` release, the command above fails closed. Track
+> Until the first successful master build publishes its `current` release, the
+> command above fails closed. Publication status is not verified here: track
 > [releases](https://github.com/ppierzchalka/spec-driven-scrum-team/releases)
 > or install from a checkout below in the meantime.
 
