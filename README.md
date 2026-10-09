@@ -6,27 +6,30 @@ Explore an idea with **Analyst**. Hand ready tasks to **Lead** for implementatio
 
 ## Install
 
-Requires Node.js 22.19+ and npm. The interactive setup defaults to the
-directory you run it from and offers a folder picker for another existing
-directory; the confirmed single target receives the install. There are no
-target-path arguments and no multi-target mode. Passing a path fails with
-usage instead of installing elsewhere. Noninteractive `--defaults` always
-installs into the current directory.
+Requires Node.js 22.19+ and npm.
 
 **Registry-free launch from GitHub Releases (no npm publish, no clone):**
 
 ```sh
 cd your-project
-npx --yes --package=https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz toady --harness=opencode
+npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz
 ```
 
-`install-team` remains an equivalent supported alias: replace `toady` with
-`install-team` in the command above for identical arguments and results.
+The interactive setup defaults to the
+directory you run it from and offers a folder picker for another existing
+directory; the confirmed single target receives the install. There are no
+target-path arguments and no multi-target mode. Passing a path fails with
+usage instead of installing elsewhere. Noninteractive flags, harness
+selection and the `install-team` alias route live in one place:
+[Installation options →](docs/team-configuration.md#installation-options).
 
-Requires Node.js 22.19+ and npm. Every launch resolves the newest
+`install-team` remains a supported alias through the `--package` form
+documented there; the short positional URL above always runs the canonical
+`toady` entry.
+
+Every launch resolves the newest
 successfully verified master build, verifies its exact tarball checksum, and
-executes that exact build — even when an older npx install is cached. Pass
-installer flags after the bin name, e.g. `toady --defaults --toady`.
+executes that exact build — even when an older npx install is cached.
 Network, lookup or verification failures abort before anything is written, so
 a stale cache is never silently run. Each run prints its build identity
 (`version+commit`) for diagnosability. Even `--help` verifies freshness first,
@@ -37,7 +40,8 @@ so the text you read always belongs to the current build.
 > [releases](https://github.com/ppierzchalka/toady/releases)
 > or install from a checkout below in the meantime.
 
-**Local development:**
+**Local development** (for working on the toolkit itself — not a project
+install route):
 
 ```sh
 git clone https://github.com/ppierzchalka/toady.git

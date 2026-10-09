@@ -134,7 +134,7 @@ jobs:
           cp "$TGZ" installer-current.tgz
           if gh release view current >/dev/null 2>&1; then
             gh release upload current "$TGZ" installer-current.tgz current.json --clobber
-            gh release edit current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz toady\`."
+            gh release edit current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx -y https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz\`."
           else
-            gh release create current --title current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx --yes --package=https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz toady\`." "$TGZ" installer-current.tgz current.json
+            gh release create current --title current --notes "Current verified installer build: $TAG ($SHA). Launch: \`npx -y https://github.com/${{ github.repository }}/releases/download/current/installer-current.tgz\`." "$TGZ" installer-current.tgz current.json
           fi
