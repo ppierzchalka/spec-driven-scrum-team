@@ -27,5 +27,5 @@ No single-agent redesign, new daemon/service, additional harness, default voice 
 - Source: owner discussion on 2026-10-10, existing README, package.json, installer source and release workflow.
 - Accepted: toolkit identity, complete outward rename with compatible upgrades, unchanged installation process and optional voice.
 - Confirmed: “non published” excludes npm publication and preserves existing GitHub Releases distribution. The owner accepted the task-level migration, cutover and verification contract.
-- Last change: local implementation and independent review completed; the owner selected one PR for delivery. The [local task](../../.scratch/toady/issues/01-toady-identity.md) remains in-review pending merged delivery and hosted gates.
-- Next: publish the scoped PR, then coordinate owner-operated repository cutover and hosted validation. Repository rename, merge and deployment remain unauthorized in this run.
+- Last change: the original rename PR merged; the GitHub repository rename and origin update are done, the local checkout directory unchanged. Detail lives in the [local task](../../.scratch/toady/issues/01-toady-identity.md) (a working-tree file, not a published reader resource).
+- Next: deliver the short-command docs follow-up as a new PR (scoped fixes/push/merge authorized; Lead handles delivery), then run hosted final post-cutover validation after a post-cutover master build regenerates canonical `current` metadata. Repository rename is complete; deployment of any new workflow stage remains out of scope.

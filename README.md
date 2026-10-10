@@ -35,10 +35,13 @@ a stale cache is never silently run. Each run prints its build identity
 (`version+commit`) for diagnosability. Even `--help` verifies freshness first,
 so the text you read always belongs to the current build.
 
-> Until the first successful master build publishes its `current` release, the
-> command above fails closed. Publication status is not verified here: track
-> [releases](https://github.com/ppierzchalka/toady/releases)
-> or install from a checkout below in the meantime.
+> A `current` release is published, but its pinned build metadata still
+> addresses the pre-rename repository path, so the canonical route currently
+> depends on GitHub redirect behavior. Canonical end-to-end validation is
+> pending a post-cutover master build (see [Repository
+> cutover →](docs/team-configuration.md#repository-cutover)); track
+> [releases](https://github.com/ppierzchalka/toady/releases) for publication
+> status.
 
 **Local development** (for working on the toolkit itself — not a project
 install route):
@@ -51,15 +54,15 @@ npm run setup
 ```
 
 **Repository cutover:** the toolkit moved from
-`ppierzchalka/spec-driven-scrum-team` to `ppierzchalka/toady`. Use the new
-clone and release URLs above; the launcher resolves the new repository and
-the new canonical `toady` route must be validated against a throwaway project
-after a successful verified build (see [Installation and model
-settings →](docs/team-configuration.md#repository-cutover)). The rename is an
-owner-operated step — do not rely on GitHub redirect behavior as evidence the
-canonical route works, and do not rename the local checkout directory. Old
-downloaded `install-team` callers remain supported through the alias, but
-survival of every old GitHub URL is not guaranteed.
+`ppierzchalka/spec-driven-scrum-team` to `ppierzchalka/toady` — the GitHub
+rename and remote update are done; the local checkout directory is
+intentionally unchanged. Use the new clone and release URLs above. The
+canonical `toady` route still needs end-to-end validation against a throwaway
+project after a post-cutover verified build (see [Installation and model
+settings →](docs/team-configuration.md#repository-cutover)) — redirect
+behavior is not evidence the canonical route works. Old downloaded
+`install-team` callers remain supported through the alias, but survival of
+every old GitHub URL is not guaranteed.
 
 A keyboard-first native full-screen setup walks four steps:
 **installation directory (invocation-folder default plus a folder picker for

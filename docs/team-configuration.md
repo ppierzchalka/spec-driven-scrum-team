@@ -82,7 +82,7 @@ Available installer flags:
 
 | Flag | Effect |
 | --- | --- |
-| `--harness=<name>` | `opencode` \| `claude-code` \| `codex` \| `antigravity` \| `copilot`; required for `--defaults`, chosen interactively otherwise |
+| `--harness=<name>` | `opencode` \| `claude-code` \| `codex` \| `antigravity` \| `copilot`; optional — omitted means `opencode` (including with `--defaults`); chosen interactively otherwise |
 | `--defaults`, `-d` | Noninteractive install with default models; always installs into the current directory |
 | `--toady` / `--no-toady` | Enable or disable the cartoon-minion voice in the private startup persona |
 | `--additional-rules=<file>` (also `--toady-rules=<file>`) | Load extra rules into the private persona; relative paths resolve against the invocation directory; regular Markdown/text files up to 64 KiB |
@@ -223,16 +223,16 @@ Preserve unrelated rules/provider settings. Disabling Toady voice removes its st
 
 ## Repository cutover
 
-The toolkit's canonical home is `ppierzchalka/toady` (package `toady`, command `toady`, with `install-team` as the supported alias). The GitHub repository rename itself is an owner-operated manual step, as are git remote configuration updates — this task performs no remote mutation and renames no local checkout directory.
+The toolkit's canonical home is `ppierzchalka/toady` (package `toady`, command `toady`, with `install-team` as the supported alias). The GitHub repository rename and origin update are done (owner-operated); the local checkout directory is intentionally unchanged — this task performs no remote mutation.
 
 Coordinated cutover checklist:
 
-1. Rename the GitHub repository to `ppierzchalka/toady` (owner action; requires the name to be available).
-2. Confirm the new clone URL (`https://github.com/ppierzchalka/toady.git`) and the new release launcher route (`npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz`).
-3. After a successful verified master build publishes `current.json` and its checksum-pinned immutable build, run the documented new canonical npx route against a throwaway project with a private HOME and confirm the install.
+1. Repository renamed to `ppierzchalka/toady` (done, owner action).
+2. New clone URL (`https://github.com/ppierzchalka/toady.git`) and new release launcher route (`npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz`) confirmed (done).
+3. After the next post-cutover verified master build publishes `current.json` with canonical new-repo metadata and its checksum-pinned immutable build, run the documented canonical npx route against a throwaway project with a private HOME and confirm the install (pending).
 4. Do not rely on GitHub redirect behavior as evidence that the canonical route works; verify the new route directly.
 
-Existing downloaded `install-team` callers remain supported through the bin alias, but survival of every old GitHub URL is not guaranteed. Public asset names are unchanged (`installer-current.tgz`, `current.json`); there is no npm publication step. Until cutover and a successful master release complete, hosted identity/release checks remain unverified.
+Existing downloaded `install-team` callers remain supported through the bin alias, but survival of every old GitHub URL is not guaranteed. Public asset names are unchanged (`installer-current.tgz`, `current.json`); there is no npm publication step. The published `current` release predates the rename: its pinned metadata still addresses the old repository path (redirect-dependent) and regenerates with canonical URLs on the next post-cutover master build — releases are never edited by hand. Full hosted identity/release validation is pending that build plus the canonical end-to-end install.
 
 ## Validation status
 
