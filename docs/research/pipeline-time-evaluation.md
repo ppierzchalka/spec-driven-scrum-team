@@ -2,7 +2,15 @@
 
 ## Outcome and boundary
 
-2026-10-09. Report-only operation: no pipeline, policy, tests, model, runtime or publication changes. Reuse [task13's measured baseline and candidate](test-value-and-runtime.md); do not rerun suites just to time this report. The evidence demonstrates expensive rendered/release commands and a local focused improvement, **not a measured dispatch-to-verdict improvement**. No complete critical path, coordination-overhead total, queue time, token usage or billing can be computed from the available observations.
+2026-10-09. Report-only operation: no pipeline, policy, tests, model, runtime or publication changes. Reuse [task13's measured baseline and candidate](test-value-and-runtime.md#serialized-baseline-for-task12-reuse); do not rerun suites just to time this report. The evidence demonstrates expensive rendered/release commands and a local focused improvement, **not a measured dispatch-to-verdict improvement**. No complete critical path, coordination-overhead total, queue time, token usage or billing can be computed from the available observations.
+
+> Dated disposition (grooming): the task13 diagnosis in this report predates
+> the appended repairs in [test value and runtime](test-value-and-runtime.md#bounded-repair-follow-up-six-diagnosed-long-path-failures)
+> and its [outage-resume replacement](test-value-and-runtime.md#outage-resume-follow-up-durable-replacement-evidence).
+> References below to "task13's six failures" and the 316-case baseline
+> describe this report's scope at 2026-10-09, not the later 323-case repaired
+> outcome. The owning measurements live in the task13 report; this report
+> keeps only the pipeline-relevant summary and anchors to it.
 
 The smallest justified next step is an identity-led evidence-reuse pilot on a genuine small packet. Its protocol below is executable but **unmeasured**: two comparable dispatch-to-independent-verdict intervals are missing. This satisfies the accepted protocol alternative; it does not claim an executed pipeline pilot or independent approval. Lead owns scheduling, final gates, task lifecycle and the consolidated delivery. Task13 owns individual test changes; its ongoing read-only long-path diagnosis is not an approved repair.
 
@@ -13,11 +21,11 @@ Direct inspection here means reading existing records/artifacts, not re-executin
 | Source | Content identity at inspection | Provenance / limitations |
 |---|---|---|
 | Historical task09 record | SHA-256 `61843431975cff0a844b027d1f151ced8f2d557b7d80fc7c13a75babc6f99273` | Directly read `.scratch/team-installer/issues/09-verification-feedback-and-interruption-diagnostics.md`; selected observations migrated below. Historical timing base `26ff0b3`, dirty task08; not the later delivered identity. No durable dependency on its ignored link. |
-| [Task13 report](test-value-and-runtime.md) | SHA-256 `90138faf9b39ee0f87833e56bb993b1d7ddb766cff4f489781ef1b6373fbad99` | Directly read current report and baseline JSONs; no new execution. Final report content differs from report identity used during its code checks. |
+| [Task13 report](test-value-and-runtime.md) | See owning report ([baseline](test-value-and-runtime.md#serialized-baseline-for-task12-reuse), [evidence ledger](test-value-and-runtime.md#baseline-evidence-ledger-ephemeral-local-artifacts), [final verification](test-value-and-runtime.md#final-verification)) | Directly read current-at-2026-10-09 report and baseline JSONs; no new execution. Later appended repairs changed its content; the five baseline JSON identities live in that report's ledger, not duplicated here. |
 | [Task11 cancellation report](native-session-cancellations.md) | SHA-256 `524e3b8802d24dde90b26b5387d4cc056d1ae0e148c951971ca75ad86efe68ed` | Durable incident taxonomy and sanitized correlation ledger; initiator/root cause unresolved. No private logs inspected here. |
 | Lead packet | No serialized content hash supplied | Reported task11 Developer phase 122.016s, validation 0.0053s, independent Reviewer validation 0.000662s. These are different scopes, not interchangeable pipeline intervals. |
 
-Current task13 baseline HEAD is `4be1db6bef208bae0087c92c47da693de6fecba6`; working-tree fingerprint `e4916d8b3a84c9364c532a25bb207426888f7903f306549160b1d0bf15674c34`. Fingerprinting hashes sorted cached/unignored paths, NUL, bytes (or `<deleted>`), NUL; it includes the then-untracked cancellation report. All three baseline post-command identities matched. Environment: Linux x64, Node v22.22.0, npm 11.14.1, installed node_modules reused, owned short TMPDIR/EVIDENCE_DIR. OS/module cache state was uncontrolled. Release used isolated HOME/XDG/npm caches with deliberate within-scenario cache reuse; real npx dependency installation can use npm/network. Registry/download/extraction/startup attribution is unknown.
+Current-at-2026-10-09 task13 baseline HEAD was `4be1db6bef208bae0087c92c47da693de6fecba6`. Environment: Linux x64, Node v22.22.0, npm 11.14.1, installed node_modules reused, owned short TMPDIR/EVIDENCE_DIR. OS/module cache state was uncontrolled. Release used isolated HOME/XDG/npm caches with deliberate within-scenario cache reuse; real npx dependency installation can use npm/network. Registry/download/extraction/startup attribution is unknown.
 
 Historical evidence records Vitest v5.0.0 and this Linux checkout, but does not retain a matched full environment/cache ledger or exact dated UTC command boundaries. Reporter clock-only starts below have **unknown timezone and date binding**; do not subtract them to estimate an operation. Initial historical release fingerprint is missing. Historical render's final owned manifest is `13505743676260c022b2842e22970fa0c1d593dd75c4dba30f3b5a4793360652`; it is not proof of a matched initial manifest. Historical release final source fingerprint is `e2ab3e68fce4a364670a971f303a002eab4c988bec62c1171e1d6a7c13c682d0`.
 
@@ -31,19 +39,16 @@ Historical exact focused invocation was **not recovered**; its selector must not
 |---|---|---|
 | Historical render focused three-case journey, original invocation unknown | 26.96s → 6.61s; repeat 6.65s; 3 passed / 10 skipped each | Command wall only; observable input/render synchronization repair with nine helper regressions. No session start/end. |
 | Historical release baseline invocation unknown → final release gate | 14.86s → 16.28826631s; 2 files / 5 passed each | No demonstrated gain; isolated outputs and five → two packs improve ownership, not established elapsed speed. Missing initial fingerprint and network/cache comparability. |
-| `npm run test:fast -- --reporter=verbose` | 3257.118ms owned; 3257.597ms phase; Vitest 2.87s; 20 files / 194 passed | Task13 stable baseline, serialized. |
-| `npm run test:rendered -- --reporter=verbose` | 14977.986ms owned; 14978.142ms phase; Vitest 14.59s; 9 files / 117 passed | Same baseline; concurrent cases within the suite. |
-| `npm run test:release -- --reporter=verbose` | 16991.816ms owned; 16991.990ms phase; Vitest 16.64s; 2 files / 5 passed | Same baseline; network-sensitive subprocess work. |
-| `npm run test:rendered -- src/tui/targetFlow.test.tsx -t 'returns from edited Agents' --reporter=verbose` | Short original 5828.098 / 5738.098ms; candidate 5035.419 / 5063.606ms. Long original 5914.044 / 5897.440ms; candidate 5177.942 / 5168.091ms. Each 2 passed / 12 filtered. | Task13 repeated focused commands, before-then-after order; same selector/environment apart from named TMPDIR variants. Not pipeline or full-suite gain. |
-| `npm test -- --reporter=verbose` | Candidate 32166.424ms owned; 32176.287ms phase; Vitest 31.81s; 31 files / 316 passed | Task13 final full gate; no matched original full trial. Cannot compare with historical changing-count totals to claim speedup. |
+| Task13 serialized baseline (`test:fast` / `test:rendered` / `test:release`) and focused consent-seam comparison | See [owning baseline table](test-value-and-runtime.md#serialized-baseline-for-task12-reuse) and [candidate comparison](test-value-and-runtime.md#single-candidate-consent-explanation-scan) | Task13 stable baselines, serialized; focused before-then-after hotspot only. Not pipeline or full-suite gain. |
+| `npm test -- --reporter=verbose` (task13 final full gate at this report's scope) | Candidate 32166.424ms owned; 32176.287ms phase; Vitest 31.81s; 31 files / 316 passed | See [final verification](test-value-and-runtime.md#final-verification); no matched original full trial. Cannot compare with historical changing-count totals to claim speedup. |
 
 The baseline serialized phase sum is 35227.729ms (35.228s rounded), command sum 35226.921ms (summing unrounded measurements). Neither is an observed `npm test` invocation or pipeline duration. Task09's eight historical logged runs total **116.837s command runs**, not agent wall time; overlaps and interstitial waits were not mapped. Historical suites grew through 300, 312 and 316 cases; comparing their 31.94s/33.37s/36.55s totals ignores test changes, network and environment.
 
 Render focused reductions: `(26.96 - 6.61) / 26.96 = 75.482%`; repeat 75.334%. Historical release difference +1.428s (+9.611%) is an observation, not causal regression proof. Task13 short mean reduction 733.5855ms (12.685%); long 732.7255ms (12.407%); smallest paired reduction 674.492ms. Fewer inputs alone would not prove speed; repeated actual command timings support only this local hotspot result.
 
-### Selected raw excerpts (sanitized projection)
+### Selected raw excerpts (sanitized projection, task09 history)
 
-Line text below removes terminal escape sequences and omits unrelated output. Hashes identify **original local artifact bytes**, not this projection. Clock-only starts remain clock-only.
+Line text below removes terminal escape sequences and omits unrelated output. Hashes identify **original local artifact bytes**, not this projection. Clock-only starts remain clock-only. Task13's five baseline JSON identities are preserved in [its report's ledger](test-value-and-runtime.md#baseline-evidence-ledger-ephemeral-local-artifacts), not duplicated here.
 
 ```text
 task09-v2-20261009/before.log:
@@ -72,15 +77,9 @@ task09-release/gate-release-vfinal.log:
 Tests  5 passed (5)
 Start at  19:50:22
 Duration  15.94s
-t13-evidence-EsCVvD/fast.json:
-"kind": "success", "status": 0, "commandMs": 3257.117955, "phaseWallMs": 3257.597497
-t13-evidence-EsCVvD/rendered.json:
-"kind": "success", "status": 0, "commandMs": 14977.986256999999, "phaseWallMs": 14978.141545999999
-t13-evidence-EsCVvD/release.json:
-"kind": "success", "status": 0, "commandMs": 16991.81632, "phaseWallMs": 16991.98999
 ```
 
-Original artifact SHA-256 ledger (all paths rooted at `/tmp/opencode/`):
+Original task09 artifact SHA-256 ledger (all paths rooted at `/tmp/opencode/`):
 
 | Artifact | SHA-256 |
 |---|---|
@@ -90,13 +89,6 @@ Original artifact SHA-256 ledger (all paths rooted at `/tmp/opencode/`):
 | `task09-release/before.log` | `514950e194ef167f4170b0948c806aedd443b381ebe7be1ba0b275124adebb23` |
 | `task09-release/release-vfinal.json` | `a7fd03bc6ecb0d74a66f730e69e6b1d81cc703de205239b29df09e7004ccd4af` |
 | `task09-release/gate-release-vfinal.log` | `6095535cfcee9e5f9a32938f65b9f2e58e1e98ec02c0067d5d5ab6a40e503a9a` |
-| `t13-evidence-EsCVvD/identity.json` | `2fcb4b119e78a6940e339420db1554ff27d39d03b2370bb4bed8679eb863d070` |
-| `t13-evidence-EsCVvD/fast.json` | `c3d1cfa77cc7c4968a4c441519f7c7eb648fa6e1f56c93a486187a7b4a3cf592` |
-| `t13-evidence-EsCVvD/rendered.json` | `50ab1244db1870287833793fa573fd01abb312877fadadf18cde1286b5273ae5` |
-| `t13-evidence-EsCVvD/release.json` | `10467dd4113753008ba99677b82bb55f330844bcdf78a3cf57a687168d59a2b9` |
-| `t13-evidence-EsCVvD/final-full.json` | `54864b797ffae168a355b889f16154c0eb656cfb070744fa1eb04e710c426cad` |
-
-Task13 final-full before/after fingerprint matched `b678bbc0d95b41dc6379ea1aa9171475842e06f2305951da87637ccdf67ad60d`; candidate source SHA `48c6d162f32a25e72613b082cd1dd81dc4212e9c663db31d3ed33bc9d5973790`, checked report SHA `2153abbf70c7352b2e76f524b3fcc3a4c609417d21c0f1a1416e6ee121611d59`. Later report-only additions do not establish changed code or invalidate those code checks, but must have their own documentation review.
 
 ## Stage timeline and critical-path limits
 
@@ -118,7 +110,7 @@ Only the three serialized baseline command/phase totals are fully covered additi
 
 ## Bottlenecks and prioritized recommendations
 
-Strong evidence: historical fixed render waits were removable; current release npx/subprocess work outweighs compile/pack (task13 compile + two packs 918ms, versus release command 16991.816ms). Exact dependency/network breakdown remains unmeasured. Strong reliability evidence: candidate and restored original both have 111 passes / the same six long-TMPDIR failures; candidate normal full gate has 316 passes. Long-path repair is pending diagnosis, not locally approved or waived. Suggestive only: repeated broad checks, duplicated loading, waiting and handoff churn may dominate some operations, but no causal elapsed ledger measures their shares. Task11's long report phase relative to microvalidation does not establish what consumed that phase.
+Strong evidence: historical fixed render waits were removable; current release npx/subprocess work outweighs compile/pack (task13 compile + two packs 918ms, versus release command 16991.816ms — see [owning breakdown](test-value-and-runtime.md#serialized-baseline-for-task12-reuse)). Exact dependency/network breakdown remains unmeasured. Strong reliability evidence: candidate and restored original both have 111 passes / the same six long-TMPDIR failures at this report's scope; candidate normal full gate has 316 passes. Long-path repair is pending diagnosis, not locally approved or waived. Suggestive only: repeated broad checks, duplicated loading, waiting and handoff churn may dominate some operations, but no causal elapsed ledger measures their shares. Task11's long report phase relative to microvalidation does not establish what consumed that phase.
 
 Existing [team core](../../skills/autonomous-implement/TEAM-POLICY.md) already permits reliable unchanged evidence reuse, focused checks, small operations, one core read per context and invalidation-based broader gates; [domain context](../../CONTEXT.md) already defines bounded review units. No canonical instruction rewrite is justified here. Recommendations operationalize those mechanisms rather than duplicate or weaken them.
 

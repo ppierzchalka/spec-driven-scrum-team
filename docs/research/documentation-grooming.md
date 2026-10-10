@@ -1,12 +1,12 @@
 # Documentation grooming — task 10
 
-Date: 2026-10-09 UTC. Branch `follow-up/grooming-and-pipeline`, HEAD `4be1db6bef208bae0087c92c47da693de6fecba6`. Report-only grooming packet: documentation audit and inline correction plus a completion-aware scratch-cleanup eligibility review. No production behavior, canonical agent/skill content, runtime, model or publication changes.
+Date: 2026-10-09 UTC. Branch `follow-up/grooming-and-pipeline`, HEAD `4be1db6bef208bae0087c92c47da693de6fecba6`. Report-only grooming packet: documentation audit and inline correction plus a completion-aware scratch-cleanup eligibility review. No production behavior, canonical agent/skill content, runtime, model or publication changes. "Current" throughout means at this audit date.
 
 ## Scope, method and evidence identity
 
-Audited against current source/package scripts/behavior: `README.md`, `docs/**`, canonical `agents/**` (8 role files), canonical `skills/**` (12 procedures plus `autonomous-implement/references/**`), repository `AGENTS.md`, and `.github/workflows/release.yml`. Source checked directly includes `package.json`, `vitest.config.ts`, `src/cli/{args,launch,main,freshness}.ts`, `src/installer/{defaults,harness,toady,installTeam}.ts`, and `src/tui` screens/tests (read-only; `src/tui/*` is task13-owned and was not modified).
+Audited against current-at-audit source/package scripts/behavior: `README.md`, `docs/**`, canonical `agents/**` (8 role files), canonical `skills/**` (12 procedures plus `autonomous-implement/references/**`), repository `AGENTS.md`, and `.github/workflows/release.yml`. Source checked directly includes `package.json`, `vitest.config.ts`, `src/cli/{args,launch,main,freshness}.ts`, `src/installer/{defaults,harness,toady,installTeam}.ts`, and `src/tui` screens/tests (read-only; `src/tui/*` is task13-owned and was not modified).
 
-Working tree at start included pre-existing uncommitted task11–14 work (untracked `docs/research/native-session-cancellations.md`, `pipeline-time-evaluation.md`, `test-value-and-runtime.md`; modified `src/tui/*`; `.gitignore` and the index-only untracking of `.vscode/settings.json`). None of that work was touched. Final working-tree fingerprint and per-file hashes are at the end of this report; the report's own SHA-256 is recorded in the Developer handoff to avoid a self-referential hash.
+Working tree at start included pre-existing uncommitted task11–14 work; none of it was touched. Per-file hashes of the three edited files are below; the report's own hash was recorded in the Developer handoff to avoid a self-referential hash.
 
 ## Discrepancy inventory
 
@@ -56,12 +56,10 @@ Eligibility was evaluated against `docs/agents/issue-tracker.md`: done requires 
 | Check | Result |
 |---|---|
 | `git diff --check` | exit 0, no whitespace errors |
-| `npx vitest run src/installer/installTeam.test.ts src/installer/harness.test.ts` | 2 files / 22 tests passed (485 ms) — run as a sanity check only; no canonical agent/skill content changed, so these gates were not strictly required |
+| `npx vitest run src/installer/installTeam.test.ts src/installer/harness.test.ts` | 2 files / 22 tests passed (485 ms) — sanity check only; no canonical agent/skill content changed, so these gates were not strictly required |
 | Link/reference validation | see above |
 
 ## Content identity
-
-Working-tree fingerprint (release-helper algorithm: sorted `git ls-files -z --cached --others --exclude-standard`, path + NUL + bytes-or-`<deleted>` + NUL): `cb853ba24ee5f13d1d65207d972cb166ad967a0e0709f4b51c6d5dbae332afe7` **before** this report was added (the report changes it after; final value in the handoff).
 
 Edited file SHA-256 (after edits, before this report):
 
@@ -74,5 +72,5 @@ Edited file SHA-256 (after edits, before this report):
 ## Remaining uncertainty
 
 - Whether a `current` release has already been published by the master push is unverified and intentionally left unasserted in README/release.yml (no authorized hosted evidence). Live VS Code Ctrl+P routing and hosted release/freshness remain unverified pending owner capability/authorization.
-- The model-defaults prose in `docs/team-configuration.md` uses shorthand names ("Sol 6.1", "Terra", "Luna 6", "Muse Contributor", "Zen equivalents") that map to the exact provider IDs in `src/installer/defaults.ts`; the fallback ordering is accurate but the shorthand could drift if defaults change. Not a current defect, no edit.
+- The model-defaults prose in `docs/team-configuration.md` uses shorthand names ("Sol 6.1", "Terra", "Luna 6", "Muse Contributor", "Zen equivalents") that map to the exact provider IDs in `src/installer/defaults.ts`; the shorthand could drift if defaults change. Not a defect at audit time, no edit.
 - `.agents/skills/**` vendored third-party skills contain template placeholder links; these are outside this repo's authored guidance and were left untouched.

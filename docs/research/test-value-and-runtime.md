@@ -1,12 +1,57 @@
 # Test value and runtime — task 13
 
+## Final disposition (read first; evidence progression, not contradiction)
+
+Executed 2026-10-09. Final outcome: **31 files / 323 passed**, typecheck
+passed, private copied-stage build and pack passed. All rendered suites pass
+at short, 18-segment long, and bounded stronger TMPDIR shapes (9 files /
+124 passed each); the affected-seam matrices pass 17/17 at all three shapes.
+No remaining executed counterexample or mandatory check failure. UX recheck
+and independent Reviewer disposition remain pending; **this is not final
+approval**.
+
+Evidence progression (later subsections supersede only the blocker they
+name, not the measurements above them):
+
+1. **Initial test-only candidate** (316 cases): keep all 31 files and all 316
+   current cases; implement only the authorized consent-explanation scan in
+   `targetFlow.test.tsx`. No production, selector, matrix, deadline or
+   assertion changes. Final full gate at that stage: 31 files / 316 passed.
+2. **Bounded repair follow-up** (six diagnosed long-path failures → still 316
+   scope plus added geometry cases): test plus strictly scoped production
+   repairs (consent hint order, menu indicator sharing, static path cap).
+   Stronger-path matrix at that stage still blocked on six *different*
+   failures — a new finding, not a contradiction of stage 1.
+3. **Outage-resume replacement** (323 cases): explicitly executed
+   replacement checks supersede the remaining stronger-path blocker. Final
+   gates in that subsection are the current verdict (323 passed).
+
+Baseline HEAD throughout: `4be1db6bef208bae0087c92c47da693de6fecba6`.
+Production-repair scope is confined to stage 2–3 seams listed in their
+subsections; the initial stage-1 hotspot gain (~0.73s matched comparison)
+remains only that historical comparison, not a speedup claim for the
+repairs. Historical `/tmp` raw logs lost in the outage remain reported
+history, not newly recovered evidence.
+
 ## Decision and evidence boundary
 
-Keep all 31 files and all 316 current cases. The layers catch different failures; no dispensable duplicate was demonstrated. Implement only the authorized consent-explanation scan in [targetFlow.test.tsx](../../src/tui/targetFlow.test.tsx): stop on the existing normalized `savedconfig/defaults` oracle, still capped at 20 Down inputs. No production, selector, matrix, deadline or assertion changes.
+Keep all 31 files and all 316 current cases at this stage. The layers catch different failures; no dispensable duplicate was demonstrated. Implement only the authorized consent-explanation scan in [targetFlow.test.tsx](../../src/tui/targetFlow.test.tsx): stop on the existing normalized `savedconfig/defaults` oracle, still capped at 20 Down inputs. No production, selector, matrix, deadline or assertion changes at this stage.
 
 Measurements below were executed on 2026-10-09, not copied from task09. Baseline HEAD: `4be1db6bef208bae0087c92c47da693de6fecba6`; working-tree SHA-256: `e4916d8b3a84c9364c532a25bb207426888f7903f306549160b1d0bf15674c34`. Algorithm matches the release helper: sorted `git ls-files -z --cached --others --exclude-standard`, hash each path, NUL, bytes (or `<deleted>`), NUL. Includes the pre-existing untracked cancellation report; no report/source edits occurred during the three baseline commands, and every post-command fingerprint matched.
 
 Raw local evidence: `/tmp/opencode/t13-evidence-EsCVvD/`, with `identity.json`, `{fast,rendered,release}.{log,json}`, focused `{before,before-long,after,after-long}-{1,2}.{log,json}`, and mutation/count logs. These are test-only logs, not profile/auth/session exports. Paths are local artifacts, not promised permanent hosted links. Drivers: `/tmp/opencode/t13-profile.mjs` and `/tmp/opencode/t13-focused.mjs`; they use existing `runOwned`, exclusive file outputs and positive owned-command deadlines. Evidence screenshots/contrast are in the same exclusively allocated EVIDENCE_DIR. No shared repository dist was built or packed.
+
+### Baseline evidence ledger (ephemeral local artifacts)
+
+SHA-256 of original local artifact bytes under `/tmp/opencode/`, preserved here as the owning record. Ephemeral and local-only: hashes alone are not publicly reproducible logs.
+
+| Artifact | SHA-256 |
+|---|---|
+| `t13-evidence-EsCVvD/identity.json` | `2fcb4b119e78a6940e339420db1554ff27d39d03b2370bb4bed8679eb863d070` |
+| `t13-evidence-EsCVvD/fast.json` | `c3d1cfa77cc7c4968a4c441519f7c7eb648fa6e1f56c93a486187a7b4a3cf592` |
+| `t13-evidence-EsCVvD/rendered.json` | `50ab1244db1870287833793fa573fd01abb312877fadadf18cde1286b5273ae5` |
+| `t13-evidence-EsCVvD/release.json` | `10467dd4113753008ba99677b82bb55f330844bcdf78a3cf57a687168d59a2b9` |
+| `t13-evidence-EsCVvD/final-full.json` | `54864b797ffae168a355b889f16154c0eb656cfb070744fa1eb04e710c426cad` |
 
 Environment: Node `v22.22.0`, npm `11.14.1`, Linux x64. Installed local node_modules reused; OS/module caches neither flushed nor measured. Baseline TMPDIR was the owned `short-tmp` under the evidence directory. Release tests privately isolate HOME/XDG/npm caches; a cold private npm cache is populated and deliberately reused within scenarios, not between suite invocations. Local file release metadata/tarballs avoid live GitHub availability, but real npx dependency installation can contact npm; registry/cache/network breakdown is **unknown**, not zero. No private environment dump was captured. Existing ignored `dist/build-info.json` identifies commit `26ff0b34c41c7efdc487a8d57e699c2df94f9d42`, builtAt `2026-10-09T18:29:37.724Z`; it remained untouched. The release fixture compiled current source into its private stage and stamped the checked baseline identity instead.
 
@@ -70,7 +115,7 @@ Frequency/ownership recommendations, not policy edits: **F** = fast feedback on 
 
 - Exact selected target: targetFlow catches applying A's config or install target after browsing B; directory reducers alone cannot detect a miswired shell input/effect. Assertions check targetB, `saved/b`, conflicts/editor status, exact restored consent/browser frames, and A/B directory contents. The fake installer proves shell routing/no unintended shell writes, not actual installed B files; installAll/installTeam separately prove writes. An assembled real-render-to-real-install B journey is a possible integration gap, not a reason to remove either layer.
 - Viewports/error/notice: geometry alone can pass while important text is lost. Detail sentinel and U09-1 tests require inspection text/end markers and nonmutating actions; F04/F05/F06 fixtures identify concrete search/focus/wrapping/conflict regressions. Evidence captures are not pixel-golden comparisons: a cosmetic mismatch within geometry/content assertions can escape automation and needs visual review. Keep all sizes/modes.
-- Freshness: parse tests could pass while the shipped bin serves stale npm cache. launch requires new identity and explicitly rejects the old one; freshLaunch proves standalone launcher URL/cache behavior using small stub packages. Neither replaces the other. Missing metadata and checksum tests require nonzero/refusal before consumer writes. No release mutation was performed for this report.
+- Freshness: parse tests could pass while the shipped bin serves stale npm cache. launch requires new identity and explicitly rejects the old one; freshLaunch proves standalone launcher URL/cache behavior using small stub packages. Neither replaces the other. Missing metadata and checksum tests require nonzero/refusal before consumer writes. No release mutation was performed for this report's initial stage.
 - Cleanup: owned-process tests catch descendants surviving timeout or successful parent exit; render-helper tests catch ignored inputs, stalled flush, business-result confusion and listeners/raw mode not restored. Existing observable helper replaced old arbitrary waits already; that repair is not claimed here. Windows tree cleanup explicitly unsupported; this Linux run establishes no cross-platform portability claim.
 
 Actionable follow-ups remain recommendations, not additional edits:
@@ -79,12 +124,12 @@ Actionable follow-ups remain recommendations, not additional edits:
 |---|---|---|
 | Evidence notice scan | `evidence.test.tsx:123` unconditionally sends 20 PageDown and writes page evidence. Investigate bounded stop only when full notice/end text is recovered; first determine whether intermediate artifacts are required. No proof or change here. | Entire notice + exact restore/nonmutation at all three sizes; `npm run test:rendered -- src/tui/evidence.test.tsx -t 'suppressed UX warning'`; rendered/full + visual artifacts. |
 | Detail path sentinel | First path test assumes fixed paging (two Downs + PageDown); current sentinel passes, fragility under other wrapping remains **unproven**. Prefer bounded sentinel observation only after omission counterexample proof, never merely fewer keys. | Middle sentinel inaccessible before inspection, visible inside, no selection; `npm run test:rendered -- src/tui/detail.test.tsx -t 'capped long cwd'`; rendered/full. |
-| Pure rendered classification | screens/directory's 38 cases are pure (48ms sum); renaming/moving to fast may clarify feedback ownership, not a proven overall speedup. Keep architecture guard separately assessed. | Preserve every case and equivalent selector discovery; both projects/full and typecheck if imports change. No selector edits in task13. |
+| Pure rendered classification | screens/directory's 38 cases are pure (48ms sum); renaming/moving to fast may clarify feedback ownership, not a proven overall speedup. Keep architecture guard separately assessed. | Preserve every case and equivalent selector discovery; both projects/full and typecheck if imports change. No selector edits in task13's initial stage. |
 | Discovery startup | Real sleep cancellation has a 200ms startup wait, unrelated to rendered settlement. Observe owned child readiness before cancel only with an actual cancellation failure proof and cleanup audit; preserve live process exercise. | Cancel returns empty result within bound, no orphan; `npm run test:fast -- src/tui/discovery.test.ts`; fast/full. Current title says empty catalog but assertion expects rejection: clarify wording separately. |
 | Release failure cleanup | createReleaseFixture allocates root before awaited setup; rejection before return leaves caller unable to remove it. afterAll pack-count assertion also precedes removal. Use try/finally ownership and inject failed compile/pack to prove cleanup; no scope expansion here. | Failure diagnostic retained, owned children dead, only allocated root removed; release-helper focused proof then release/full; package gates if helper/source packaging affected. |
 | Source CLI process bounds | non-TTY execFileSync test lacks its own timeout; pin helper has one. Audit other source CLI subprocesses before a narrow test-only timeout packet; do not impose timeouts on real interactive users. | Exact exit/message/no writes unchanged; fast CLI focused then fast/full. Outer owned command currently bounds suite execution, not each child test. |
 
-Additional long-TMPDIR probe exposed **six pre-existing failures**, not candidate regressions: two detail error-sentinel tests assume two PageDown inputs; three targetFlow same-target/cancel/vanished-folder cases expect `Install into` in an unfocused capped frame; U09-1 evidence at 99x24 rendered 25 rows under this longer path. Candidate full rendered-long: 111 passed / 6 failed, command 13533.800ms, Vitest 13.15s. Restoring the exact original targetFlow source SHA and rerunning the identical long selector/environment reproduced the **same six names and assertion classes**, 111 passed / 6 failed, command 14205.906ms, Vitest 13.81s (`original-rendered-long.{log,json}`). Candidate consent variants passed in both runs. This establishes a real broader long-path reliability limitation: fixed error paging and unfocused-frame assumptions need separate proof-backed packets; the row-overflow issue requires production-versus-fixture diagnosis outside this authorized change. No assertion weakening or deadline increase was attempted. Task13 cannot claim the entire rendered suite passes this long TMPDIR condition.
+Additional long-TMPDIR probe exposed **six pre-existing failures**, not candidate regressions: two detail error-sentinel tests assume two PageDown inputs; three targetFlow same-target/cancel/vanished-folder cases expect `Install into` in an unfocused capped frame; U09-1 evidence at 99x24 rendered 25 rows under this longer path. Candidate full rendered-long: 111 passed / 6 failed, command 13533.800ms, Vitest 13.15s. Restoring the exact original targetFlow source SHA and rerunning the identical long selector/environment reproduced the **same six names and assertion classes**, 111 passed / 6 failed, command 14205.906ms, Vitest 13.81s (`original-rendered-long.{log,json}`). Candidate consent variants passed in both runs. This establishes a real broader long-path reliability limitation: fixed error paging and unfocused-frame assumptions need separate proof-backed packets; the row-overflow issue requires production-versus-fixture diagnosis outside the initial authorized change. No assertion weakening or deadline increase was attempted. The initial stage cannot claim the entire rendered suite passes this long TMPDIR condition.
 
 Implementation-coupled examples: literal palette values, eight-role/12-skill counts, exact focus-ID arrays and regex source-import guard. Some are intentional product/architecture contracts; no demonstrated redundant assertion was removed. Historical identity for unnamed tests remains unknown rather than attributed speculatively.
 
@@ -111,6 +156,8 @@ Observed command mean reductions: short 733.6ms (~12.7%), long 732.7ms (~12.4%).
 
 ## Final verification
 
+Initial 316-case stage:
+
 | Check | Actual result | Vitest / owned command / enclosing phase |
 |---|---|---|
 | Whole affected targetFlow file, short TMPDIR | 14 passed | 10.95s / 11312.104ms / 11321.171ms |
@@ -119,15 +166,15 @@ Observed command mean reductions: short 733.6ms (~12.7%), long 732.7ms (~12.4%).
 | `npm test -- --reporter=verbose`, short TMPDIR | 31 files / 316 passed | 31.81s / 32166.424ms / 32176.287ms |
 | `npm run typecheck` | passed, exit 0 | not applicable / 372.099ms / 384.137ms |
 
-Final runner phase wall additionally includes post-command identity hashing (~9–12ms); use owned command times when task12 wants comparable invocation cost. `final-*.{log,json}` preserve per-check before/after identities. Last code-gate identity: HEAD as above, fingerprint `b678bbc0d95b41dc6379ea1aa9171475842e06f2305951da87637ccdf67ad60d`, report SHA `2153abbf70c7352b2e76f524b3fcc3a4c609417d21c0f1a1416e6ee121611d59`, unchanged candidate source SHA as above. This final-results section was appended afterwards; only documentation identity changed, so code checks remain applicable. A final report-content snapshot is retained as `handoff-identity.json`.
+Final runner phase wall additionally includes post-command identity hashing (~9–12ms); use owned command times when task12 wants comparable invocation cost. `final-*.{log,json}` preserve per-check before/after identities. Last code-gate identity at this stage: HEAD as above, fingerprint `b678bbc0d95b41dc6379ea1aa9171475842e06f2305951da87637ccdf67ad60d`, report SHA `2153abbf70c7352b2e76f524b3fcc3a4c609417d21c0f1a1416e6ee121611d59`, unchanged candidate source SHA as above. Only documentation identity changed afterwards, so code checks remain applicable at this stage.
 
-No introduced failures observed; controlled unreachable-oracle failures are intentional; long-path failures are confirmed pre-existing and unresolved within the packet. Normal mandatory rendered/full/typecheck gates pass, but broader long-path portability remains a material limitation for Lead/Reviewer, not silently approved. Test files are excluded by tsconfig.build and npm ships only dist/agents/skills/README: this candidate does not invalidate shipped compile/pack inputs. Full `npm test` was executed after the change; no additional release-only profiling rerun was performed.
+No introduced failures observed at this stage; controlled unreachable-oracle failures are intentional; long-path failures are confirmed pre-existing and unresolved within the initial packet. Normal mandatory rendered/full/typecheck gates pass, but broader long-path portability remains a material limitation for Lead/Reviewer, not silently approved. Test files are excluded by tsconfig.build and npm ships only dist/agents/skills/README: this candidate does not invalidate shipped compile/pack inputs. Full `npm test` was executed after the change; no additional release-only profiling rerun was performed.
 
 ## Bounded repair follow-up — six diagnosed long-path failures
 
-This subsection supersedes the **unresolved six-failure disposition**, not the historical baseline, consent measurements, inventory or mutation evidence above. Tester evidence `/tmp/opencode/t13-diagnosis-DPcuwZ/{command.txt,identity.txt,red.log,frames}` directly established six failures / 35 filtered cases in 2.31s; that baseline was reused rather than repeated. The original consent scan optimization and its 20-Down bound, oracle and downstream journey remain unchanged; the earlier approximately 0.73s measured gain remains only that earlier matched comparison, not a speed claim for this repair.
+This subsection supersedes the **unresolved six-failure disposition of the initial stage above**, not the historical baseline, consent measurements, inventory or mutation evidence. Tester evidence `/tmp/opencode/t13-diagnosis-DPcuwZ/{command.txt,identity.txt,red.log,frames}` directly established six failures / 35 filtered cases in 2.31s; that baseline was reused rather than repeated. The original consent scan optimization and its 20-Down bound, oracle and downstream journey remain unchanged; the earlier approximately 0.73s measured gain remains only that earlier matched comparison, not a speed claim for this repair.
 
-Repair evidence is exclusively owned under `/tmp/opencode/t13-repair-1791576629/`. Each `*-command.txt` records exact selectors, TMPDIR and separate EVIDENCE_DIR; `*.log` and `*.json` record actual results, elapsed invocation-wrapper durations and seven scoped source SHA-256 identities before/after. No task lifecycle, global policy, production CLI, staging, commit or publication edits were made. Task12's report was not edited. The server restart happened after all checks and before this documentation appendix; completed checks were not rerun merely because of the restart.
+Repair evidence is exclusively owned under `/tmp/opencode/t13-repair-1791576629/`. Each `*-command.txt` records exact selectors, TMPDIR and separate EVIDENCE_DIR; `*.log` and `*.json` record actual results, elapsed invocation-wrapper durations and seven scoped source SHA-256 identities before/after. No task lifecycle, global policy, production CLI, staging, commit or publication edits were made. The server state after checks is out of scope for this report's verdict; completed checks stand on their recorded before/after identities.
 
 ### Coverage and implementation map
 
@@ -142,7 +189,7 @@ Repair evidence is exclusively owned under `/tmp/opencode/t13-repair-1791576629/
 
 `geometry-mutate.mjs` similarly restored exact owned production bytes after each run. Restoring unconditional above/below indicators made both pure and rendered 1/2-row cases fail at strict row-count assertions (four failures, two 3-row cases passed). Removing the shared static path cap made the stronger U09-1 99x24 frame render **27 rows**, failing the unchanged 24-row assertion; other warning sizes passed. Corrected final equivalents pass in `focused-long-final` and `focused-strong-final` (15 cases each). Original consent unreachable-oracle proof above is retained separately; the consent seam was not remutated or changed.
 
-### Assembled checks and remaining counterexamples
+### Assembled checks and remaining counterexamples (bounded-repair stage)
 
 Environment remains Node v22.22.0 / npm 11.14.1 / Linux x64 with installed dependencies reused. Short TMPDIR is `…/short`; 18-segment TMPDIR is evidence root + `long-parent-` + 18 `segment-` repetitions + `/end-sentinel`. The bounded stronger TMPDIR is evidence root + **eight separate 68-character components**, each `stronger-` + 12 `path-` repetitions (about 585 characters total before fixture suffixes). Components and total paths stay below ordinary Linux name/path limits. Tests use supported viewports; no absurd below-40x8 terminal was introduced. Each invocation gets a new evidence directory.
 
@@ -162,7 +209,7 @@ The complete suite's real packaged/npx consumer checks compiled current source i
 
 Checked full-suite working-tree fingerprint (release helper's actual identity): `aa828acd94f628e7766dc65459cb272c24135908a70b7a552fd874f807fc6348`, HEAD `4be1db6bef208bae0087c92c47da693de6fecba6`. All seven scoped code hashes matched before/after every final command, and matched after controlled mutation restoration; `full.json` and both final focused JSON files contain the complete map. This documentation appendix changes only report identity after those code gates.
 
-**Not a blanket stronger-path pass:** the six *original diagnosed* failures are repaired even at the stronger path, but the full stronger matrix exposed six **different** failures. Two static-full-path parsers (`app.test.tsx:117`, `evidence.test.tsx:371`) assume the entire path remains in non-scrollable content, now invalid when bounding it is necessary; their existing full-detail expectations are not reached. The former file is outside this repair's write ownership. The retained 40-column consent scan cannot reach `savedconfig/defaults` within its unchanged 20-Down bound at this stronger path. Two B-install journeys expect the unfocused saved-model row immediately after Home although the long focused review target fills the window. The symlink browser test expects unfocused `real/` while the long focused inspection row fills the window. No production row overflow was reported by the stronger final run, but these content failures are real unresolved checks. No original-source stronger rerun was performed, so blanket pre-existing classification for this new six-case set is **not established**; the static-summary assertion incompatibility was directly invalidated by the intentional bounded-path behavior. Repairing these additional seams or editing `app.test.tsx` requires another confirmed packet. The stronger all-cases gate therefore remains blocked, despite all scoped repaired seams and normal/full gates passing. Scoped UX recheck and independent review remain pending; this report does not claim approval.
+**Not a blanket stronger-path pass at this stage:** the six *original diagnosed* failures are repaired even at the stronger path, but the full stronger matrix exposed six **different** failures. Two static-full-path parsers (`app.test.tsx:117`, `evidence.test.tsx:371`) assume the entire path remains in non-scrollable content, now invalid when bounding it is necessary; their existing full-detail expectations are not reached. The former file is outside this repair's write ownership. The retained 40-column consent scan cannot reach `savedconfig/defaults` within its unchanged 20-Down bound at this stronger path. Two B-install journeys expect the unfocused saved-model row immediately after Home although the long focused review target fills the window. The symlink browser test expects unfocused `real/` while the long focused inspection row fills the window. No production row overflow was reported by the stronger final run, but these content failures are real unresolved checks at this stage. No original-source stronger rerun was performed, so blanket pre-existing classification for this new six-case set is **not established**; the static-summary assertion incompatibility was directly invalidated by the intentional bounded-path behavior. Repairing these additional seams or editing `app.test.tsx` requires another confirmed packet. The stronger all-cases gate therefore remains blocked at this stage, despite all scoped repaired seams and normal/full gates passing. Scoped UX recheck and independent review remain pending; this report does not claim approval.
 
 ## Outage-resume follow-up — durable replacement evidence
 
@@ -172,7 +219,7 @@ Durable ignored local evidence: the local-only evidence directory `task13-outage
 
 ### Actual red, classification and smallest repairs
 
-The starting seven hashes matched the supplied preserved identities exactly; report hash was `3d087b83835d78eede169469ae1653836bffeae8000bc108d5b13aa1212a701a`. Tight `red` command selected the six named seams in app/evidence/targetFlow with the stronger TMPDIR: **6 failed / 1 passed / 44 filtered**, Vitest 7.11s, owned invocation **7533.184ms**. The before/after source map is unchanged in `red.json`; full diagnostics and assertion locations are in `red.log`.
+The starting seven hashes matched the supplied preserved identities exactly. Tight `red` command selected the six named seams in app/evidence/targetFlow with the stronger TMPDIR: **6 failed / 1 passed / 44 filtered**, Vitest 7.11s, owned invocation **7533.184ms**. The before/after source map is unchanged in `red.json`; full diagnostics and assertion locations are in `red.log`.
 
 - **Two incompatible static parsers:** both demanded an uncapped path in the static summary after the prior required path cap. That prior change directly invalidated these assertions; no blanket pre-existing label is used. App/evidence now recover the **entire exact install label/path**, including all middle components, via the existing focused Space/details route, one Down at a time under a 128-input bound. They require exact frame restoration and no installation/writes while inspecting; evidence retains strict 99x24 geometry on every scanned frame and the exact eventual install-target oracle. Static summary/step/shortcut/focus checks remain.
 - **Two unfocused B-model assertions:** Home correctly focuses the long review target, not every model. The tests still assert Target, then focus analyst/lead in order and require the visible focused `lead: other/b-model`. Exact B target, B saved config, outcome target, A filesystem preservation and no A team/editor directories remain unchanged. This is an observation mismatch at the preserved source identity, not evidence that the UI lost B's config; historical introduction is unknown.
