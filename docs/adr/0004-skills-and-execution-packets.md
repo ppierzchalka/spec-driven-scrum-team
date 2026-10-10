@@ -8,4 +8,6 @@ Separate tracker identity, execution packet, review unit and PR unit. Bounded re
 
 Tester defaults to independent read-only case design when enabled; test-author mode remains an explicit choice. One writer owns production; tests stay with Developer unless explicitly assigned. Prompt orchestration and optional prose project preferences remain; no scheduling service or global billing integration is added.
 
+One agent per role, no per-model variants: the installer chooses each role's model from the install-time catalog, so model choice stays configuration rather than code. Pipeline configurability stays in skill prose and prompt input — current invocation, then explicit session choices, then project prose preferences — but prose preferences never grant publication, deployment, merge, or force-push, and role ownership safeguards are fixed.
+
 Tradeoff: smaller repeated context can reduce overhead, but larger packets can increase coupling or obscure individual failures. Bound packet scope and split at incompatible ownership, risk, context growth or delivery boundaries. Verify by representative runtime scenarios rather than assumed token savings.

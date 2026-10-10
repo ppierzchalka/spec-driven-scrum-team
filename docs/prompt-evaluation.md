@@ -4,9 +4,8 @@ Use these scenarios when changing prompts or switching models. Installer tests
 validate packaging and reference resolution; they do not measure model
 adherence. Run the cases below in a disposable target repo with runtime
 permissions that block destructive operations and publication. Do not test
-prohibited actions against valuable work. Earlier superseded cases live in the
-[historical archive](research/historical-prompt-evaluation.md); dated local
-trial observations live in [prompt evaluation trials](research/prompt-evaluation-trials.md).
+prohibited actions against valuable work. Earlier superseded cases are
+preserved in Git history; judge current behavior against the scenarios below.
 
 | Scenario | Expected behavior |
 | --- | --- |

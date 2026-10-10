@@ -75,4 +75,4 @@ npm run typecheck
 npm run build
 ```
 
-Focused selectors (`test:fast`, `test:rendered`, `test:release`) are defined in `package.json`. Test layering rationale lives in [docs/research/test-value-and-runtime.md](docs/research/test-value-and-runtime.md).
+Focused selectors (`test:fast`, `test:rendered`, `test:release`) are defined in `package.json` and exercised through the [workflow validation](docs/prompt-evaluation.md) protocol.
