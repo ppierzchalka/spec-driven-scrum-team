@@ -8,43 +8,14 @@ Explore an idea with **Analyst**. Hand ready tasks to **Lead** for implementatio
 
 Requires Node.js 22.19+ and npm.
 
-**Registry-free launch from GitHub Releases (no npm publish, no clone):**
-
 ```sh
 cd your-project
 npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz
 ```
 
-The interactive setup defaults to the
-directory you run it from and offers a folder picker for another existing
-directory; the confirmed single target receives the install. There are no
-target-path arguments and no multi-target mode. Passing a path fails with
-usage instead of installing elsewhere. Noninteractive flags, harness
-selection and the `install-team` alias route live in one place:
-[Installation options →](docs/team-configuration.md#installation-options).
+The interactive setup walks **installation directory → agents and models → personal instructions → review and install**; files are written only after you confirm. Noninteractive flags, harness selection and the `install-team` alias form live in one place: [Installation options →](docs/team-configuration.md#installation-options).
 
-`install-team` remains a supported alias through the `--package` form
-documented there; the short positional URL above always runs the canonical
-`toady` entry.
-
-Every launch resolves the newest
-successfully verified master build, verifies its exact tarball checksum, and
-executes that exact build — even when an older npx install is cached.
-Network, lookup or verification failures abort before anything is written, so
-a stale cache is never silently run. Each run prints its build identity
-(`version+commit`) for diagnosability. Even `--help` verifies freshness first,
-so the text you read always belongs to the current build.
-
-> A `current` release is published, but its pinned build metadata still
-> addresses the pre-rename repository path, so the canonical route currently
-> depends on GitHub redirect behavior. Canonical end-to-end validation is
-> pending a post-cutover master build (see [Repository
-> cutover →](docs/team-configuration.md#repository-cutover)); track
-> [releases](https://github.com/ppierzchalka/toady/releases) for publication
-> status.
-
-**Local development** (for working on the toolkit itself — not a project
-install route):
+**Local development** (for working on the toolkit itself):
 
 ```sh
 git clone https://github.com/ppierzchalka/toady.git
@@ -53,47 +24,7 @@ npm install
 npm run setup
 ```
 
-**Repository cutover:** the toolkit moved from
-`ppierzchalka/spec-driven-scrum-team` to `ppierzchalka/toady` — the GitHub
-rename and remote update are done; the local checkout directory is
-intentionally unchanged. Use the new clone and release URLs above. The
-canonical `toady` route still needs end-to-end validation against a throwaway
-project after a post-cutover verified build (see [Installation and model
-settings →](docs/team-configuration.md#repository-cutover)) — redirect
-behavior is not evidence the canonical route works. Old downloaded
-`install-team` callers remain supported through the alias, but survival of
-every old GitHub URL is not guaranteed.
-
-A keyboard-first native full-screen setup walks four steps:
-**installation directory (invocation-folder default plus a folder picker for
-another existing directory) → agents and models →
-personal instructions → review and install**. Navigate with **↑/↓** (**Home**,
-**End**, **PgUp**/**PgDn** in long lists), activate with **Enter**,
-**Space** toggles checkboxes (and types in inputs), **Tab** moves between
-search and list, **Esc** opens a safe Quit dialog from anywhere — editors
-offer explicit Cancel rows and Back navigation for local cancellation —
-before anything is written. No mouse. Browsing folders never changes the
-target or writes files: only an explicit **Use this folder** action confirms
-a new single target (loading that folder's saved configuration, with explicit
-consent when it would discard your session edits), while **Cancel** keeps the
-prior target. Choose a harness in the agents step.
-Personal instructions start with a **Toady voice** checkbox: **Enter** toggles the
-optional cartoon-minion style (Space still toggles checkboxes too). Then **Additional rules
-(loaded to persona)** imports your own coding, commit, formatting or service
-instructions into the same startup persona, independently of Toady voice. Persona and
-imported rules are saved privately in your user configuration, apply across
-projects for that harness, and are retained on update. Agent definitions and
-skills stay per repo. Run setup again for another harness or to update an
-installation.
-
-Everything is validated before writes. Only the selected harness's files are
-installed. Setup adds a managed block to the target's `.gitignore` that
-ignores the installed agent, skills and config paths while leaving the rest of
-`.gitignore` alone, and configures the target's `.vscode/settings.json` so
-**Ctrl+P** reaches applications running in the VS Code integrated terminal.
-Existing unmarked skill folders require explicit adoption; recognized unchanged
-legacy Planner definitions are removed on update. [Installation and model
-settings →](docs/team-configuration.md)
+[Installation and model settings →](docs/team-configuration.md)
 
 ## From idea to ready task
 
@@ -127,12 +58,12 @@ Agents define responsibility and runtime settings; skills describe how to do the
 
 | Agent | Skill | Focus |
 | --- | --- | --- |
-| Architect | `architecture-assess` | Boundaries, interfaces and design tradeoffs |
-| Security | `security-assess` | Threats and trust boundaries |
-| UX | `interface-assess` | Interface behavior and interactions |
-| Tester | `test-design` | Cases and verification; read-only by default |
-| Developer | `implement-task` | Code, tests and checks |
-| Reviewer | `review-change` | Requirements, code quality and evidence |
+| Architect | [`architecture-assess`](skills/architecture-assess/SKILL.md) | Boundaries, interfaces and design tradeoffs |
+| Security | [`security-assess`](skills/security-assess/SKILL.md) | Threats and trust boundaries |
+| UX | [`interface-assess`](skills/interface-assess/SKILL.md) | Interface behavior and interactions |
+| Tester | [`test-design`](skills/test-design/SKILL.md) | Cases and verification; read-only by default |
+| Developer | [`implement-task`](skills/implement-task/SKILL.md) | Code, tests and checks |
+| Reviewer | [`review-change`](skills/review-change/SKILL.md) | Requirements, code quality and evidence |
 
 ## Details and validation
 
@@ -144,25 +75,4 @@ npm run typecheck
 npm run build
 ```
 
-For focused feedback, use `npm run test:fast` (non-rendered tests and test-helper
-regressions), `npm run test:rendered` (Ink interaction tests), or
-`npm run test:release` (serialized shipped-bin/freshness integration).
-`npm test` still runs all three projects; CI and final verification retain
-the complete suite, typecheck, build and packaging checks. File/test-name
-filters can narrow a selected project further.
-
-Release tests compile once into a private `/tmp/opencode` fixture, recording
-HEAD plus a working-tree content fingerprint, and pack twice (base and a
-second stamped identity). They do not rebuild or clean repository `dist/`.
-Every subprocess has private HOME/XDG/temp/npm cache configuration, with
-explicit same-cache reuse inside freshness scenarios. These are real `npx`
-calls: `file://` metadata does **not** make dependency downloads offline;
-cold-cache/network cost remains part of release-suite timing. Test-owned
-noninteractive commands use file-backed logs, a deadline and POSIX group
-teardown with graceful termination then escalation; timeout, nonzero exit,
-spawn failure and abort remain distinct. Windows process-tree cleanup is
-unverified and unsupported by this helper. Linux orphan zombies may await
-PID 1 reaping; teardown verifies no executable descendants or heartbeats
-remain. No interactive user process is subject to these test deadlines.
-
-Installer tests and local workflow trials are documented. Native behavior varies by harness and version; token savings need measurement on your actual setup. The prompts coordinate agents; runtime permissions enforce their access.
+Focused selectors (`test:fast`, `test:rendered`, `test:release`) are defined in `package.json`. Test layering rationale lives in [docs/research/test-value-and-runtime.md](docs/research/test-value-and-runtime.md).

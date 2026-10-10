@@ -1,53 +1,33 @@
 # Installation and team configuration
 
-Run `npm run setup` (or the [GitHub Release launcher](../README.md#install)) in
-the repository you want to configure. A native keyboard-first full-screen setup
-walks four steps: **installation directory → agents and models → personal
-instructions → review and install**. The first screen defaults to the absolute
-invocation directory and offers a native folder picker for another existing
-directory — exactly one folder is ever the install target. **↑/↓** navigate,
-**Enter** activates (and toggles the Toady checkbox), **Space** toggles checkboxes (and types inside inputs),
-**Tab** moves between search and list, **Home**/**End**/**PgUp**/**PgDn** jump
-in long lists, and **Esc** opens a safe Quit dialog from anywhere before
-anything is written. Editors offer explicit Cancel rows and Back navigation
-for local cancellation: cancelling a draft discards only the draft. There is
-no mouse. Browsing the folder picker never changes the target or writes
-files: only an explicit **Use this folder** action confirms another target,
-loading that folder's saved team configuration (with explicit consent when it
-would discard session agent edits); **Cancel** keeps the prior target, and
-**Esc** follows the global safe-quit contract with exact state restore on
-Continue. Passing a
-target path fails with usage instead of installing elsewhere. Choose one
-harness in the agents step, then configure models/effort and canonical prompt
-overwrite. Toady and additional rules have their own step. Back navigation
-retains committed choices; editor cancellation discards only its draft. Files
-are written only after selecting **Install** in the final summary. Setup also
-appends a managed `.gitignore` block that ignores the installed agent, skills
-and config paths, and configures `.vscode/settings.json` so Ctrl+P reaches
-applications in the VS Code integrated terminal; all other rules and unrelated
-harness folders stay untouched. Noninteractive single-directory install
-(cwd-only, also available from a checkout) is covered under
+Run the [release launcher](../README.md#install) in the repository you want to
+configure. A native keyboard-first full-screen setup walks four steps:
+**installation directory → agents and models → personal instructions → review
+and install**. Navigate with **↑/↓** (**Home**, **End**, **PgUp**/**PgDn** in
+long lists), activate with **Enter**, **Space** toggles checkboxes (and types
+in inputs), **Tab** moves between search and list, **Esc** opens a safe Quit
+dialog from anywhere before anything is written. No mouse. Files are written
+only after selecting **Install** in the final summary. Noninteractive use and
+all installer flags are covered under
 [Installation options](#installation-options).
-`install-team` is an
-equivalent supported alias with identical arguments and results; see
-[Installation options](#installation-options) for the alias invocation form.
 
 ## Single installation directory
 
 One interactive run installs into exactly one target folder. The directory
-screen defaults to the invocation directory and offers a folder picker for
-another existing directory. Confirming another target loads that folder's
-saved team configuration, skill conflicts and editor status (with explicit
+screen defaults to the absolute invocation directory and offers a native
+folder picker for another existing directory. Browsing folders never changes
+the target or writes files: only an explicit **Use this folder** action
+confirms another target, while **Cancel** keeps the prior target. Confirming
+another target loads that folder's saved team configuration (with explicit
 consent when it would discard session agent edits); reselecting the same
-target keeps committed session choices. Initial agent
-settings come from the default target's saved team configuration; personal settings
-come from the user profile, falling back to an old repo installation during
-migration. Persona and additional rules are saved once as user-level settings
-for the selected harness; native provider settings, unrelated instructions and
-operator controls are preserved. Run setup once per repository for different
-profiles. The picked target must exist, be a real directory (no symlinks) and
-be readable; invalid targets are rejected recoverable in the picker, and no
-folder is ever created for you. `--defaults` stays cwd-only.
+target keeps committed session choices. Editors offer explicit Cancel rows and
+Back navigation: cancelling a draft discards only the draft, and Back retains
+committed choices. Passing a target path fails with usage instead of
+installing elsewhere.
+
+The picked target must exist, be a real directory (no symlinks) and be
+readable; invalid targets are rejected recoverably in the picker, and no
+folder is ever created for you.
 
 Every write scope — team files, persona profile and editor settings — is
 preflighted before the first write. Unowned skill collisions are listed for one
@@ -55,11 +35,14 @@ in-shell adoption decision. This is not a filesystem transaction: disk
 errors/concurrent changes may leave the target partially written, reported
 truthfully.
 
-For noninteractive use run in the target directory with `--defaults`; it never
-opens the setup. Model defaults apply, while the user profile retains its saved
-persona/rules unless corresponding flags explicitly override them. In
-non-TTY/raw-mode-unavailable/`TERM=dumb` environments interactive invocation
-exits with usage and no writes; it never silently selects defaults.
+Setup appends a managed `.gitignore` block that ignores the installed agent,
+skills and config paths, and configures `.vscode/settings.json` so Ctrl+P
+reaches applications in the VS Code integrated terminal; all other rules and
+unrelated harness folders stay untouched. Recognized unchanged legacy Planner
+definitions are removed on update.
+
+In non-TTY/raw-mode-unavailable/`TERM=dumb` environments interactive
+invocation exits with usage and no writes; it never silently selects defaults.
 
 ## Installation options
 
@@ -69,6 +52,10 @@ All remote installs use the single canonical route (no npm publish, no clone):
 cd your-project
 npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz
 ```
+
+Every launch resolves the newest successfully verified master build and
+verifies its exact tarball checksum before executing it; lookup or verification
+failures abort before anything is written.
 
 npx infers the canonical `toady` entry from the tarball, so no bin name is
 needed. Append installer flags directly after the URL (no `--` separator —
@@ -97,6 +84,11 @@ bin — invoking the alias needs the explicit `--package` form:
 ```sh
 npx --yes --package=https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz install-team --harness=opencode --defaults
 ```
+
+From a target directory, `--defaults` installs noninteractively into the
+current directory without opening the setup; model defaults apply, while the
+user profile retains its saved persona/rules unless corresponding flags
+explicitly override them.
 
 A repository checkout (`git clone` + `npm run setup`) is the toolkit
 development workflow, not a competing install route: `npm run setup`
@@ -183,9 +175,7 @@ Only models found in the installer's available list can be selected automaticall
 - Reviewer prefers plain DeepSeek V4 Flash through Go or Zen, then V4 Pro/medium if Flash is unavailable. Security prefers V4 Pro/high. Neither role nor Developer/Tester automatically falls back to OpenAI.
 - Astra and unlisted fast/premium variants are manual choices, never automatic matches. Exact matching avoids accidentally selecting a different variant merely because its name contains a preferred ID.
 
-**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. A noninteractive reset
-is covered under [Installation options](#installation-options) (`--defaults`
-from the target directory).
+**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. A noninteractive reset uses `--defaults` from the target directory (see [Installation options](#installation-options)).
 
 If a role has no available listed candidate, first-time/defaults installation leaves it unset (inheriting the current opencode model); an interactive reset keeps its existing choice. Check the resulting selections before running a quality-sensitive stage.
 
@@ -220,20 +210,3 @@ Noninteractive: from the target directory run the launcher form documented
 under [Installation options](#installation-options). Relative rules paths resolve against the installation (invocation) directory; absolute paths are also accepted. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers from either product namespace are rejected. Named read-only service restrictions require native least-privilege credentials/tools for enforcement.
 
 Preserve unrelated rules/provider settings. Disabling Toady voice removes its style; the startup entry remains while additional rules are present. Clearing both removes the managed block/entry. State is stored privately under each harness user directory in `toady/persona.json` (a prior `spec-driven-scrum-team/persona.json` is recognized as fallback and migrated on reinstall; when both exist the new settings take precedence); shared native rules may be discovered by other tools. Use a fresh session after changes. Installing with voice off still installs the toolkit; additional rules continue to load independently of the voice setting.
-
-## Repository cutover
-
-The toolkit's canonical home is `ppierzchalka/toady` (package `toady`, command `toady`, with `install-team` as the supported alias). The GitHub repository rename and origin update are done (owner-operated); the local checkout directory is intentionally unchanged — this task performs no remote mutation.
-
-Coordinated cutover checklist:
-
-1. Repository renamed to `ppierzchalka/toady` (done, owner action).
-2. New clone URL (`https://github.com/ppierzchalka/toady.git`) and new release launcher route (`npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz`) confirmed (done).
-3. After the next post-cutover verified master build publishes `current.json` with canonical new-repo metadata and its checksum-pinned immutable build, run the documented canonical npx route against a throwaway project with a private HOME and confirm the install (pending).
-4. Do not rely on GitHub redirect behavior as evidence that the canonical route works; verify the new route directly.
-
-Existing downloaded `install-team` callers remain supported through the bin alias, but survival of every old GitHub URL is not guaranteed. Public asset names are unchanged (`installer-current.tgz`, `current.json`); there is no npm publication step. The published `current` release predates the rename: its pinned metadata still addresses the old repository path (redirect-dependent) and regenerates with canonical URLs on the next post-cutover master build — releases are never edited by hand. Full hosted identity/release validation is pending that build plus the canonical end-to-end install.
-
-## Validation status
-
-Package tests check all five layouts and local links, collision handling, path safety and metadata preservation. These are not proof of discovery/spawning/model adherence in each CLI/GUI. Codex-target installation and fresh-context workflow tests run in disposable repos. Corporate OpenCode/Gemini/Vertex latency, tokens and native permission behavior require measurement on that runtime. Follow docs/prompt-evaluation.md before claiming a harness/model behavior pass.

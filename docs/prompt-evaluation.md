@@ -1,6 +1,12 @@
-# Updated workflow evaluation
+# Workflow validation
 
-Use these scenarios for forward-testing the revised bundle. The historical cases below are retained as archive only, not release expectations. Their repeated-toggle, Lead-per-Ticket and forced single-Ticket isolation assumptions are superseded by the current scenarios above.
+Use these scenarios when changing prompts or switching models. Installer tests
+validate packaging and reference resolution; they do not measure model
+adherence. Run the cases below in a disposable target repo with runtime
+permissions that block destructive operations and publication. Do not test
+prohibited actions against valuable work. Earlier superseded cases live in the
+[historical archive](research/historical-prompt-evaluation.md); dated local
+trial observations live in [prompt evaluation trials](research/prompt-evaluation-trials.md).
 
 | Scenario | Expected behavior |
 | --- | --- |
@@ -40,12 +46,6 @@ Install into a disposable repo, start a fresh native Lead and judge actual dispa
 | Long Wayfinder resume | Current state read first; settled decisions/questions preserved |
 | Missing usage | Unknown, no fabricated savings or hard billing cap |
 
-Historical scenarios live in research/historical-prompt-evaluation.md; their earlier full toggle forms, note files and isolation defaults are superseded.
-
-## Recorded local packet evidence
-
-2026-10-08: fresh-context Lead used a newly installed Codex-format bundle in a disposable formatter repo, with two related ready tasks, Developer+independent Reviewer, concurrency one, inherited models and local delivery. Lead selected one packet, dispatched each role once, and retained individual task results. One test execution passed three tests/nine assertions; Reviewer approved both criteria/interactions on pass one. No repairs, extra reports or publication. Wall phases: Developer ~52s, Reviewer ~42s, contract-to-recording ~119s (intake excluded). This is one behavioral trial through this environment's native agents, not live Codex/OpenCode client validation or proof of Vertex/token savings.
-
 ## Analysis discipline scenarios
 
 Use disposable artifacts and fresh Analyst contexts; judge questions, persisted definitions and task readiness, not keyword presence in prompts.
@@ -60,5 +60,3 @@ Use disposable artifacts and fresh Analyst contexts; judge questions, persisted 
 | Multi-session branching direction | Small decision/open-question index in existing artifact; no forced decision-ticket tracker or reload of all historical detail |
 
 Adapted concepts: decision prerequisites from Matt Pocock's `grilling`, active vocabulary/scenario checks and selective ADRs from `domain-modeling`, behavioral test seams from `to-spec`, and expand–contract decomposition from `to-tickets` ([upstream skills](https://github.com/mattpocock/skills)). The bundle retains its own lifecycle, question bound and delivery choices; no external skill dependency is introduced.
-
-2026-10-08 analysis trials: installed the revised Codex-format bundle into two disposable local repos and used fresh native Analyst contexts. For an already accepted label-only change, Refine preserved the task identity, added one criterion and the existing public verification boundary, and marked it ready-to-implement without more questions, Plan, ADR or source edits. For cancellation with ambiguous account/ownership and partial-cancellation language, Refine inspected glossary/code, asked two prerequisite questions with scenarios/recommendations and kept in-refinement. After explicit user answers it persisted accepted terms in the existing glossary and behavior/criteria/check direction in the same task, then asked three downstream questions about time/delivery/failure; unresolved behavior stayed in-refinement. No production/test edits, extra skills, remote publication or ADR were introduced. These are local native-agent observations, not live harness/Vertex validation, a comparison benchmark or evidence of token savings. The sandbox denied tsx IPC; installation used the compiled node CLI instead.
