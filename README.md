@@ -6,38 +6,45 @@ Explore an idea with **Analyst**. Hand ready tasks to **Lead** for implementatio
 
 ## Install
 
-Requires Node.js 22.19+ and npm. The interactive setup defaults to the
-directory you run it from and offers a folder picker for another existing
-directory; the confirmed single target receives the install. There are no
-target-path arguments and no multi-target mode. Passing a path fails with
-usage instead of installing elsewhere. Noninteractive `--defaults` always
-installs into the current directory.
+Requires Node.js 22.19+ and npm.
 
 **Registry-free launch from GitHub Releases (no npm publish, no clone):**
 
 ```sh
 cd your-project
-npx --yes --package=https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz toady --harness=opencode
+npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz
 ```
 
-`install-team` remains an equivalent supported alias: replace `toady` with
-`install-team` in the command above for identical arguments and results.
+The interactive setup defaults to the
+directory you run it from and offers a folder picker for another existing
+directory; the confirmed single target receives the install. There are no
+target-path arguments and no multi-target mode. Passing a path fails with
+usage instead of installing elsewhere. Noninteractive flags, harness
+selection and the `install-team` alias route live in one place:
+[Installation options →](docs/team-configuration.md#installation-options).
 
-Requires Node.js 22.19+ and npm. Every launch resolves the newest
+`install-team` remains a supported alias through the `--package` form
+documented there; the short positional URL above always runs the canonical
+`toady` entry.
+
+Every launch resolves the newest
 successfully verified master build, verifies its exact tarball checksum, and
-executes that exact build — even when an older npx install is cached. Pass
-installer flags after the bin name, e.g. `toady --defaults --toady`.
+executes that exact build — even when an older npx install is cached.
 Network, lookup or verification failures abort before anything is written, so
 a stale cache is never silently run. Each run prints its build identity
 (`version+commit`) for diagnosability. Even `--help` verifies freshness first,
 so the text you read always belongs to the current build.
 
-> Until the first successful master build publishes its `current` release, the
-> command above fails closed. Publication status is not verified here: track
-> [releases](https://github.com/ppierzchalka/toady/releases)
-> or install from a checkout below in the meantime.
+> A `current` release is published, but its pinned build metadata still
+> addresses the pre-rename repository path, so the canonical route currently
+> depends on GitHub redirect behavior. Canonical end-to-end validation is
+> pending a post-cutover master build (see [Repository
+> cutover →](docs/team-configuration.md#repository-cutover)); track
+> [releases](https://github.com/ppierzchalka/toady/releases) for publication
+> status.
 
-**Local development:**
+**Local development** (for working on the toolkit itself — not a project
+install route):
 
 ```sh
 git clone https://github.com/ppierzchalka/toady.git
@@ -47,15 +54,15 @@ npm run setup
 ```
 
 **Repository cutover:** the toolkit moved from
-`ppierzchalka/spec-driven-scrum-team` to `ppierzchalka/toady`. Use the new
-clone and release URLs above; the launcher resolves the new repository and
-the new canonical `toady` route must be validated against a throwaway project
-after a successful verified build (see [Installation and model
-settings →](docs/team-configuration.md#repository-cutover)). The rename is an
-owner-operated step — do not rely on GitHub redirect behavior as evidence the
-canonical route works, and do not rename the local checkout directory. Old
-downloaded `install-team` callers remain supported through the alias, but
-survival of every old GitHub URL is not guaranteed.
+`ppierzchalka/spec-driven-scrum-team` to `ppierzchalka/toady` — the GitHub
+rename and remote update are done; the local checkout directory is
+intentionally unchanged. Use the new clone and release URLs above. The
+canonical `toady` route still needs end-to-end validation against a throwaway
+project after a post-cutover verified build (see [Installation and model
+settings →](docs/team-configuration.md#repository-cutover)) — redirect
+behavior is not evidence the canonical route works. Old downloaded
+`install-team` callers remain supported through the alias, but survival of
+every old GitHub URL is not guaranteed.
 
 A keyboard-first native full-screen setup walks four steps:
 **installation directory (invocation-folder default plus a folder picker for

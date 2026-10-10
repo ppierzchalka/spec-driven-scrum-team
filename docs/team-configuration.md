@@ -25,10 +25,12 @@ are written only after selecting **Install** in the final summary. Setup also
 appends a managed `.gitignore` block that ignores the installed agent, skills
 and config paths, and configures `.vscode/settings.json` so Ctrl+P reaches
 applications in the VS Code integrated terminal; all other rules and unrelated
-harness folders stay untouched. Noninteractive single-directory install:
-`toady --harness=codex --defaults` (or `npm run setup --
---harness=codex --defaults` from a checkout). `install-team` is an
-equivalent supported alias with identical arguments and results.
+harness folders stay untouched. Noninteractive single-directory install
+(cwd-only, also available from a checkout) is covered under
+[Installation options](#installation-options).
+`install-team` is an
+equivalent supported alias with identical arguments and results; see
+[Installation options](#installation-options) for the alias invocation form.
 
 ## Single installation directory
 
@@ -58,6 +60,48 @@ opens the setup. Model defaults apply, while the user profile retains its saved
 persona/rules unless corresponding flags explicitly override them. In
 non-TTY/raw-mode-unavailable/`TERM=dumb` environments interactive invocation
 exits with usage and no writes; it never silently selects defaults.
+
+## Installation options
+
+All remote installs use the single canonical route (no npm publish, no clone):
+
+```sh
+cd your-project
+npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz
+```
+
+npx infers the canonical `toady` entry from the tarball, so no bin name is
+needed. Append installer flags directly after the URL (no `--` separator —
+the installer rejects it as an unknown flag):
+
+```sh
+npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz --harness=opencode --defaults --additional-rules=/path/to/rules.md
+```
+
+Available installer flags:
+
+| Flag | Effect |
+| --- | --- |
+| `--harness=<name>` | `opencode` \| `claude-code` \| `codex` \| `antigravity` \| `copilot`; optional — omitted means `opencode` (including with `--defaults`); chosen interactively otherwise |
+| `--defaults`, `-d` | Noninteractive install with default models; always installs into the current directory |
+| `--toady` / `--no-toady` | Enable or disable the cartoon-minion voice in the private startup persona |
+| `--additional-rules=<file>` (also `--toady-rules=<file>`) | Load extra rules into the private persona; relative paths resolve against the invocation directory; regular Markdown/text files up to 64 KiB |
+| `--clear-additional-rules` (also `--clear-toady-rules`) | Clear imported rules |
+| `--replace-skills` | Adopt/replace unowned shipped skill folders without prompting (noninteractive collision handling) |
+| `--help`, `-h` | Show help (verifies freshness first, like every other launch) |
+
+The `install-team` alias runs the same entry with identical arguments and
+results, but npx positional inference only resolves the canonical `toady`
+bin — invoking the alias needs the explicit `--package` form:
+
+```sh
+npx --yes --package=https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz install-team --harness=opencode --defaults
+```
+
+A repository checkout (`git clone` + `npm run setup`) is the toolkit
+development workflow, not a competing install route: `npm run setup`
+configures the checkout itself, while project installs always go through the
+release launcher above.
 
 ## Installation ownership and paths
 
@@ -139,7 +183,9 @@ Only models found in the installer's available list can be selected automaticall
 - Reviewer prefers plain DeepSeek V4 Flash through Go or Zen, then V4 Pro/medium if Flash is unavailable. Security prefers V4 Pro/high. Neither role nor Developer/Tester automatically falls back to OpenAI.
 - Astra and unlisted fast/premium variants are manual choices, never automatic matches. Exact matching avoids accidentally selecting a different variant merely because its name contains a preferred ID.
 
-**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. `toady --defaults` (from the target directory) applies current defaults noninteractively and writes canonical prompts.
+**Apply these defaults to an existing install:** run setup, choose **Reset all to defaults** (or reset an individual agent), then continue through personal instructions and select **Install** in the final summary. Saved model choices are preserved during ordinary reconfiguration; changing the defaults does not silently replace them. A noninteractive reset
+is covered under [Installation options](#installation-options) (`--defaults`
+from the target directory).
 
 If a role has no available listed candidate, first-time/defaults installation leaves it unset (inheriting the current opencode model); an interactive reset keeps its existing choice. Check the resulting selections before running a quality-sensitive stage.
 
@@ -149,7 +195,8 @@ Only enabled roles consume work for a given run; the allocation changes naturall
 
 ## Optional Toady voice
 
-The personal instructions step starts with a native Toady voice checkbox: **Enter** toggles it (Space toggles checkboxes too). Its saved state is preselected; the following menu lets you reopen this setting. Alternatively, `--toady` / `--no-toady` works for the selected harness. Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona tone affects user-facing conversation, not source/docs or internal handoff style. Toady voice controls the cartoon-minion style only; it adds no coding or commit defaults.
+The personal instructions step starts with a native Toady voice checkbox: **Enter** toggles it (Space toggles checkboxes too). Its saved state is preselected; the following menu lets you reopen this setting. Alternatively, the noninteractive equivalent is listed under
+[Installation options](#installation-options). Git user.name is read locally with Master fallback; the chosen name becomes persona context for the selected model. Persona tone affects user-facing conversation, not source/docs or internal handoff style. Toady voice controls the cartoon-minion style only; it adds no coding or commit defaults.
 
 Persona and imported rules are **personal, user-wide settings** for the selected harness. They apply across projects on this computer. Team agents and skills are still installed per repository. No new persona, rule content or persona-state file is written into a repo.
 
@@ -169,22 +216,23 @@ During an update, the installer migrates old settings, removes its recognized ma
 
 After confirming the Toady checkbox, **Additional rules (loaded to persona)** is always available in the personal instructions menu. Choose **Browse for a rules file** to navigate folders (including parent folders) and select a Markdown/text file. The browser shows its current absolute directory, validates the selected file and leaves existing rules unchanged when you go back. **Enter a rules file path** remains available. Import instructions for TypeScript, custom or Conventional Commits, formatting, Azure DevOps read-only or other guidelines. The content is embedded in the same private startup persona; no repo policy document is installed. Rules load even when Toady is off. Toggling Toady changes only the voice; clearing additional rules removes only imported instructions. Both settings are retained independently across reinstall. Do not include credentials/secrets. Existing company/runtime restrictions remain authoritative; applicable rules propagate to subagents without the persona voice.
 
-Noninteractive: from the target directory run `toady --harness=opencode --defaults --additional-rules=/path/to/rules.md`; add `--toady` only for the minion voice. Use `--clear-additional-rules` to clear imported rules. The previous `--toady-rules` / `--clear-toady-rules` flags remain aliases. Relative rules paths resolve against the installation (invocation) directory; absolute paths are also accepted. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers from either product namespace are rejected. Named read-only service restrictions require native least-privilege credentials/tools for enforcement.
+Noninteractive: from the target directory run the launcher form documented
+under [Installation options](#installation-options). Relative rules paths resolve against the installation (invocation) directory; absolute paths are also accepted. Rules sources must be regular Markdown/text files up to 64 KiB; managed markers from either product namespace are rejected. Named read-only service restrictions require native least-privilege credentials/tools for enforcement.
 
 Preserve unrelated rules/provider settings. Disabling Toady voice removes its style; the startup entry remains while additional rules are present. Clearing both removes the managed block/entry. State is stored privately under each harness user directory in `toady/persona.json` (a prior `spec-driven-scrum-team/persona.json` is recognized as fallback and migrated on reinstall; when both exist the new settings take precedence); shared native rules may be discovered by other tools. Use a fresh session after changes. Installing with voice off still installs the toolkit; additional rules continue to load independently of the voice setting.
 
 ## Repository cutover
 
-The toolkit's canonical home is `ppierzchalka/toady` (package `toady`, command `toady`, with `install-team` as the supported alias). The GitHub repository rename itself is an owner-operated manual step, as are git remote configuration updates — this task performs no remote mutation and renames no local checkout directory.
+The toolkit's canonical home is `ppierzchalka/toady` (package `toady`, command `toady`, with `install-team` as the supported alias). The GitHub repository rename and origin update are done (owner-operated); the local checkout directory is intentionally unchanged — this task performs no remote mutation.
 
 Coordinated cutover checklist:
 
-1. Rename the GitHub repository to `ppierzchalka/toady` (owner action; requires the name to be available).
-2. Confirm the new clone URL (`https://github.com/ppierzchalka/toady.git`) and the new release launcher route (`npx --yes --package=https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz toady`).
-3. After a successful verified master build publishes `current.json` and its checksum-pinned immutable build, run the documented new canonical npx route against a throwaway project with a private HOME and confirm the install.
+1. Repository renamed to `ppierzchalka/toady` (done, owner action).
+2. New clone URL (`https://github.com/ppierzchalka/toady.git`) and new release launcher route (`npx -y https://github.com/ppierzchalka/toady/releases/download/current/installer-current.tgz`) confirmed (done).
+3. After the next post-cutover verified master build publishes `current.json` with canonical new-repo metadata and its checksum-pinned immutable build, run the documented canonical npx route against a throwaway project with a private HOME and confirm the install (pending).
 4. Do not rely on GitHub redirect behavior as evidence that the canonical route works; verify the new route directly.
 
-Existing downloaded `install-team` callers remain supported through the bin alias, but survival of every old GitHub URL is not guaranteed. Public asset names are unchanged (`installer-current.tgz`, `current.json`); there is no npm publication step. Until cutover and a successful master release complete, hosted identity/release checks remain unverified.
+Existing downloaded `install-team` callers remain supported through the bin alias, but survival of every old GitHub URL is not guaranteed. Public asset names are unchanged (`installer-current.tgz`, `current.json`); there is no npm publication step. The published `current` release predates the rename: its pinned metadata still addresses the old repository path (redirect-dependent) and regenerates with canonical URLs on the next post-cutover master build — releases are never edited by hand. Full hosted identity/release validation is pending that build plus the canonical end-to-end install.
 
 ## Validation status
 
